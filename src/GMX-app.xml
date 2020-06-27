@@ -1,0 +1,25 @@
+<application xmlns="http://ns.adobe.com/air/application/2.5">
+    <id>Main</id>
+    <versionNumber>1.0</versionNumber>
+    <filename>GMF</filename>
+    <initialWindow>
+        <content>Main.swf</content>
+        <visible>true</visible>
+    </initialWindow>
+	<icon>
+	   <image36x36>assets/skull36x36.png</image36x36>
+	   <image48x48>assets/skull48x48.png</image48x48>
+	   <image72x72>assets/skull72x72.png</image72x72>
+	</icon>
+	<android> 
+		<manifestAdditions> 
+			<![CDATA[ 
+				<manifest> 
+					<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> 
+					<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> 
+					<uses-permission android:name="android.permission.INTERNET" /> 
+				</manifest> 
+			]]> 
+		</manifestAdditions> 
+	</android>
+</application>

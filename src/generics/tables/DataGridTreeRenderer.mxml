@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+ *      Copyright (c) Vanderbilt University, 2006-2009
+ *      ALL RIGHTS RESERVED, UNLESS OTHERWISE STATED
+ *
+ *      Developed under contract for Future Combat Systems (FCS)
+ *      by the Institute for Software Integrated Systems, Vanderbilt Univ.
+ *
+ *      Export Controlled:  Not Releasable to a Foreign Person or
+ *      Representative of a Foreign Interest
+ *
+ *      GOVERNMENT PURPOSE RIGHTS:
+ *      The Government is granted Government Purpose Rights to this
+ *      Data or Software.  Use, duplication, or disclosure is subject
+ *      to the restrictions as stated in Agreement DAAE07-03-9-F001
+ *      between The Boeing Company and the Government.
+ *
+ *      Vanderbilt University disclaims all warranties with regard to this
+ *      software, including all implied warranties of merchantability
+ *      and fitness.  In no event shall Vanderbilt University be liable for
+ *      any special, indirect or consequential damages or any damages
+ *      whatsoever resulting from loss of use, data or profits, whether
+ *      in an action of contract, negligence or other tortious action,
+ *      arising out of or in connection with the use or performance of
+ *      this software.
+ * 
+ */-->
+<mx:HBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalGap="2"
+   width="100%" height="100%" horizontalAlign="left" verticalAlign="middle" horizontalScrollPolicy="off">
+  <mx:Script>
+   <![CDATA[
+		import constants.Size;
+		import generics.tables.ExpandTreeEvent;
+		import flash.events.MouseEvent;
+		import generics.Button_X;
+		import mx.controls.Button;
+		private var _data:Object = new Object;
+		//private static const KEY:String = "rating";
+		public var fid:String = "";
+		//private var level:int = 0;
+		public var fontSize:String = "";
+		public var buttonSize:String = "";
+     
+		private var _expandButton:Button_X;
+	
+		override protected function createChildren():void {
+			super.createChildren();
+			_expandButton = new Button_X();
+			_expandButton.build(<Button width="20" height="20" icon="expandTree"/>);
+			if (buttonSize != "") { 
+				_expandButton.width = _expandButton.height = GMXComponentBuilder.parseMM(buttonSize); 
+				if (_expandButton.icon != null) { 
+					_expandButton.icon.width = _expandButton.icon.height = _expandButton.width - Size.MM;
+					_expandButton.icon.x = _expandButton.icon.y = Size.MM / 2;
+				}
+			}
+			if (fontSize != "") { labelID.setStyle("fontSize", parseFloat(fontSize)); }
+			
+			this.addChildAt(_expandButton, 1); // put it after the hBox
+			_expandButton.addEventListener(MouseEvent.CLICK, handleExpandClick);
+		}
+     
+		public function set level(val:int):void {
+			_data.levelInTreeDataGrid = val;
+		}
+		
+		public function set show(val:Boolean):void {
+			_data.showExpandButton = Boolean(val);
+			trace("EXPAND BUTTON BEFORE: " + _data.showExpandButton + "   DATA: " + _data[fid]);
+		}
+		
+		public function get value():String { 
+			if (data != null) {
+				return _data[fid];
+			}
+			return "";
+		}
+		
+		public function get text():String {
+			return this.value;
+		}
+	     
+		override public function set data(value:Object):void {
+			_data = value;
+			if (fid != "") {
+				labelID.text = value[fid];
+			}
+			if (_data.showExpandButton == true) {
+				_expandButton.visible = true;
+				if (_data.showChildren == true) {
+					_expandButton.changeIcon("collapseTree");
+				} else {
+					_expandButton.changeIcon("expandTree");
+				}
+			} else {
+				_expandButton.visible = false;
+			}
+		}
+     
+		override public function get data():Object {
+			return _data;
+		}
+     
+		override protected function updateDisplayList(unscaledWidth:Number, unscaledHeight:Number):void {			
+			hBox.width = _data.levelInTreeDataGrid * 20;
+			//trace("EXPAND BUTTON LATER: " + _data.showExpandButton + "   DATA: " + _data[fid]);
+			
+			super.updateDisplayList(unscaledWidth, unscaledHeight);
+		}
+     
+		override public function invalidateDisplayList():void {
+			super.invalidateDisplayList();
+		}
+		
+		override protected function commitProperties():void {
+			super.commitProperties();
+		}
+		
+		private function handleExpandClick(event:MouseEvent):void {
+			event.stopPropagation();
+			var expandTreeEvent:ExpandTreeEvent;
+			var showChildren:Boolean;
+			if (_data.showChildren == true) {
+				showChildren = false;
+			} else {
+				// switch it to true
+				showChildren = true;
+			}
+			this.dispatchEvent(new ExpandTreeEvent(_data.ruidForExpand, showChildren, ExpandTreeEvent.RESIZE, true, true));
+		}
+   ]]>
+ </mx:Script>
+ <mx:HBox id="hBox" width="0"/>
+ <mx:Label id="labelID" truncateToFit="false" percentWidth="100" />
+</mx:HBox>

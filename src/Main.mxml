@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<mx:Application
+	xmlns:mx="http://www.adobe.com/2006/mxml"  
+	applicationComplete="initHandler(event)" layout="absolute" horizontalScrollPolicy="auto"
+	>
+	
+    <mx:Script>
+	<![CDATA[
+import flash.events.MouseEvent;
+import flash.external.ExternalInterface;
+import generics.FileBrowser;
+import gmx_builder.drawing_tool.ActionScriptGraphicsGenerator;
+import mx.controls.TextInput;
+import mx.events.FlexEvent;
+import mx.events.ResizeEvent;
+
+		public static function set SCALE(val:Number):void { instance.scaleX = instance.scaleY = val; }
+		public static function get SCALE():Number { return instance.scaleX; }
+		public static var instance:Main;
+		
+		private var gmx:GMXMain = new GMXMain();
+		
+//====================================================================================================================================
+//======== BEGIN initHandler() =======================================================================================================
+		private function initHandler(event:Event):void {
+			instance = this;
+			//flash.system.fscommand("fullscreen", "true");
+			if (this.parameters.width != undefined) {
+				this.width = Number(this.parameters.width);
+			}
+			if (this.parameters.height != undefined) {
+				this.height = Number(this.parameters.height);
+			}
+			this.addChild(gmx);
+			gmx.width = this.width;
+			gmx.height = this.height;
+			this.addChild(GMXMain.PopUps);
+			//GMXMain.PopUps.addChild(new ActionScriptGraphicsGenerator());
+			//GMXMain.PopUps.addChild(new FileBrowser());
+			
+			
+			this.addEventListener(ResizeEvent.RESIZE, resize);
+		}	
+		
+		private function resize(event:ResizeEvent):void {
+			gmx.width = this.width;
+			gmx.height = this.height;
+		}
+//======== END initHandler() =========================================================================================================
+//====================================================================================================================================
+	]]>
+    </mx:Script>
+    <mx:Style>
+	 VBox {
+		verticalGap: 0;
+	 }
+	 
+	 HBox {
+		horizontalGap: 0;
+	 }
+	 
+	 Container {
+		paddingLeft: 0;
+		paddingRight: 0;
+		paddingTop: 0;
+		paddingBottom: 0;
+	 }
+	 </mx:Style>
+</mx:Application>
