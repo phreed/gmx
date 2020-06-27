@@ -4,17 +4,17 @@ COMPILE AIR PROGRAM
 amxmlc Main.mxml
 
 TESTING:
-adl GMX-app.xml 
+adl GMX-app.xml
 
 CREATE CERTIFICATE
 adt -certificate -cn [SelfSigned] 1024-RSA [sampleCert.pfx] [samplePassword]
 
 CREATE EITHER:
 	1) AIR installation file
-adt -package -storetype pkcs12 -keystore sampleCert.pfx HelloWorld.air 
+adt -package -storetype pkcs12 -keystore sampleCert.pfx HelloWorld.air
 HelloWorld-app.xml HelloWorld.swf
 
-OR 
+OR
 
 	2) ANDROID installation file
 adt -package -target apk-debug -storetype pkcs12 -keystore GMXCert.pfx GMF.apk GMX-app.xml Main.swf assets/skull72x72.png assets/skull36x36.png assets/skull48x48.png
