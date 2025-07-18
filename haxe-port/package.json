@@ -1,0 +1,82 @@
+{
+  "name": "gmx-haxe-port",
+  "version": "1.0.0",
+  "description": "GMX Application ported from Adobe AIR to Haxe/HashLink",
+  "main": "bin/gmx.hl",
+  "scripts": {
+    "build": "haxe build.hxml",
+    "build-release": "haxe build-release.hxml",
+    "run": "hl bin/gmx.hl",
+    "dev": "npm run build && npm run run",
+    "clean": "rm -rf bin/*",
+    "install-libs": "haxelib install heaps && haxelib install hlsdl && haxelib install format",
+    "setup": "npm run install-libs && mkdir -p bin",
+    "watch": "nodemon --watch src --ext hx --exec \"npm run dev\"",
+    "test": "haxe test.hxml",
+    "package-windows": "hl --compile-hl bin/gmx.hl bin/gmx.exe",
+    "package-linux": "hl --compile-hl bin/gmx.hl bin/gmx",
+    "package-mac": "hl --compile-hl bin/gmx.hl bin/gmx.app"
+  },
+  "keywords": [
+    "haxe",
+    "hashlink",
+    "heaps",
+    "cross-platform",
+    "gui",
+    "form-builder"
+  ],
+  "author": "GMX Development Team",
+  "license": "PROPRIETARY",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "."
+  },
+  "haxe": {
+    "version": ">=4.3.0",
+    "libraries": [
+      {
+        "name": "heaps",
+        "version": ">=1.10.0"
+      },
+      {
+        "name": "hlsdl",
+        "version": ">=1.13.0"
+      },
+      {
+        "name": "format",
+        "version": ">=3.6.0"
+      }
+    ]
+  },
+  "build": {
+    "targets": [
+      {
+        "platform": "hashlink",
+        "output": "bin/gmx.hl"
+      },
+      {
+        "platform": "windows",
+        "output": "bin/gmx.exe"
+      },
+      {
+        "platform": "linux",
+        "output": "bin/gmx"
+      },
+      {
+        "platform": "mac",
+        "output": "bin/gmx.app"
+      }
+    ]
+  },
+  "deployment": {
+    "crossPlatform": true,
+    "performance": "native",
+    "runtime": "hashlink"
+  }
+}

@@ -1,3 +1,5 @@
+= The GMX Developer's Guide
+
 FIRST: open a console in and navigate over to the src folder
 
 COMPILE AIR PROGRAM
@@ -50,5 +52,3 @@ alan25
 
 adb install -r GMF.apk
 adb logcat
-
-

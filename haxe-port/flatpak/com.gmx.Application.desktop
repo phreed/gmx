@@ -1,0 +1,24 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=GMX Application
+GenericName=Form Builder
+Comment=GMX graphical form builder and editor application
+Exec=gmx-flatpak %F
+Icon=com.gmx.Application
+Terminal=false
+Categories=Development;Office;Database;
+MimeType=application/x-gmx-form;application/xml;
+Keywords=form;builder;editor;gmx;database;ui;
+StartupNotify=true
+StartupWMClass=GMX
+
+[Desktop Action NewForm]
+Name=New Form
+Exec=gmx-flatpak --new-form
+
+[Desktop Action OpenRecent]
+Name=Open Recent
+Exec=gmx-flatpak --recent
+
+Actions=NewForm;OpenRecent;
