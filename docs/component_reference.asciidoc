@@ -1,0 +1,571 @@
+= GMX Component Reference
+
+This document provides a comprehensive reference for all UI components available in the GMX framework.
+
+== Component Overview
+
+GMX components are XML-defined UI elements that can be dynamically created and updated via layout messages. All components support data binding through RUIDs (Record Unique IDs) and field identifiers (FIDs).
+
+== Common Attributes
+
+Most GMX components support these standard attributes:
+
+=== Layout Attributes
+* `luid` - Layout Unique ID for targeting layout updates
+* `width` - Component width in pixels
+* `height` - Component height in pixels
+* `x` - X position (for Canvas containers)
+* `y` - Y position (for Canvas containers)
+* `visible` - Visibility flag (true/false)
+* `enabled` - Interaction enabled flag (true/false)
+
+=== Data Binding Attributes
+* `ruid` - Record Unique ID for data binding
+* `fid` - Field ID within the record
+* `cuid` - Collection Unique ID for collection-based components
+
+=== Styling Attributes
+* `styleName` - CSS style class name
+* `color` - Text/foreground color
+* `backgroundColor` - Background color
+* `fontSize` - Font size in points
+* `fontWeight` - Font weight (normal, bold)
+* `textAlign` - Text alignment (left, center, right)
+
+== Container Components
+
+=== VBox
+Arranges child components vertically.
+
+```xml
+<VBox luid="vertical_container" width="200" height="400"
+      gap="10" paddingTop="5" paddingLeft="5">
+  <Button label="Top Button"/>
+  <Button label="Middle Button"/>
+  <Button label="Bottom Button"/>
+</VBox>
+```
+
+*Specific Attributes:*
+* `gap` - Spacing between child components
+* `paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight` - Internal padding
+* `horizontalAlign` - Horizontal alignment of children (left, center, right)
+* `verticalAlign` - Vertical alignment of children (top, middle, bottom)
+
+=== HBox
+Arranges child components horizontally.
+
+```xml
+<HBox luid="horizontal_container" width="400" height="100"
+      gap="15" verticalAlign="middle">
+  <Button label="Left"/>
+  <Button label="Center"/>
+  <Button label="Right"/>
+</HBox>
+```
+
+*Specific Attributes:*
+* `gap` - Spacing between child components
+* `paddingTop`, `paddingBottom`, `paddingLeft`, `paddingRight` - Internal padding
+* `horizontalAlign` - Horizontal alignment of children
+* `verticalAlign` - Vertical alignment of children
+
+=== Canvas
+Allows absolute positioning of child components.
+
+```xml
+<Canvas luid="absolute_container" width="500" height="300">
+  <Button label="Positioned" x="100" y="50"/>
+  <Label text="Another Position" x="200" y="150"/>
+</Canvas>
+```
+
+*Usage Notes:*
+* Child components require explicit `x` and `y` coordinates
+* Supports overlapping components
+* No automatic layout management
+
+=== VBox_X (Extended VBox)
+Enhanced VBox with additional layout capabilities.
+
+```xml
+<VBox_X luid="enhanced_vbox" width="250" height="500"
+        scrollPolicy="auto" borderStyle="solid">
+  <!-- Child components -->
+</VBox_X>
+```
+
+*Additional Features:*
+* Automatic scrolling support
+* Enhanced border and styling options
+* Improved memory management
+
+== Input Components
+
+=== Button
+Interactive button component.
+
+```xml
+<Button label="Submit" width="100" height="30"
+        ruid="form_record" fid="submit_action"
+        enabled="true" styleName="submitButton"/>
+```
+
+*Specific Attributes:*
+* `label` - Button text
+* `icon` - Icon resource identifier
+* `toggle` - Toggle button mode (true/false)
+* `selected` - Selection state for toggle buttons
+
+*Data Binding:*
+* When clicked, updates the specified field with button's action value
+* Can bind to boolean fields for toggle functionality
+
+=== TextInput
+Single-line text input field.
+
+```xml
+<TextInput text="Default text" width="200" height="25"
+           ruid="user_record" fid="username"
+           maxChars="50" restrict="A-Za-z0-9_"/>
+```
+
+*Specific Attributes:*
+* `text` - Default/current text value
+* `maxChars` - Maximum character limit
+* `restrict` - Character restriction pattern
+* `displayAsPassword` - Password field mode (true/false)
+* `editable` - Text can be edited (true/false)
+
+*Data Binding:*
+* Automatically updates bound field on text change
+* Reflects changes from record updates
+
+=== TextArea
+Multi-line text input field.
+
+```xml
+<TextArea text="Multi-line content" width="300" height="150"
+          ruid="content_record" fid="description"
+          wordWrap="true" scrollPolicy="auto"/>
+```
+
+*Specific Attributes:*
+* `text` - Default/current text content
+* `wordWrap` - Automatic word wrapping (true/false)
+* `scrollPolicy` - Scrollbar policy (auto, on, off)
+* `maxChars` - Maximum character limit
+* `editable` - Content can be edited (true/false)
+
+=== ComboBox
+Dropdown selection component.
+
+```xml
+<ComboBox width="150" height="25"
+          cuid="options_collection"
+          ruid="selection_record" fid="selected_value"
+          labelField="display_name" dataField="value"/>
+```
+
+*Specific Attributes:*
+* `labelField` - Field name for display text
+* `dataField` - Field name for selection value
+* `editable` - Allow custom text entry (true/false)
+* `prompt` - Placeholder text when no selection
+
+*Data Binding:*
+* `cuid` - Collection providing dropdown options
+* `ruid`/`fid` - Stores selected value
+* Updates selection when bound field changes
+
+=== ComboBoxSingleField_X
+Simplified ComboBox for single-field collections.
+
+```xml
+<ComboBoxSingleField_X width="150" height="25"
+                       cuid="simple_options"
+                       ruid="selection_record" fid="choice"/>
+```
+
+*Usage:*
+* Designed for collections with single value fields
+* Simplified configuration compared to standard ComboBox
+
+=== RadioButton
+Radio button for exclusive selection.
+
+```xml
+<RadioButton label="Option A" value="a" groupName="choices"
+             ruid="form_record" fid="selection"
+             selected="true"/>
+```
+
+*Specific Attributes:*
+* `label` - Display text
+* `value` - Value when selected
+* `groupName` - Radio button group identifier
+* `selected` - Selection state (true/false)
+
+*Data Binding:*
+* Multiple RadioButtons with same `groupName` are mutually exclusive
+* Updates bound field with `value` when selected
+
+=== RadioButton_X (Enhanced)
+Extended RadioButton with additional features.
+
+```xml
+<RadioButton_X label="Enhanced Option" value="enhanced"
+               groupName="advanced_choices" width="200"
+               ruid="advanced_record" fid="selection"
+               icon="radio_icon" labelPlacement="right"/>
+```
+
+*Additional Features:*
+* Icon support
+* Flexible label placement
+* Enhanced styling options
+
+== Display Components
+
+=== Label
+Static text display component.
+
+```xml
+<Label text="User Name:" width="100" height="20"
+       ruid="user_record" fid="display_name"
+       fontWeight="bold" color="0x333333"/>
+```
+
+*Specific Attributes:*
+* `text` - Display text
+* `htmlText` - HTML-formatted text
+* `truncateToFit` - Truncate text to fit width (true/false)
+* `selectable` - Text can be selected (true/false)
+
+*Data Binding:*
+* Automatically updates display when bound field changes
+* Can format bound data for display
+
+=== DataGrid
+Tabular data display component.
+
+```xml
+<DataGrid width="500" height="300"
+          cuid="table_data"
+          selectable="true" sortableColumns="true">
+  <columns>
+    <DataGridColumn headerText="Name" dataField="name" width="150"/>
+    <DataGridColumn headerText="Email" dataField="email" width="200"/>
+    <DataGridColumn headerText="Status" dataField="status" width="100"/>
+  </columns>
+</DataGrid>
+```
+
+*Specific Attributes:*
+* `selectable` - Rows can be selected (true/false)
+* `sortableColumns` - Enable column sorting (true/false)
+* `alternatingItemColors` - Zebra striping colors array
+* `headerHeight` - Height of header row
+* `rowHeight` - Height of data rows
+
+*DataGridColumn Attributes:*
+* `headerText` - Column header display text
+* `dataField` - Field name in record data
+* `width` - Column width
+* `sortable` - Individual column sorting (true/false)
+* `resizable` - Column can be resized (true/false)
+
+*Data Binding:*
+* `cuid` - Collection providing table rows
+* Each row corresponds to a record in the collection
+* Supports real-time data updates
+
+=== DataGrid_ISIS (Enhanced DataGrid)
+Extended DataGrid with additional capabilities.
+
+```xml
+<DataGrid_ISIS width="600" height="400"
+               cuid="enhanced_table_data"
+               ruid="selection_record" fid="selected_row"
+               editable="true" multipleSelection="false">
+  <!-- Column definitions -->
+</DataGrid_ISIS>
+```
+
+*Additional Features:*
+* Enhanced selection handling
+* Inline editing capabilities
+* Improved performance for large datasets
+* Custom cell renderers
+
+== Specialized Components
+
+=== Compass_X
+Magnetic compass display component.
+
+```xml
+<Compass_X width="120" height="120"
+           ruid="navigation_record" fid="magnetic_heading"
+           showDegrees="true" northColor="0xFF0000"/>
+```
+
+*Specific Attributes:*
+* `showDegrees` - Display degree markings (true/false)
+* `northColor` - Color for north indicator
+* `needleColor` - Color for compass needle
+
+*Data Binding:*
+* Bound field should contain magnetic heading in degrees (0-360)
+* Updates compass needle direction based on heading value
+
+=== TurnRateIndicator_X
+Aircraft turn rate indicator component.
+
+```xml
+<TurnRateIndicator_X width="140" height="140"
+                     ruid="flight_record" fid="turn_rate"
+                     maxRate="3.0" showMarks="true"/>
+```
+
+*Specific Attributes:*
+* `maxRate` - Maximum turn rate for scale
+* `showMarks` - Display rate markings (true/false)
+* `indicatorColor` - Color for rate indicator
+
+*Data Binding:*
+* Bound field should contain turn rate in degrees per second
+* Positive values indicate right turns, negative indicate left turns
+
+=== Icon_X
+Generic icon display component.
+
+```xml
+<Icon_X icon="warning" width="32" height="32"
+        ruid="status_record" fid="icon_type"
+        tintColor="0xFF6600"/>
+```
+
+*Specific Attributes:*
+* `icon` - Icon identifier/resource name
+* `tintColor` - Color tint to apply to icon
+* `smooth` - Smooth scaling (true/false)
+
+*Built-in Icons:*
+* `warning` - Warning triangle
+* `error` - Error X mark
+* `info` - Information circle
+* `success` - Success checkmark
+* `turnRate` - Turn rate indicator bitmap
+* `compass` - Compass rose bitmap
+
+=== Spacer
+Invisible spacing component for layouts.
+
+```xml
+<Spacer width="20" height="10"/>
+```
+
+*Usage:*
+* Creates empty space in container layouts
+* No visual representation
+* Useful for precise spacing control
+
+== Advanced Components
+
+=== Container_ISIS
+Enhanced container with advanced layout features.
+
+```xml
+<Container_ISIS luid="advanced_container" width="400" height="300"
+                scrollPolicy="auto" clipContent="true"
+                backgroundAlpha="0.8">
+  <!-- Child components -->
+</Container_ISIS>
+```
+
+*Advanced Features:*
+* Sophisticated scroll management
+* Content clipping controls
+* Advanced background handling
+* Enhanced event handling
+
+=== UIComponent_ISIS
+Base class for custom component development.
+
+```xml
+<UIComponent_ISIS width="200" height="100"
+                  ruid="custom_record" fid="custom_data"
+                  customProperty="value"/>
+```
+
+*Usage:*
+* Foundation for creating custom components
+* Inherits all standard component capabilities
+* Supports custom properties and behaviors
+
+== Component Lifecycle
+
+=== Creation
+1. Component XML parsed from layout message
+2. Component class instantiated
+3. Attributes applied to component properties
+4. Data bindings established
+5. Component added to parent container
+6. Component becomes part of display tree
+
+=== Updates
+1. Layout messages can replace component definitions
+2. Record messages update bound data
+3. Collection messages update collection-bound components
+4. Components automatically reflect data changes
+
+=== Destruction
+1. Component removed from layout via new layout message
+2. Data bindings cleaned up
+3. Event listeners removed
+4. Component marked for garbage collection
+
+== Custom Component Development
+
+=== Component Interface
+Custom components should implement relevant interfaces:
+
+* `IMultiField` - Components handling multiple data fields
+* `ICollection` - Components working with collections
+* `IRecord` - Components bound to records
+
+=== Component Registration
+Register custom components in ClassDefinitions.xml:
+
+```xml
+<component name="MyCustom_X" class="com.example.MyCustomComponent"/>
+```
+
+=== Data Binding Implementation
+Custom components should:
+* Support `ruid` and `fid` attributes
+* Update display when bound data changes
+* Send updates to bound fields when user interacts
+* Handle collection binding if applicable
+
+== Performance Considerations
+
+=== Component Count
+* Minimize deeply nested component hierarchies
+* Use containers efficiently
+* Remove unused components promptly
+
+=== Data Binding
+* Avoid unnecessary bindings
+* Use collection binding for repetitive data
+* Implement efficient update mechanisms
+
+=== Memory Management
+* Clean up event listeners properly
+* Remove components from dictionaries when destroyed
+* Avoid circular references in data binding
+
+== Troubleshooting
+
+=== Common Issues
+* Components not displaying: Check LUID targeting
+* Data not updating: Verify RUID/FID bindings
+* Layout problems: Validate container configurations
+* Performance issues: Review component count and nesting
+
+=== Debug Techniques
+* Enable component tracing in GMXMain
+* Use Flash debugger for component inspection
+* Validate XML message formatting
+* Check dictionary registration for data-bound components
+
+== Layout Examples
+
+=== Simple Button Layout (simple_button.xml)
+The most basic GMX layout demonstrating:
+- Single interactive button
+- Data binding to a record
+- Basic container layout (VBox)
+- Status display updates
+
+*Target LUID:* `mainLuid`
+*Required Records:* `button_record`
+
+```xml
+<VBox luid="mainLuid" width="300" height="200" gap="20"
+      horizontalAlign="center" verticalAlign="middle"
+      backgroundColor="0xF0F0F0" paddingTop="20" paddingLeft="20" paddingRight="20" paddingBottom="20">
+    <Label text="Welcome to GMX" fontSize="16" fontWeight="bold" color="0x333333"/>
+    <Button label="Click Me!" width="120" height="40"
+           ruid="button_record" fid="click_action" fontSize="14"/>
+    <Label text="Ready" ruid="button_record" fid="status_message"
+          fontSize="12" color="0x666666" textAlign="center"/>
+</VBox>
+```
+
+=== Basic Form Layout (basic_form.xml)
+A user registration form demonstrating:
+- Multiple input components (TextInput, ComboBox, RadioButton, TextArea)
+- Form layout with labels and spacing
+- Data validation and submission
+- Complex container nesting
+
+*Target LUID:* `mainLuid`
+*Required Records:* `user_form_record`, `validation_record`
+*Required Collections:* `role_options`
+
+*Key Features:*
+- Username/email/password input fields
+- Role selection dropdown
+- Account type radio buttons
+- Bio text area
+- Submit/reset/cancel buttons
+
+=== Dashboard Layout (dashboard.xml)
+A comprehensive dashboard interface demonstrating:
+- Complex multi-panel layout
+- Real-time data displays
+- Navigation instruments (compass, turn rate indicator)
+- Data grids and metrics
+- Alert management
+- System status monitoring
+
+*Target LUID:* `mainLuid`
+*Required Records:* `system_status`, `user_info`, `navigation_data`
+*Required Collections:* `alerts_list`, `recent_activities`, `system_metrics`
+
+*Key Components:*
+- Sidebar with user info and navigation
+- Main content area with metrics and activities
+- Alerts panel with active warnings
+- Configuration controls
+- Real-time status updates
+
+== Custom Component Development
+
+=== Adding New Components
+. Create new XML files in `layouts/`
+. Add to the layout server's `_load_default_layouts()` method
+. Restart the server to load new layouts
+
+=== Creating Custom Records
+. Define new record structures following the examples
+. Add initialization code to the data server
+. Update related layouts to use new records
+
+=== Extending Collections
+. Create collection XML with RuidList entries
+. Add supporting records for collection items
+. Initialize in the data server's collection setup
+
+=== Advanced Layout Features
+- Create responsive layouts with percentage sizing
+- Implement tabbed interfaces using multiple LUIDs
+- Add popup and dialog management
+- Create wizard-style multi-step interfaces
+
+== See Also
+
+- link:protocol_reference.asciidoc[Protocol Reference] - Message formats
+- link:server_guide.asciidoc[Server Guide] - Server implementation
+- link:../examples/layouts/[Layout Examples] - Sample component usage

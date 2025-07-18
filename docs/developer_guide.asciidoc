@@ -1,0 +1,836 @@
+= GMX Developer's Guide
+
+This guide covers developing, building, and deploying the GMX client application, as well as extending it with custom components and functionality.
+
+== Overview
+
+GMX (Graphical Message eXchange) is a Flash/ActionScript-based client application that provides dynamic user interfaces through server-delivered XML layout messages. The client connects to servers via socket connections to receive layout definitions and data updates.
+
+== Development Environment Setup
+
+=== Prerequisites
+
+==== For Haxe Development (Recommended)
+* Pixi package manager
+* Haxe 4.3.4+ (installed automatically via `pixi run setup`)
+* HashLink 1.14+ (installed automatically via `pixi run setup`)
+* SDL2 development libraries
+* GCC or Clang compiler (for native compilation)
+
+==== For Legacy ActionScript Development (Deprecated)
+* Adobe Flex SDK (with AIR support)
+* ActionScript 3.0 compiler (amxmlc)
+* AIR Development Tool (adt)
+* Android SDK (for mobile deployment)
+* Java Development Kit (JDK)
+
+=== Directory Structure
+```
+gmx/
+├── src/                    # Source code
+│   ├── GMX/               # Core GMX framework
+│   ├── generics/          # Reusable UI components
+│   ├── services/          # Network and service layers
+│   ├── records/           # Data management
+│   ├── interfaces/        # Component interfaces
+│   ├── constants/         # Application constants
+│   └── Main.mxml          # Application entry point
+├── docs/                  # Documentation
+├── examples/              # Example layouts and data
+└── README.asciidoc        # Project overview
+```
+
+== Building the Application
+
+=== Haxe/HashLink Application (Recommended)
+
+==== Quick Start
+```bash
+# One-time setup
+pixi run setup
+
+# Build development version
+pixi run build
+
+# Run the application
+pixi run run
+
+# Development mode with auto-rebuild
+pixi run dev
+```
+
+==== Development Build
+```bash
+pixi run build-dev
+```
+
+Creates `haxe-port/bin/gmx.hl` with debug symbols for development.
+
+==== Release Build
+```bash
+pixi run build-release
+```
+
+Creates an optimized `haxe-port/bin/gmx.hl` with full optimizations and dead code elimination.
+
+==== Clean Build
+```bash
+pixi run clean
+pixi run rebuild
+```
+
+Removes build artifacts and rebuilds from scratch.
+
+==== Package Native Executable
+```bash
+pixi run package
+```
+
+Creates platform-specific native executables:
+- Linux: `dist/gmx-linux`
+- macOS: `dist/gmx-macos`
+- Windows: `dist/gmx-windows.exe`
+
+=== Legacy ActionScript Application (Deprecated)
+
+==== Compile the SWF
+```bash
+cd gmx/src
+amxmlc Main.mxml
+```
+
+This creates `Main.swf` in the src directory.
+
+==== Test with AIR Debug Launcher
+```bash
+adl GMX-app.xml
+```
+
+This launches the application in debug mode for testing.
+
+==== Create Certificate (First Time Only)
+```bash
+adt -certificate -cn SelfSigned 1024-RSA GMXCert.pfx yourpassword
+```
+
+==== Package AIR Installation File
+```bash
+adt -package -storetype pkcs12 -keystore GMXCert.pfx GMX.air GMX-app.xml Main.swf assets/skull72x72.png assets/skull36x36.png assets/skull48x48.png
+```
+
+=== Application Configuration
+
+The Haxe application is configured via `haxe-port/build.hxml` and `haxe-port/build-release.hxml` files:
+
+```hxml
+# Main class
+-main Main
+
+# Source directories
+-cp src
+
+# Target HashLink
+-hl bin/gmx.hl
+
+# Libraries
+-lib heaps
+-lib hlsdl
+-lib format
+
+# Compiler flags
+-D resourcesPath=assets
+-dce full
+--debug
+```
+
+== Architecture Overview
+
+=== Core Components
+
+==== GMXMain
+The main application class that:
+* Manages the application lifecycle
+* Handles server connections
+* Processes incoming messages
+* Manages component dictionaries
+* Provides debugging capabilities
+
+==== ControlChannel
+Manages socket connections to servers:
+* Establishes and maintains connections
+* Handles connection failures and reconnection
+* Routes messages to appropriate handlers
+* Provides connection status feedback
+
+==== GMXBuilder
+Dynamic UI builder that:
+* Processes layout XML messages
+* Creates and configures UI components
+* Manages component lifecycles
+* Handles layout updates and replacements
+
+==== GMXDictionaries
+Central registry for:
+* LUID to component mappings
+* RUID to record mappings
+* CUID to collection mappings
+* State management for UI components
+
+=== Data Flow
+
+1. *Startup*: Client connects to server via ControlChannel
+2. *Layout*: Server sends layout XML targeting mainLuid
+3. *Building*: GMXBuilder creates UI components from XML
+4. *Binding*: Components bind to data via RUIDs/CUIDs
+5. *Updates*: Server sends data updates, UI reflects changes
+6. *Interaction*: User input triggers data updates to server
+
+== Component Development
+
+=== Creating Custom Components
+
+==== Component Class Structure
+```actionscript
+package generics {
+    import mx.containers.VBox;
+    import interfaces.IMultiField;
+
+    public class MyCustom_X extends VBox implements IMultiField {
+        private var _ruid:String;
+        private var _fid:String;
+
+        public function MyCustom_X() {
+            super();
+        }
+
+        public function build(xml:XML):void {
+            // Parse XML attributes
+            if (xml.@ruid != undefined) {
+                _ruid = xml.@ruid.toString();
+            }
+            if (xml.@fid != undefined) {
+                _fid = xml.@fid.toString();
+            }
+
+            // Set standard properties
+            GMXComponentBuilder.setStandardValues(xml, this);
+
+            // Create child components
+            createChildren();
+
+            // Process additional XML
+            GMXComponentBuilder.processXML(this, xml);
+        }
+
+        private function createChildren():void {
+            // Add child UI components
+        }
+
+        // Implement IMultiField interface methods
+        public function updateRecord():void {
+            // Update bound record when component changes
+        }
+    }
+}
+```
+
+==== Component Registration
+Add to `ClassDefinitions.xml`:
+```xml
+<component name="MyCustom_X" class="generics.MyCustom_X"/>
+```
+
+==== Data Binding Implementation
+```actionscript
+// Update component when record changes
+private function onRecordUpdate():void {
+    var record:Record = GMXDictionaries.getRuid(_ruid);
+    if (record != null) {
+        var value:String = record.getFieldValue(_fid);
+        updateDisplay(value);
+    }
+}
+
+// Send update to record when component changes
+private function onComponentChange():void {
+    var record:Record = GMXDictionaries.getRuid(_ruid);
+    if (record != null) {
+        record.setFieldValue(_fid, getCurrentValue());
+    }
+}
+```
+
+=== Component Interfaces
+
+==== IMultiField
+For components that handle multiple data fields:
+```actionscript
+public interface IMultiField {
+    function updateRecord():void;
+    function build(xml:XML):void;
+}
+```
+
+==== ICollection
+For components that work with data collections:
+```actionscript
+public interface ICollection {
+    function updateCollection(xmlList:XMLList):void;
+    function get cuid():String;
+    function set cuid(value:String):void;
+}
+```
+
+=== Advanced Component Features
+
+==== State Management
+Use ExtraLayoutStateRetainer for preserving component state:
+```actionscript
+// Save scroll position before layout replacement
+var stateRetainer:ExtraLayoutStateRetainer = new ExtraLayoutStateRetainer();
+stateRetainer.savePreviousState(this);
+
+// Restore state after layout replacement
+stateRetainer.revertComponentToPreviousState(newComponent);
+```
+
+==== Event Handling
+```actionscript
+// Add event listeners in component creation
+addEventListener(MouseEvent.CLICK, onComponentClick);
+addEventListener(Event.CHANGE, onComponentChange);
+
+// Clean up listeners in component destruction
+removeEventListener(MouseEvent.CLICK, onComponentClick);
+removeEventListener(Event.CHANGE, onComponentChange);
+```
+
+== Debugging and Testing
+
+=== Debug Modes
+Enable debugging in GMXMain:
+```actionscript
+GMXMain.debugSend = true;              // Log outgoing messages
+GMXMain.debugReceive = true;           // Log incoming messages
+GMXMain.debugLayoutMessagesUsingGMXBuilder = true;  // Log layout processing
+```
+
+=== Testing Strategies
+
+==== Unit Testing
+* Test individual components in isolation
+* Mock server responses for component testing
+* Validate data binding behavior
+* Test error handling and edge cases
+
+==== Integration Testing
+* Test complete client-server message flow
+* Validate layout building and updates
+* Test collection and record operations
+* Verify memory management and cleanup
+
+==== Performance Testing
+* Monitor memory usage with large datasets
+* Test UI responsiveness under load
+* Validate connection handling under stress
+* Profile component creation and destruction
+
+=== Common Issues and Solutions
+
+==== Connection Problems
+```actionscript
+// Handle connection failures gracefully
+private function onConnectionError():void {
+    // Show reconnection dialog
+    // Attempt automatic reconnection
+    // Provide offline mode if applicable
+}
+```
+
+==== Memory Leaks
+* Remove event listeners when destroying components
+* Clean up references in GMXDictionaries
+* Avoid circular references in data binding
+* Use weak references where appropriate
+
+==== Layout Issues
+* Validate XML well-formedness before processing
+* Check LUID targeting for layout messages
+* Verify component hierarchy for containers
+* Debug layout with GMXBuilder tracing
+
+== Configuration and Deployment
+
+=== FlashVars Configuration
+Set connection parameters in HTML:
+```html
+<param name="flashvars" value="host=localhost&port=12345" />
+```
+
+=== Security Configuration
+For web deployment, provide crossdomain.xml:
+```xml
+<?xml version="1.0"?>
+<cross-domain-policy>
+    <allow-access-from domain="*" to-ports="12345"/>
+</cross-domain-policy>
+```
+
+=== Mobile Deployment Considerations
+* Adjust UI scaling for different screen densities
+* Handle device orientation changes
+* Optimize for touch interaction
+* Consider battery usage for socket connections
+
+== Performance Optimization
+
+=== Component Optimization
+* Minimize component nesting depth
+* Use efficient container types (VBox vs Canvas)
+* Remove unused components promptly
+* Implement lazy loading for complex components
+
+=== Data Binding Optimization
+* Batch record updates when possible
+* Use collection binding for repetitive data
+* Avoid unnecessary field bindings
+* Implement efficient update notification
+
+=== Memory Management
+* Monitor component dictionary sizes
+* Clean up references in component destruction
+* Use object pooling for frequently created/destroyed objects
+* Profile memory usage regularly
+
+== API Documentation Generation
+
+Generate API documentation:
+```bash
+asdoc --target-player=10.0.0 -source-path . -doc-classes GMXMain -main-title "GMX API Documentation" -window-title "GMX API" -output docs/api
+```
+
+== Extending GMX
+
+=== Adding New Message Types
+1. Define message format in protocol documentation
+2. Add message parsing in ControlChannel
+3. Implement message handlers in appropriate classes
+4. Update component builders if needed
+5. Add client response mechanisms
+
+=== Custom Layout Managers
+```actionscript
+public class CustomLayoutManager {
+    public function processLayout(xml:XML):void {
+        // Custom layout processing logic
+    }
+
+    public function validateLayout(xml:XML):Boolean {
+        // Layout validation logic
+        return true;
+    }
+}
+```
+
+=== Plugin Architecture
+* Define plugin interfaces for extensibility
+* Implement plugin loading mechanisms
+* Provide plugin configuration options
+* Document plugin development guidelines
+
+== Best Practices
+
+=== Code Organization
+* Follow ActionScript naming conventions
+* Group related functionality in packages
+* Use interfaces for component contracts
+* Document public APIs thoroughly
+
+=== Error Handling
+* Implement graceful degradation for missing components
+* Provide meaningful error messages
+* Log errors for debugging purposes
+* Handle network failures gracefully
+
+=== Security
+* Validate all incoming data
+* Sanitize user input
+* Use secure connection methods when possible
+* Implement authentication mechanisms
+
+== Troubleshooting
+
+=== Build Issues
+* Verify Flex SDK installation and PATH
+* Check for missing dependencies
+* Validate XML configuration files
+* Review compiler error messages
+
+=== Runtime Issues
+* Enable debug logging for diagnosis
+* Use Flash debugger for step-through debugging
+* Monitor network traffic for connection issues
+* Check component registration in ClassDefinitions.xml
+
+=== Performance Issues
+* Profile memory usage and garbage collection
+* Monitor component creation/destruction cycles
+* Analyze network message frequency and size
+* Review layout complexity and nesting
+
+== Pixi Task System
+
+GMX now uses Pixi for dependency management and build automation. The Pixi task system provides a complete development workflow from setup to deployment using Haxe/HashLink instead of the legacy Adobe Flex/AIR stack.
+
+=== Quick Start with Pixi
+
+```bash
+# Initial setup (run once)
+pixi run setup
+
+# Build and run
+pixi run build
+pixi run run
+
+# Development mode
+pixi run dev
+
+# Package for distribution
+pixi run package
+```
+
+=== Available Tasks
+
+==== Setup & Installation Tasks
+
+===== `pixi run setup`
+Complete setup of the GMX development environment. This is the main setup task that runs all necessary installation steps.
+
+*Dependencies:* `install-haxe`, `install-hashlink`, `install-libs`, `setup-directories`
+
+*What it does:*
+- Downloads and installs Haxe compiler (4.3.4)
+- Downloads and installs HashLink runtime (1.14)
+- Installs required Haxe libraries (heaps, hlsdl, format)
+- Creates necessary project directories
+
+===== `pixi run install-haxe`
+Downloads and installs the Haxe compiler to `.haxe/` directory.
+
+*Platform Support:*
+- Linux: Downloads binary tarball
+- macOS: Downloads installer package (may require manual installation)
+- Windows: Downloads binary zip
+
+===== `pixi run install-hashlink`
+Downloads and installs HashLink runtime to `.hashlink/` directory.
+
+*Features:*
+- Cross-platform support
+- Creates wrapper scripts for easy execution
+- Installs to local project directory (no system-wide installation required)
+
+===== `pixi run install-libs`
+Installs required Haxe libraries using haxelib:
+- `heaps` - GPU game framework
+- `hlsdl` - SDL bindings for HashLink
+- `format` - File format support
+
+==== Building Tasks
+
+===== `pixi run build` (alias: `pixi run compile`)
+Builds the development version of GMX. This is the main build task for daily development.
+
+*Output:* `haxe-port/bin/gmx.hl`
+
+*Features:*
+- Debug symbols included
+- Faster compilation
+- Suitable for development and testing
+
+===== `pixi run build-release`
+Builds an optimized release version with full optimizations.
+
+*Features:*
+- Dead code elimination
+- -O2 optimization level
+- No debug traces
+- Smaller file size
+- Better performance
+
+===== `pixi run clean`
+Removes all build artifacts from `bin/` and `dist/` directories.
+
+===== `pixi run rebuild`
+Convenience task that cleans and rebuilds the project.
+
+===== `pixi run check`
+Performs compilation check without generating output files. Useful for CI/CD and quick syntax verification.
+
+==== Running Tasks
+
+===== `pixi run run` (alias: `pixi run start`)
+Builds and runs the GMX application.
+
+*Dependencies:* `build-dev`
+
+*Requirements:*
+- HashLink runtime must be installed
+- `bin/gmx.hl` must exist (built automatically)
+
+===== `pixi run dev`
+Development mode with simplified file watching. Provides an interactive loop for rapid development.
+
+*Features:*
+- Builds the application
+- Runs the application
+- Waits for user input to rebuild
+- Press Enter to rebuild and run again
+- Press Ctrl+C to exit
+
+==== Packaging Tasks
+
+===== `pixi run package`
+Packages the application for the current platform. Automatically detects the platform and creates appropriate executable.
+
+===== `pixi run package-native`
+Creates a native executable for the current platform using HashLink's C compilation.
+
+*Output:*
+- Linux: `dist/gmx-linux`
+- macOS: `dist/gmx-macos`
+- Windows: `dist/gmx-windows.exe`
+
+===== `pixi run package-flatpak`
+Creates a Linux Flatpak package using the build script in `scripts/build-flatpak.sh`.
+
+==== Server Tasks
+
+===== `pixi run start-layout-server`
+Starts the example layout server on `localhost:12345`.
+
+*Location:* `examples/servers/layout_server.py`
+
+===== `pixi run start-data-server`
+Starts the example data server on `localhost:12346`.
+
+*Location:* `examples/servers/data_server.py`
+
+===== `pixi run start-servers`
+Starts both layout and data servers in the background.
+
+*Features:*
+- Runs both servers concurrently
+- Shows process IDs for monitoring
+- Graceful shutdown with Ctrl+C
+
+==== Development Tasks
+
+===== `pixi run docs`
+Generates API documentation using Haxe's XML documentation output.
+
+*Output:* `docs/api/gmx.xml`
+
+===== `pixi run info`
+Displays comprehensive project information and status including tool installation status, build status, and quick start commands.
+
+===== `pixi run help`
+Shows detailed help for all available tasks with descriptions and examples.
+
+=== Environment Variables
+
+The tasks set up several environment variables automatically:
+
+- `HAXE_STD_PATH` - Path to Haxe standard library
+- `HAXELIB_PATH` - Path to local haxelib repository
+- `PATH` - Extended to include Haxe and HashLink binaries
+
+=== Directory Structure for Haxe Port
+
+```
+gmx/
+├── .haxe/                  # Haxe compiler installation
+├── .hashlink/              # HashLink runtime installation
+├── .haxelib/              # Local Haxe library repository
+├── haxe-port/             # Main Haxe project
+│   ├── src/               # Source code
+│   ├── bin/               # Build output
+│   ├── dist/              # Distribution packages
+│   ├── assets/            # Game assets
+│   ├── build.hxml         # Development build config
+│   ├── build-release.hxml # Release build config
+│   └── package.json       # Node.js package info
+├── examples/              # Example layouts, records, servers
+└── pixi.toml             # Pixi configuration
+```
+
+=== Troubleshooting Pixi Tasks
+
+==== Common Issues
+
+*"Haxe not found"*
+- Run `pixi run install-haxe`
+- Check that `.haxe/haxe` wrapper script exists and is executable
+
+*"HashLink not found"*
+- Run `pixi run install-hashlink`
+- Check that `.hashlink/hl` wrapper script exists and is executable
+
+*"Library not found"*
+- Run `pixi run install-libs`
+- Check that `.haxelib` directory exists and contains required libraries
+
+*Build failures*
+- Run `pixi run clean` then `pixi run build`
+- Check that all dependencies are installed with `pixi run info`
+- Verify Haxe source code syntax with `pixi run check`
+
+*Runtime errors*
+- Ensure SDL2 libraries are installed on your system
+- Check that graphics drivers are up to date
+- Verify the executable has proper permissions
+
+=== CI/CD Integration
+
+Example GitHub Actions workflow snippet:
+
+```yaml
+- name: Setup environment
+  run: pixi run setup
+
+- name: Check code
+  run: pixi run check
+
+- name: Build release
+  run: pixi run build-release
+
+- name: Package
+  run: pixi run package
+```
+
+== Getting Started with Examples
+
+=== Running the Complete System
+
+. *Start the Layout Server:*
++
+```bash
+pixi run start-layout-server
+```
+
+. *Start the Data Server (in another terminal):*
++
+```bash
+pixi run start-data-server
+```
+
+. *Build and Run GMX Client:*
++
+```bash
+pixi run build
+pixi run run
+```
+
+=== Testing Layout Examples
+
+. *Simple Button Layout:*
++
+The layout server loads this as the default. Click the button to see record updates.
+
+. *Form Layout:*
++
+Send a layout change request or modify the server to load the form layout.
+
+. *Dashboard Layout:*
++
+Load the dashboard to see real-time data updates and complex UI interactions.
+
+=== Complete Development Workflow
+
+For a complete development environment:
+
+```bash
+# Terminal 1: Start servers
+pixi run start-servers
+
+# Terminal 2: Build and run client
+pixi run setup    # One-time setup
+pixi run dev      # Development mode
+```
+
+== Debugging and Development Tips
+
+=== Debugging GMX Applications
+
+==== Enable Debug Logging
+```actionscript
+GMXMain.debugSend = true;
+GMXMain.debugReceive = true;
+GMXMain.debugLayoutMessagesUsingGMXBuilder = true;
+```
+
+==== Server Verbose Logging
+```bash
+# Layout server with verbose output
+python layout_server.py --verbose
+
+# Data server with verbose output
+python data_server.py --verbose
+```
+
+==== Network Traffic Monitoring
+Monitor network traffic between client and servers:
+```bash
+# Monitor specific port traffic
+tcpdump -i any port 12345
+tcpdump -i any port 12346
+
+# Check socket connections
+netstat -tulpn | grep :12345
+ss -tulpn | grep :12345
+```
+
+=== Common Development Issues
+
+==== Build Issues
+- Run `pixi run clean` then `pixi run build`
+- Check that all dependencies are installed with `pixi run info`
+- Verify Haxe source code syntax with `pixi run check`
+
+==== Runtime Issues
+- Ensure SDL2 libraries are installed on your system
+- Check that graphics drivers are up to date
+- Verify the executable has proper permissions
+
+==== Connection Issues
+- Verify host/port configuration in client
+- Check firewall settings
+- Ensure server processes are running
+- Test with telnet: `telnet localhost 12345`
+
+=== Development Best Practices
+
+==== Code Organization
+- Follow Haxe naming conventions
+- Group related functionality in packages
+- Use interfaces for component contracts
+- Document public APIs thoroughly
+
+==== Testing Strategies
+- Test components in isolation
+- Mock server responses for component testing
+- Validate data binding behavior
+- Test error handling and edge cases
+
+==== Performance Optimization
+- Monitor memory usage with large datasets
+- Test UI responsiveness under load
+- Validate connection handling under stress
+- Profile component creation and destruction
+
+== See Also
+
+- link:server_guide.asciidoc[Server Guide] - Server implementation
+- link:protocol_reference.asciidoc[Protocol Reference] - Message formats
+- link:component_reference.asciidoc[Component Reference] - Available components
+- link:../examples/[Examples] - Sample implementations

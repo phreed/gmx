@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Alerts List Collection Example
+     This demonstrates a collection structure for active system alerts
+     CUID: alerts_list
+     Used with: dashboard.xml layout DataGrid component
+-->
+<ISISCollection cuid="alerts_list">
+
+    <RuidList>
+        <!-- Critical Database Connection Alert -->
+        <Ruid ruid="alert_db_001" select="first"/>
+
+        <!-- Warning High Memory Usage Alert -->
+        <Ruid ruid="alert_mem_002" select="last"/>
+
+        <!-- Info Scheduled Maintenance Alert -->
+        <Ruid ruid="alert_maint_003" select="last"/>
+
+        <!-- Warning Network Latency Alert -->
+        <Ruid ruid="alert_net_004" select="last"/>
+
+        <!-- Info User Login Alert -->
+        <Ruid ruid="alert_login_005" select="last"/>
+
+        <!-- Warning Disk Space Alert -->
+        <Ruid ruid="alert_disk_006" select="last"/>
+
+        <!-- Critical Security Breach Attempt -->
+        <Ruid ruid="alert_sec_007" select="after" ref="alert_db_001"/>
+    </RuidList>
+
+</ISISCollection>
+
+<!-- Supporting Records for Alert Items -->
+
+<!-- Critical Database Connection Alert -->
+<ISISRecord ruid="alert_db_001">
+    <Field fid="alert_id" value="DB_CONN_001"/>
+    <Field fid="severity" value="Critical"/>
+    <Field fid="severity_level" value="5"/>
+    <Field fid="message" value="Database connection lost"/>
+    <Field fid="detailed_message" value="Primary database connection has been lost. Failover to backup database initiated."/>
+    <Field fid="alert_time" value="14:28:15"/>
+    <Field fid="timestamp" value="2024-01-15 14:28:15"/>
+    <Field fid="source_system" value="DatabaseManager"/>
+    <Field fid="category" value="database"/>
+    <Field fid="acknowledged" value="false"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="db_admin"/>
+    <Field fid="action_required" value="true"/>
+</ISISRecord>
+
+<!-- Warning High Memory Usage Alert -->
+<ISISRecord ruid="alert_mem_002">
+    <Field fid="alert_id" value="MEM_HIGH_002"/>
+    <Field fid="severity" value="Warning"/>
+    <Field fid="severity_level" value="3"/>
+    <Field fid="message" value="High memory usage detected"/>
+    <Field fid="detailed_message" value="System memory usage has exceeded 85% threshold (current: 92%)"/>
+    <Field fid="alert_time" value="14:25:32"/>
+    <Field fid="timestamp" value="2024-01-15 14:25:32"/>
+    <Field fid="source_system" value="SystemMonitor"/>
+    <Field fid="category" value="performance"/>
+    <Field fid="acknowledged" value="true"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="sys_admin"/>
+    <Field fid="action_required" value="true"/>
+</ISISRecord>
+
+<!-- Info Scheduled Maintenance Alert -->
+<ISISRecord ruid="alert_maint_003">
+    <Field fid="alert_id" value="MAINT_SCHED_003"/>
+    <Field fid="severity" value="Info"/>
+    <Field fid="severity_level" value="1"/>
+    <Field fid="message" value="Scheduled maintenance tonight"/>
+    <Field fid="detailed_message" value="System maintenance window scheduled from 02:00 to 04:00 EST"/>
+    <Field fid="alert_time" value="14:20:00"/>
+    <Field fid="timestamp" value="2024-01-15 14:20:00"/>
+    <Field fid="source_system" value="MaintenanceScheduler"/>
+    <Field fid="category" value="maintenance"/>
+    <Field fid="acknowledged" value="true"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="operations"/>
+    <Field fid="action_required" value="false"/>
+</ISISRecord>
+
+<!-- Warning Network Latency Alert -->
+<ISISRecord ruid="alert_net_004">
+    <Field fid="alert_id" value="NET_LAT_004"/>
+    <Field fid="severity" value="Warning"/>
+    <Field fid="severity_level" value="3"/>
+    <Field fid="message" value="Network latency increased"/>
+    <Field fid="detailed_message" value="Average network latency has increased to 180ms (normal: &lt;50ms)"/>
+    <Field fid="alert_time" value="14:15:45"/>
+    <Field fid="timestamp" value="2024-01-15 14:15:45"/>
+    <Field fid="source_system" value="NetworkMonitor"/>
+    <Field fid="category" value="network"/>
+    <Field fid="acknowledged" value="false"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="net_admin"/>
+    <Field fid="action_required" value="true"/>
+</ISISRecord>
+
+<!-- Info User Login Alert -->
+<ISISRecord ruid="alert_login_005">
+    <Field fid="alert_id" value="LOGIN_INFO_005"/>
+    <Field fid="severity" value="Info"/>
+    <Field fid="severity_level" value="1"/>
+    <Field fid="message" value="Administrator login"/>
+    <Field fid="detailed_message" value="User 'admin_user' logged in from IP 192.168.1.100"/>
+    <Field fid="alert_time" value="14:10:22"/>
+    <Field fid="timestamp" value="2024-01-15 14:10:22"/>
+    <Field fid="source_system" value="AuthenticationService"/>
+    <Field fid="category" value="security"/>
+    <Field fid="acknowledged" value="true"/>
+    <Field fid="resolved" value="true"/>
+    <Field fid="assigned_to" value="security"/>
+    <Field fid="action_required" value="false"/>
+</ISISRecord>
+
+<!-- Warning Disk Space Alert -->
+<ISISRecord ruid="alert_disk_006">
+    <Field fid="alert_id" value="DISK_SPACE_006"/>
+    <Field fid="severity" value="Warning"/>
+    <Field fid="severity_level" value="3"/>
+    <Field fid="message" value="Low disk space on /data"/>
+    <Field fid="detailed_message" value="Disk usage on /data partition: 88% (22GB remaining)"/>
+    <Field fid="alert_time" value="14:05:10"/>
+    <Field fid="timestamp" value="2024-01-15 14:05:10"/>
+    <Field fid="source_system" value="DiskMonitor"/>
+    <Field fid="category" value="storage"/>
+    <Field fid="acknowledged" value="false"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="storage_admin"/>
+    <Field fid="action_required" value="true"/>
+</ISISRecord>
+
+<!-- Critical Security Breach Attempt -->
+<ISISRecord ruid="alert_sec_007">
+    <Field fid="alert_id" value="SEC_BREACH_007"/>
+    <Field fid="severity" value="Critical"/>
+    <Field fid="severity_level" value="5"/>
+    <Field fid="message" value="Security breach attempt detected"/>
+    <Field fid="detailed_message" value="Multiple failed login attempts from IP 203.0.113.45 (blocked)"/>
+    <Field fid="alert_time" value="14:30:01"/>
+    <Field fid="timestamp" value="2024-01-15 14:30:01"/>
+    <Field fid="source_system" value="SecurityMonitor"/>
+    <Field fid="category" value="security"/>
+    <Field fid="acknowledged" value="false"/>
+    <Field fid="resolved" value="false"/>
+    <Field fid="assigned_to" value="security"/>
+    <Field fid="action_required" value="true"/>
+</ISISRecord>

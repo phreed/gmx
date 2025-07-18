@@ -1,0 +1,634 @@
+[workspace]
+authors = ["Fredrick Eisele <fred.eisele@vanderbilt.edu>"]
+channels = ["https://prefix.dev/meso-forge", "conda-forge"]
+name = "gmx"
+platforms = ["linux-64", "osx-64", "win-64", "osx-arm64"]
+version = "0.1.0"
+
+[dependencies]
+# Core dependencies for building and running GMX
+python = ">=3.8"
+nodejs = ">=14"
+curl = "*"
+unzip = "*"
+git = "*"
+make = "*"
+gcc = "*"        # For HashLink C compilation
+pkg-config = "*"
+# SDL2 for HashLink graphics
+sdl2 = "*"
+sdl2_image = "*"
+sdl2_mixer = "*"
+# OpenGL libraries
+mesa-libgl-devel-cos7-x86_64 = { version = "*", platform = "linux-64" }
+xorg-libx11-devel-cos7-x86_64 = { version = "*", platform = "linux-64" }
+
+[pypi-dependencies]
+# Python tools for server examples
+requests = "*"
+
+[tasks]
+
+# =============================================================================
+# Setup and Installation Tasks
+# =============================================================================
+
+[tasks.setup]
+description = "Complete setup of GMX development environment"
+depends-on = [
+    "install-haxe",
+    "install-hashlink",
+    "install-libs",
+    "setup-directories",
+]
+
+[tasks.install-haxe]
+cmd = """
+bash -c '
+set -e
+HAXE_VERSION="4.3.4"
+HAXE_DIR="$PIXI_PROJECT_ROOT/.haxe"
+HAXE_BIN="$HAXE_DIR/haxe_${HAXE_VERSION}"
+
+if [ ! -d "$HAXE_BIN" ]; then
+    echo "Installing Haxe $HAXE_VERSION..."
+    mkdir -p "$HAXE_DIR"
+    cd "$HAXE_DIR"
+
+    case "$(uname -s)" in
+        Linux*)
+            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-linux64.tar.gz"
+            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
+            ;;
+        Darwin*)
+            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-osx-installer.pkg"
+            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
+            echo "Note: On macOS, you may need to install manually from $HAXE_URL"
+            exit 0
+            ;;
+        CYGWIN*|MINGW*|MSYS*)
+            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-win64.zip"
+            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
+            ;;
+        *)
+            echo "Unsupported platform: $(uname -s)"
+            exit 1
+            ;;
+    esac
+
+    echo "Downloading $HAXE_URL"
+    curl -L -o "$HAXE_ARCHIVE" "$HAXE_URL"
+
+    if [[ "$HAXE_ARCHIVE" == *.tar.gz ]]; then
+        tar -xzf "$HAXE_ARCHIVE"
+        mv haxe_* "$HAXE_BIN"
+    elif [[ "$HAXE_ARCHIVE" == *.zip ]]; then
+        unzip "$HAXE_ARCHIVE"
+        mv haxe_* "$HAXE_BIN"
+    fi
+
+    rm "$HAXE_ARCHIVE"
+    echo "Haxe installed to $HAXE_BIN"
+else
+    echo "Haxe already installed at $HAXE_BIN"
+fi
+
+# Create haxe wrapper script
+cat > "$HAXE_DIR/haxe" << EOF
+#!/bin/bash
+export HAXE_STD_PATH="$HAXE_BIN/std"
+exec "$HAXE_BIN/haxe" "\$@"
+EOF
+
+cat > "$HAXE_DIR/haxelib" << EOF
+#!/bin/bash
+export HAXE_STD_PATH="$HAXE_BIN/std"
+exec "$HAXE_BIN/haxelib" "\$@"
+EOF
+
+chmod +x "$HAXE_DIR/haxe" "$HAXE_DIR/haxelib"
+echo "Haxe wrapper scripts created"
+'
+"""description = "Install Haxe compiler"
+
+[tasks.install-hashlink]
+cmd = """
+bash -c '
+set -e
+HL_VERSION="1.14"
+HL_DIR="$PIXI_PROJECT_ROOT/.hashlink"
+HL_BIN="$HL_DIR/hl_${HL_VERSION}"
+
+if [ ! -d "$HL_BIN" ]; then
+    echo "Installing HashLink $HL_VERSION..."
+    mkdir -p "$HL_DIR"
+    cd "$HL_DIR"
+
+    case "$(uname -s)" in
+        Linux*)
+            HL_ARCHIVE="hl-${HL_VERSION}-linux.tar.gz"
+            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
+            ;;
+        Darwin*)
+            HL_ARCHIVE="hl-${HL_VERSION}-osx.tar.gz"
+            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
+            ;;
+        CYGWIN*|MINGW*|MSYS*)
+            HL_ARCHIVE="hl-${HL_VERSION}-win.zip"
+            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
+            ;;
+        *)
+            echo "Unsupported platform: $(uname -s)"
+            exit 1
+            ;;
+    esac
+
+    echo "Downloading $HL_URL"
+    curl -L -o "$HL_ARCHIVE" "$HL_URL"
+
+    if [[ "$HL_ARCHIVE" == *.tar.gz ]]; then
+        tar -xzf "$HL_ARCHIVE"
+        mv hl-* "$HL_BIN"
+    elif [[ "$HL_ARCHIVE" == *.zip ]]; then
+        unzip "$HL_ARCHIVE"
+        mv hl-* "$HL_BIN"
+    fi
+
+    rm "$HL_ARCHIVE"
+    echo "HashLink installed to $HL_BIN"
+else
+    echo "HashLink already installed at $HL_BIN"
+fi
+
+# Create hl wrapper script
+cat > "$HL_DIR/hl" << EOF
+#!/bin/bash
+exec "$HL_BIN/hl" "\$@"
+EOF
+
+chmod +x "$HL_DIR/hl"
+echo "HashLink wrapper script created"
+'
+"""description = "Install HashLink runtime"
+
+[tasks.install-libs]
+description = "Install Haxe libraries"
+depends-on = ["install-haxe"]
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
+echo "Installing Haxe libraries..."
+
+# Create haxelib setup directory
+mkdir -p "$PIXI_PROJECT_ROOT/.haxelib"
+haxelib setup "$PIXI_PROJECT_ROOT/.haxelib"
+
+# Install required libraries
+haxelib install heaps --quiet
+haxelib install hlsdl --quiet
+haxelib install format --quiet
+
+echo "Haxe libraries installed successfully"
+'
+"""
+
+[tasks.setup-directories]
+description = "Setup project directories"
+cmd = """
+bash -c '
+cd "$PIXI_PROJECT_ROOT/haxe-port"
+mkdir -p bin dist assets
+echo "Project directories created"
+'
+"""
+
+# =============================================================================
+# Build Tasks
+# =============================================================================
+
+[tasks.build]
+description = "Build GMX application (development)"
+depends-on = ["build-dev"]
+
+[tasks.build-dev]
+description = "Build development version"
+depends-on = ["install-haxe", "install-hashlink", "install-libs"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+
+echo "Building GMX development version..."
+haxe build.hxml
+
+if [ $? -eq 0 ]; then
+    echo "✅ Development build completed: bin/gmx.hl"
+else
+    echo "❌ Development build failed"
+    exit 1
+fi
+'
+"""
+
+[tasks.build-release]
+description = "Build optimized release version"
+depends-on = ["install-haxe", "install-hashlink", "install-libs"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+
+echo "Building GMX release version..."
+haxe build-release.hxml
+
+if [ $? -eq 0 ]; then
+    echo "✅ Release build completed: bin/gmx.hl"
+else
+    echo "❌ Release build failed"
+    exit 1
+fi
+'
+"""
+
+[tasks.clean]
+description = "Clean build artifacts"
+cwd = "haxe-port"
+cmd = """
+bash -c '
+echo "Cleaning build artifacts..."
+rm -rf bin/* dist/*
+echo "✅ Clean completed"
+'
+"""
+
+[tasks.rebuild]
+description = "Clean and rebuild"
+depends-on = ["clean", "build"]
+
+# =============================================================================
+# Run and Test Tasks
+# =============================================================================
+
+[tasks.run]
+description = "Build and run GMX application"
+depends-on = ["build-dev"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+
+if [ ! -f "bin/gmx.hl" ]; then
+    echo "❌ Build file not found. Run build first."
+    exit 1
+fi
+
+echo "🚀 Running GMX application..."
+hl bin/gmx.hl
+'
+"""
+
+[tasks.dev]
+description = "Development mode: build and run with file watching"
+depends-on = ["build-dev"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+
+echo "🔄 Starting development mode..."
+echo "Watching for changes in src/ directory..."
+
+# Simple file watching with build and run
+while true; do
+    echo "Building and running..."
+    haxe build.hxml && hl bin/gmx.hl
+    echo ""
+    echo "Press Enter to rebuild and run again, or Ctrl+C to exit..."
+    read -r
+done
+'
+"""
+
+# =============================================================================
+# Package Tasks
+# =============================================================================
+
+[tasks.package]
+description = "Package for current platform"
+depends-on = ["package-native"]
+
+[tasks.package-native]
+description = "Package native executable for current platform"
+depends-on = ["build-release"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+
+if [ ! -f "bin/gmx.hl" ]; then
+    echo "❌ Build file not found. Run build-release first."
+    exit 1
+fi
+
+echo "📦 Packaging native executable..."
+mkdir -p dist
+
+case "$(uname -s)" in
+    Linux*)
+        hl --compile-hl bin/gmx.hl dist/gmx-linux
+        chmod +x dist/gmx-linux
+        echo "✅ Linux package created: dist/gmx-linux"
+        ;;
+    Darwin*)
+        hl --compile-hl bin/gmx.hl dist/gmx-macos
+        chmod +x dist/gmx-macos
+        echo "✅ macOS package created: dist/gmx-macos"
+        ;;
+    CYGWIN*|MINGW*|MSYS*)
+        hl --compile-hl bin/gmx.hl dist/gmx-windows.exe
+        echo "✅ Windows package created: dist/gmx-windows.exe"
+        ;;
+    *)
+        echo "❌ Unsupported platform: $(uname -s)"
+        exit 1
+        ;;
+esac
+'
+"""
+
+[tasks.package-all]
+description = "Package for all supported platforms"
+depends-on = ["build-release"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+
+if [ ! -f "bin/gmx.hl" ]; then
+    echo "❌ Build file not found. Run build-release first."
+    exit 1
+fi
+
+echo "📦 Packaging for all platforms..."
+mkdir -p dist
+
+# Package for Linux
+hl --compile-hl bin/gmx.hl dist/gmx-linux
+chmod +x dist/gmx-linux
+echo "✅ Linux package created: dist/gmx-linux"
+
+# Note: Cross-compilation for other platforms requires additional setup
+echo "ℹ️  For Windows/macOS packages, run this task on those platforms"
+echo "✅ Package-all completed"
+'
+"""
+
+[tasks.package-flatpak]
+description = "Package as Linux Flatpak"
+depends-on = ["package-native"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+if [ ! -f "scripts/build-flatpak.sh" ]; then
+    echo "❌ Flatpak build script not found"
+    exit 1
+fi
+
+echo "📦 Building Flatpak package..."
+./scripts/build-flatpak.sh all
+echo "✅ Flatpak package created"
+'
+"""
+
+# =============================================================================
+# Server Tasks
+# =============================================================================
+
+[tasks.start-layout-server]
+description = "Start the example layout server"
+cmd = """
+bash -c '
+cd "$PIXI_PROJECT_ROOT/examples/servers"
+echo "🖥️  Starting layout server on localhost:12345..."
+python layout_server.py --host localhost --port 12345
+'
+"""
+
+[tasks.start-data-server]
+description = "Start the example data server"
+cmd = """
+bash -c '
+cd "$PIXI_PROJECT_ROOT/examples/servers"
+echo "💾 Starting data server on localhost:12346..."
+python data_server.py --host localhost --port 12346
+'
+"""
+
+[tasks.start-servers]
+description = "Start both layout and data servers"
+cmd = """
+bash -c '
+cd "$PIXI_PROJECT_ROOT/examples/servers"
+echo "🚀 Starting GMX servers..."
+
+# Start layout server in background
+echo "Starting layout server..."
+python layout_server.py --host localhost --port 12345 &
+LAYOUT_PID=$!
+
+# Start data server in background
+echo "Starting data server..."
+python data_server.py --host localhost --port 12346 &
+DATA_PID=$!
+
+echo "📡 Layout server running on localhost:12345 (PID: $LAYOUT_PID)"
+echo "💾 Data server running on localhost:12346 (PID: $DATA_PID)"
+echo ""
+echo "Press Ctrl+C to stop both servers"
+
+# Wait for Ctrl+C
+trap "echo \"Stopping servers...\"; kill $LAYOUT_PID $DATA_PID; exit 0" INT
+wait
+'
+"""
+
+# =============================================================================
+# Development and Testing Tasks
+# =============================================================================
+
+[tasks.test]
+description = "Run tests (placeholder)"
+cmd = """
+bash -c '
+echo "🧪 Running tests..."
+echo "⚠️  Test suite not yet implemented"
+echo "✅ Test task completed"
+'
+"""
+
+[tasks.check]
+description = "Check Haxe code compilation without building"
+depends-on = ["install-haxe", "install-libs"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
+export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+
+echo "🔍 Checking Haxe code..."
+haxe --no-output --main Main -cp src -lib heaps -lib hlsdl -lib format
+
+if [ $? -eq 0 ]; then
+    echo "✅ Code check passed"
+else
+    echo "❌ Code check failed"
+    exit 1
+fi
+'
+"""
+
+[tasks.docs]
+description = "Generate documentation"
+depends-on = ["install-haxe", "install-libs"]
+cwd = "haxe-port"
+cmd = """
+bash -c '
+export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
+export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+
+echo "📚 Generating documentation..."
+mkdir -p docs/api
+
+haxe -cp src -lib heaps -lib hlsdl -lib format --main Main -xml docs/api/gmx.xml
+
+if [ $? -eq 0 ]; then
+    echo "✅ Documentation generated: docs/api/gmx.xml"
+else
+    echo "❌ Documentation generation failed"
+    exit 1
+fi
+'
+"""
+
+# =============================================================================
+# Utility Tasks
+# =============================================================================
+
+[tasks.info]
+description = "Show project information and status"
+cmd = """
+bash -c '
+echo "🏗️  GMX Project Information"
+echo "=========================="
+echo ""
+echo "Project: GMX (Graphical Message eXchange)"
+echo "Version: 0.1.0"
+echo "Target:  Haxe/HashLink"
+echo ""
+
+echo "📁 Directories:"
+echo "  Source: haxe-port/src"
+echo "  Build:  haxe-port/bin"
+echo "  Dist:   haxe-port/dist"
+echo "  Examples: examples/"
+echo ""
+
+echo "🔧 Tool Status:"
+if command -v "$PIXI_PROJECT_ROOT/.haxe/haxe" &> /dev/null; then
+    echo "  ✅ Haxe: $(\"$PIXI_PROJECT_ROOT/.haxe/haxe\" --version)"
+else
+    echo "  ❌ Haxe: Not installed"
+fi
+
+if command -v "$PIXI_PROJECT_ROOT/.hashlink/hl" &> /dev/null; then
+    echo "  ✅ HashLink: Available"
+else
+    echo "  ❌ HashLink: Not installed"
+fi
+
+echo ""
+echo "📦 Build Status:"
+if [ -f "haxe-port/bin/gmx.hl" ]; then
+    echo "  ✅ GMX Binary: Available ($(stat -c%s \"haxe-port/bin/gmx.hl\" 2>/dev/null || stat -f%z \"haxe-port/bin/gmx.hl\" 2>/dev/null) bytes)"
+else
+    echo "  ❌ GMX Binary: Not built"
+fi
+
+echo ""
+echo "🚀 Quick Start:"
+echo "  pixi run setup     # Initial setup"
+echo "  pixi run build     # Build application"
+echo "  pixi run run       # Run application"
+echo "  pixi run dev       # Development mode"
+echo ""
+'
+"""
+
+[tasks.help]
+description = "Show available tasks and usage"
+cmd = """
+bash -c '
+echo "🎯 GMX Pixi Tasks"
+echo "================"
+echo ""
+echo "🏗️  Setup & Installation:"
+echo "  setup              Complete development environment setup"
+echo "  install-haxe       Install Haxe compiler"
+echo "  install-hashlink   Install HashLink runtime"
+echo "  install-libs       Install Haxe libraries"
+echo ""
+echo "🔨 Building:"
+echo "  build              Build development version"
+echo "  build-dev          Build development version (explicit)"
+echo "  build-release      Build optimized release version"
+echo "  clean              Clean build artifacts"
+echo "  rebuild            Clean and rebuild"
+echo "  check              Check code compilation"
+echo ""
+echo "🚀 Running:"
+echo "  run                Build and run application"
+echo "  dev                Development mode with file watching"
+echo ""
+echo "📦 Packaging:"
+echo "  package            Package for current platform"
+echo "  package-native     Package native executable"
+echo "  package-all        Package for all platforms"
+echo "  package-flatpak    Package as Linux Flatpak"
+echo ""
+echo "🖥️  Servers:"
+echo "  start-layout-server  Start example layout server"
+echo "  start-data-server    Start example data server"
+echo "  start-servers        Start both servers"
+echo ""
+echo "🔧 Development:"
+echo "  test               Run tests"
+echo "  docs               Generate documentation"
+echo "  info               Show project information"
+echo "  help               Show this help"
+echo ""
+echo "📖 Examples:"
+echo "  pixi run setup && pixi run build && pixi run run"
+echo "  pixi run start-servers &"
+echo "  pixi run dev"
+echo ""
+'
+"""
+
+# =============================================================================
+# Aliases for common tasks
+# =============================================================================
+
+[tasks.install]
+description = "Alias for setup"
+depends-on = ["setup"]
+
+[tasks.compile]
+description = "Alias for build"
+depends-on = ["build"]
+
+[tasks.start]
+description = "Alias for run"
+depends-on = ["run"]

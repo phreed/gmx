@@ -1,0 +1,622 @@
+= GMX Server Implementation Guide
+
+This guide covers implementing servers that work with the GMX client framework. GMX uses a client-server architecture where the client connects to servers via socket connections to receive layout definitions and data content.
+
+== Server Architecture Overview
+
+GMX clients connect to servers using XML socket connections. Servers must:
+
+1. Accept socket connections on specified ports
+2. Send/receive XML messages
+3. Manage layout definitions (LUIDs)
+4. Manage data records (RUIDs) and collections (CUIDs)
+
+== Connection Protocol
+
+=== Socket Connection
+GMX clients connect via `XMLSocket` to servers. The default connection parameters are:
+
+- Host: `localhost` (configurable)
+- Port: `12345` (configurable via FlashVars)
+
+=== Message Format
+All messages are XML-based and terminated with a null character (`\0`).
+
+== Server Types
+
+=== Layout Server
+Provides UI layout definitions to clients.
+
+*Responsibilities:*
+- Store and manage layout XML definitions
+- Respond to layout requests by LUID
+- Send layout update messages to clients
+- Handle layout replacement operations
+
+*Key Message Types:*
+- Layout messages targeting specific LUIDs
+- Layout refresh/reset operations
+
+=== Data Server
+Provides content as records and collections.
+
+*Responsibilities:*
+- Store and manage data records
+- Handle CRUD operations on records (RUIDs)
+- Manage collections of records (CUIDs)
+- Send data updates to clients
+
+*Key Message Types:*
+- Record messages for individual data items
+- Collection messages for batch operations
+
+== GUID Management
+
+=== Layout Unique IDs (LUIDs)
+- Identify specific UI containers/components
+- Used to target layout replacement operations
+- Must be unique within the application scope
+- Default main container uses `luid="mainLuid"`
+
+Example LUID usage:
+```xml
+<VBox luid="sidebar_container" width="200">
+  <!-- layout content -->
+</VBox>
+```
+
+=== Record Unique IDs (RUIDs)
+- Identify individual data records
+- Used for data binding to UI components
+- Must be globally unique
+- Default main record uses `ruid="mainRuid"`
+
+Example RUID usage:
+```xml
+<Record ruid="user_123">
+  <Field fid="username" value="john_doe"/>
+  <Field fid="email" value="john@example.com"/>
+</Record>
+```
+
+=== Collection Unique IDs (CUIDs)
+- Identify collections of related records
+- Used for batch operations and data grouping
+- Support hierarchical relationships between records
+
+Example CUID usage:
+```xml
+<Collection cuid="user_list">
+  <RuidList>
+    <Ruid ruid="user_123" select="last"/>
+    <Ruid ruid="user_124" select="last"/>
+  </RuidList>
+</Collection>
+```
+
+== Message Protocols
+
+=== Layout Messages
+Layout messages update UI components by targeting specific LUIDs.
+
+Basic format:
+```xml
+<ISISLayout luid="target_container">
+  <!-- UI component definitions -->
+  <VBox>
+    <Button label="Click Me"/>
+    <TextInput text="Enter text"/>
+  </VBox>
+</ISISLayout>
+```
+
+=== Record Messages
+Record messages update individual data records.
+
+Basic format:
+```xml
+<ISISRecord ruid="record_id">
+  <Field fid="field_name" value="new_value"/>
+  <Field fid="another_field" value="another_value"/>
+</ISISRecord>
+```
+
+=== Collection Messages
+Collection messages perform batch operations on groups of records.
+
+Basic format:
+```xml
+<ISISCollection cuid="collection_id">
+  <RuidList>
+    <Ruid ruid="record_1" select="first"/>
+    <Ruid ruid="record_2" select="after" ref="record_1"/>
+    <Ruid ruid="record_3" select="delete"/>
+  </RuidList>
+</ISISCollection>
+```
+
+Collection operations (`select` attribute):
+- `first` - Insert as first item
+- `last` - Insert as last item
+- `before` - Insert before referenced item
+- `after` - Insert after referenced item
+- `child` - Insert as child of referenced item
+- `parent` - Insert as parent of referenced item
+- `clear` - Remove all items
+- `delete` - Delete specific item
+- `splice` - Remove and replace
+
+== Server Implementation Examples
+
+=== Basic Layout Server (Python)
+```python
+import socket
+import threading
+import xml.etree.ElementTree as ET
+
+class LayoutServer:
+    def __init__(self, host='localhost', port=12345):
+        self.host = host
+        self.port = port
+        self.layouts = {}
+        self.clients = []
+
+    def add_layout(self, luid, layout_xml):
+        """Store a layout definition"""
+        self.layouts[luid] = layout_xml
+
+    def send_layout(self, client, luid):
+        """Send layout to specific client"""
+        if luid in self.layouts:
+            message = f'<ISISLayout luid="{luid}">{self.layouts[luid]}</ISISLayout>\0'
+            client.send(message.encode())
+
+    def handle_client(self, client_socket, address):
+        """Handle individual client connection"""
+        self.clients.append(client_socket)
+        try:
+            while True:
+                data = client_socket.recv(1024).decode().strip('\0')
+                if not data:
+                    break
+                # Process client requests
+                self.process_request(client_socket, data)
+        finally:
+            self.clients.remove(client_socket)
+            client_socket.close()
+
+    def start_server(self):
+        """Start the layout server"""
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind((self.host, self.port))
+        server_socket.listen(5)
+
+        print(f"Layout server listening on {self.host}:{self.port}")
+
+        while True:
+            client_socket, address = server_socket.accept()
+            client_thread = threading.Thread(
+                target=self.handle_client,
+                args=(client_socket, address)
+            )
+            client_thread.start()
+```
+
+=== Basic Data Server (Python)
+```python
+class DataServer:
+    def __init__(self, host='localhost', port=12346):
+        self.host = host
+        self.port = port
+        self.records = {}
+        self.collections = {}
+        self.clients = []
+
+    def update_record(self, ruid, fields):
+        """Update a record"""
+        if ruid not in self.records:
+            self.records[ruid] = {}
+        self.records[ruid].update(fields)
+        self.broadcast_record_update(ruid)
+
+    def broadcast_record_update(self, ruid):
+        """Broadcast record update to all clients"""
+        if ruid in self.records:
+            fields_xml = ""
+            for fid, value in self.records[ruid].items():
+                fields_xml += f'<Field fid="{fid}" value="{value}"/>'
+
+            message = f'<ISISRecord ruid="{ruid}">{fields_xml}</ISISRecord>\0'
+
+            for client in self.clients:
+                try:
+                    client.send(message.encode())
+                except:
+                    self.clients.remove(client)
+```
+
+== Security Considerations
+
+=== Flash Security
+GMX clients require appropriate Flash security policies:
+
+1. Cross-domain policy files for web deployment
+2. Local security settings for desktop deployment
+3. Socket policy files for socket connections
+
+Example socket policy file:
+```xml
+<?xml version="1.0"?>
+<cross-domain-policy>
+    <allow-access-from domain="*" to-ports="12345,12346"/>
+</cross-domain-policy>
+```
+
+=== Authentication
+Implement authentication mechanisms:
+- Session tokens in message headers
+- Certificate-based authentication
+- Role-based access control for layouts/data
+
+== Performance Considerations
+
+=== Message Optimization
+- Keep layout messages focused and minimal
+- Use incremental updates rather than full refreshes
+- Batch collection operations when possible
+- Implement message compression for large datasets
+
+=== Connection Management
+- Handle client disconnections gracefully
+- Implement connection pooling for high-traffic scenarios
+- Use heartbeat messages to detect dead connections
+- Implement message queuing for offline clients
+
+== Testing and Debugging
+
+=== Server Testing
+- Use telnet or netcat to test socket connections
+- Implement logging for all message exchanges
+- Create unit tests for message parsing/generation
+- Use XML validation to ensure message format compliance
+
+=== Integration Testing
+- Test with GMX client in various scenarios
+- Verify GUID uniqueness and consistency
+- Test error handling and recovery
+- Validate performance under load
+
+== Error Handling
+
+=== Common Errors
+- Invalid XML format
+- Missing or duplicate GUIDs
+- Client disconnection during operations
+- Memory leaks from retained references
+
+=== Error Recovery
+- Graceful degradation when servers unavailable
+- Automatic reconnection for transient failures
+- Data synchronization after reconnection
+- User notification of system status
+
+== Server Deployment with Pixi
+
+=== Starting Example Servers
+
+GMX provides example servers that can be easily started using Pixi tasks:
+
+==== Layout Server
+```bash
+pixi run start-layout-server
+```
+
+Starts the Python layout server on `localhost:12345`. The server provides:
+- Example layout definitions (simple button, form, dashboard)
+- Client connection management
+- Layout validation and error handling
+
+==== Data Server
+```bash
+pixi run start-data-server
+```
+
+Starts the Python data server on `localhost:12346`. The server provides:
+- Record and collection management
+- Real-time data simulation
+- CRUD operations for records
+
+==== Both Servers
+```bash
+pixi run start-servers
+```
+
+Starts both servers concurrently in the background with:
+- Process ID monitoring
+- Graceful shutdown with Ctrl+C
+- Automatic cleanup of background processes
+
+=== Complete Development Workflow
+
+For a complete development environment:
+
+```bash
+# Terminal 1: Start servers
+pixi run start-servers
+
+# Terminal 2: Build and run client
+pixi run setup    # One-time setup
+pixi run build
+pixi run run
+```
+
+=== Server Configuration
+
+The example servers can be configured by modifying the Python files in `examples/servers/`:
+
+*Layout Server (`layout_server.py`):*
+- Default host: `localhost`
+- Default port: `12345`
+- Configurable via command line arguments
+
+*Data Server (`data_server.py`):*
+- Default host: `localhost`
+- Default port: `12346`
+- Configurable via command line arguments
+
+=== Production Deployment Considerations
+
+==== Security
+- Implement authentication and authorization
+- Use HTTPS/TLS for encrypted communication
+- Validate all incoming XML messages
+- Implement rate limiting and DDoS protection
+
+==== Scalability
+- Use load balancers for multiple server instances
+- Implement connection pooling
+- Use message queuing for high-traffic scenarios
+- Monitor server performance and resource usage
+
+==== Reliability
+- Implement health checks and monitoring
+- Use process managers (systemd, supervisor)
+- Set up log rotation and archiving
+- Implement graceful shutdown procedures
+
+==== Configuration Management
+- Use environment variables for configuration
+- Separate development/staging/production configs
+- Implement configuration validation
+- Use configuration management tools
+
+=== Monitoring and Debugging
+
+==== Server Logs
+Both example servers provide comprehensive logging:
+- Connection events
+- Message processing
+- Error conditions
+- Performance metrics
+
+==== Health Monitoring
+Implement health check endpoints:
+```python
+@app.route('/health')
+def health_check():
+    return {'status': 'healthy', 'timestamp': datetime.now()}
+```
+
+==== Performance Metrics
+Monitor key metrics:
+- Connection count
+- Message throughput
+- Response times
+- Memory usage
+- CPU utilization
+
+== Data Model Examples
+
+=== Record Examples
+
+==== User Form Record
+Demonstrates record structure for form data:
+- Basic user information fields
+- Selection and action fields
+- Validation status tracking
+- Cross-record attribute references
+
+*RUID:* `user_form_record`
+*Related Collections:* `role_options`
+
+*Field Categories:*
+- Input fields: `username`, `email`, `password`, `bio`
+- Selection fields: `selected_role`, `account_type`
+- Action fields: `submit_action`, `reset_action`, `cancel_action`
+- Status fields: `form_valid`, `validation_errors`
+
+Example implementation:
+```xml
+<ISISRecord ruid="user_form_record">
+    <Field fid="username" value=""/>
+    <Field fid="email" value=""/>
+    <Field fid="password" value=""/>
+    <Field fid="bio" value=""/>
+    <Field fid="selected_role" value="user"/>
+    <Field fid="account_type" value="standard"/>
+    <Field fid="submit_action" value=""/>
+    <Field fid="reset_action" value=""/>
+    <Field fid="cancel_action" value=""/>
+    <Field fid="form_valid" value="false"/>
+    <Field fid="validation_errors" value=""/>
+    <Attribute ruid="validation_record" fid="status_message" send="true"/>
+</ISISRecord>
+```
+
+==== System Status Record
+Comprehensive system monitoring record:
+- System identification and version info
+- Current status and health metrics
+- Resource usage (memory, CPU, disk)
+- Network and service status
+- Performance metrics and alerts
+
+*RUID:* `system_status`
+*Usage:* Dashboard and monitoring displays
+
+*Key Metrics:*
+- Uptime and system health
+- Resource utilization
+- Network connectivity
+- Service availability
+- Alert counts and status
+
+==== Navigation Record
+Navigation and positioning data:
+- GPS coordinates and altitude
+- Heading and direction information
+- Speed and motion data
+- Turn rate and course tracking
+- Environmental conditions
+
+*RUID:* `navigation_data`
+*Usage:* Compass and navigation displays
+
+*Data Categories:*
+- Position: latitude, longitude, altitude
+- Movement: speed, heading, turn rate
+- Navigation: waypoints, course, GPS status
+- Environment: wind, temperature, pressure
+
+=== Collection Examples
+
+==== Role Options Collection
+User role selection options:
+- Multiple role records with permissions
+- Display names and descriptions
+- Permission level hierarchies
+- Active/inactive status
+
+*CUID:* `role_options`
+*Usage:* ComboBox and selection components
+
+*Included Roles:*
+- Administrator (full access)
+- Manager (team oversight)
+- Standard User (daily operations)
+- Guest (read-only)
+- System Operator (operational control)
+- Data Analyst (analysis access)
+
+Example implementation:
+```xml
+<ISISCollection cuid="role_options">
+    <RuidList>
+        <Ruid ruid="role_admin" select="last"/>
+        <Ruid ruid="role_manager" select="last"/>
+        <Ruid ruid="role_user" select="last"/>
+        <Ruid ruid="role_guest" select="last"/>
+        <Ruid ruid="role_operator" select="last"/>
+        <Ruid ruid="role_analyst" select="last"/>
+    </RuidList>
+</ISISCollection>
+```
+
+==== Alerts List Collection
+Active system alerts and warnings:
+- Multiple severity levels (Critical, Warning, Info)
+- Detailed alert information
+- Acknowledgment and resolution tracking
+- Source system identification
+
+*CUID:* `alerts_list`
+*Usage:* Alert displays and management interfaces
+
+*Alert Types:*
+- Critical: Database connections, security breaches
+- Warning: High resource usage, network issues
+- Info: Scheduled maintenance, user activities
+
+==== System Metrics Collection
+Real-time system performance metrics:
+- Various performance indicators
+- Current values and status
+- Trend analysis and thresholds
+- Historical data tracking
+
+*CUID:* `system_metrics`
+*Usage:* Performance monitoring dashboards
+
+*Metric Categories:*
+- System: CPU, memory, disk I/O
+- Network: throughput, latency
+- Application: response time, error rate
+- Infrastructure: temperature, power
+
+=== Enhanced Data Models
+
+==== Data Validation and Business Rules
+Implement server-side validation:
+```python
+def validate_user_record(record):
+    errors = []
+
+    # Username validation
+    if not record.get('username') or len(record['username']) < 3:
+        errors.append("Username must be at least 3 characters")
+
+    # Email validation
+    if not record.get('email') or '@' not in record['email']:
+        errors.append("Valid email address required")
+
+    # Password validation
+    if not record.get('password') or len(record['password']) < 8:
+        errors.append("Password must be at least 8 characters")
+
+    return errors
+```
+
+==== Computed Fields and Derived Values
+Implement computed fields that automatically update:
+```python
+def update_computed_fields(record):
+    # Display name computed from first and last name
+    if 'first_name' in record and 'last_name' in record:
+        record['display_name'] = f"{record['first_name']} {record['last_name']}"
+
+    # Status computed from multiple factors
+    if record.get('active') and record.get('verified'):
+        record['status'] = 'active'
+    elif record.get('active'):
+        record['status'] = 'pending'
+    else:
+        record['status'] = 'inactive'
+```
+
+==== Hierarchical Data Relationships
+Support parent-child relationships in collections:
+```python
+def build_hierarchical_collection(parent_ruid, child_ruids):
+    collection_xml = f'<ISISCollection cuid="hierarchy_{parent_ruid}">'
+    collection_xml += '<RuidList>'
+
+    # Add parent as first item
+    collection_xml += f'<Ruid ruid="{parent_ruid}" select="first"/>'
+
+    # Add children as sub-items
+    for child_ruid in child_ruids:
+        collection_xml += f'<Ruid ruid="{child_ruid}" select="child" ref="{parent_ruid}"/>'
+
+    collection_xml += '</RuidList></ISISCollection>'
+    return collection_xml
+```
+
+== See Also
+
+- link:protocol_reference.asciidoc[Protocol Reference] - Detailed message formats
+- link:component_reference.asciidoc[Component Reference] - Available UI components
+- link:../examples/servers/[Server Examples] - Reference implementations
+- link:../examples/records/[Record Examples] - Sample record structures
+- link:../examples/collections/[Collection Examples] - Sample collection definitions
+- link:developer_guide.asciidoc[Developer Guide] - Pixi task system

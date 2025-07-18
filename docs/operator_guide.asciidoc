@@ -1,0 +1,762 @@
+= GMX Operator's Guide
+
+This guide covers deployment, packaging, and operational aspects of the GMX (Graphical Message eXchange) application for system operators and DevOps engineers.
+
+== Overview
+
+GMX is a client-server application framework that has been modernized from Adobe Flex/AIR to Haxe/HashLink. This guide focuses on:
+
+- Deployment strategies
+- Packaging and distribution
+- System requirements
+- Monitoring and maintenance
+- Troubleshooting
+
+== System Requirements
+
+=== Client System Requirements
+
+==== Minimum Requirements
+* **OS:** Linux (x64), Windows 10+ (x64), macOS 10.14+ (x64/ARM64)
+* **RAM:** 512 MB available memory
+* **Disk:** 100 MB free space for application
+* **Graphics:** OpenGL 3.0+ compatible graphics card
+* **Network:** TCP socket access (ports 12345, 12346 by default)
+
+==== Recommended Requirements
+* **OS:** Recent Linux distribution, Windows 11, macOS 12+
+* **RAM:** 2 GB available memory
+* **Disk:** 1 GB free space (including assets and cache)
+* **Graphics:** Dedicated graphics card with updated drivers
+* **Network:** Low-latency network connection to servers
+
+==== Runtime Dependencies
+* **Linux:** SDL2, OpenGL libraries, ALSA/PulseAudio
+* **Windows:** Visual C++ Redistributable 2019+
+* **macOS:** No additional dependencies (bundled in .app)
+
+=== Server System Requirements
+
+==== Layout Server
+* **OS:** Linux, Windows, macOS
+* **Runtime:** Python 3.8+
+* **RAM:** 256 MB minimum, 1 GB recommended
+* **Network:** Inbound TCP access on configured port (default 12345)
+
+==== Data Server
+* **OS:** Linux, Windows, macOS
+* **Runtime:** Python 3.8+
+* **RAM:** 512 MB minimum, 2 GB recommended for large datasets
+* **Storage:** Depends on data persistence requirements
+* **Network:** Inbound TCP access on configured port (default 12346)
+
+== Deployment Strategies
+
+=== Development Deployment
+
+For development and testing environments:
+
+```bash
+# Setup development environment
+pixi run setup
+
+# Start servers in development mode
+pixi run start-servers
+
+# Build and run client
+pixi run dev
+```
+
+=== Staging/Production Deployment
+
+==== Client Deployment
+
+===== Native Executable Deployment
+```bash
+# Build optimized release
+pixi run build-release
+
+# Package native executable
+pixi run package-native
+
+# Distribute the appropriate executable:
+# - Linux: dist/gmx-linux
+# - Windows: dist/gmx-windows.exe
+# - macOS: dist/gmx-macos
+```
+
+===== Flatpak Deployment (Linux)
+```bash
+# Build Flatpak package
+pixi run package-flatpak
+
+# Install system-wide
+flatpak install --user gmx-flatpak.flatpak
+
+# Or distribute via Flatpak repository
+```
+
+===== Container Deployment
+```dockerfile
+# Example Dockerfile for GMX client
+FROM ubuntu:22.04
+
+RUN apt-get update && apt-get install -y \
+    libsdl2-2.0-0 \
+    libgl1-mesa-glx \
+    libasound2 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY dist/gmx-linux /usr/local/bin/gmx
+RUN chmod +x /usr/local/bin/gmx
+
+USER 1000:1000
+CMD ["/usr/local/bin/gmx"]
+```
+
+==== Server Deployment
+
+===== Systemd Service (Linux)
+
+Layout Server service file (`/etc/systemd/system/gmx-layout-server.service`):
+```ini
+[Unit]
+Description=GMX Layout Server
+After=network.target
+
+[Service]
+Type=simple
+User=gmx
+Group=gmx
+WorkingDirectory=/opt/gmx/servers
+ExecStart=/usr/bin/python3 layout_server.py --host 0.0.0.0 --port 12345
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Data Server service file (`/etc/systemd/system/gmx-data-server.service`):
+```ini
+[Unit]
+Description=GMX Data Server
+After=network.target
+
+[Service]
+Type=simple
+User=gmx
+Group=gmx
+WorkingDirectory=/opt/gmx/servers
+ExecStart=/usr/bin/python3 data_server.py --host 0.0.0.0 --port 12346
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start services:
+```bash
+sudo systemctl enable gmx-layout-server gmx-data-server
+sudo systemctl start gmx-layout-server gmx-data-server
+```
+
+===== Docker Deployment
+
+Layout Server Dockerfile:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY examples/servers/layout_server.py .
+COPY examples/servers/requirements.txt .
+
+RUN pip install -r requirements.txt
+
+EXPOSE 12345
+CMD ["python", "layout_server.py", "--host", "0.0.0.0", "--port", "12345"]
+```
+
+Data Server Dockerfile:
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY examples/servers/data_server.py .
+COPY examples/servers/requirements.txt .
+
+RUN pip install -r requirements.txt
+
+EXPOSE 12346
+CMD ["python", "data_server.py", "--host", "0.0.0.0", "--port", "12346"]
+```
+
+Docker Compose deployment:
+```yaml
+version: '3.8'
+
+services:
+  layout-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.layout
+    ports:
+      - "12345:12345"
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=INFO
+
+  data-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.data
+    ports:
+      - "12346:12346"
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - layout-server
+      - data-server
+```
+
+===== Kubernetes Deployment
+
+Layout Server deployment:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gmx-layout-server
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gmx-layout-server
+  template:
+    metadata:
+      labels:
+        app: gmx-layout-server
+    spec:
+      containers:
+      - name: layout-server
+        image: gmx/layout-server:latest
+        ports:
+        - containerPort: 12345
+        env:
+        - name: LOG_LEVEL
+          value: "INFO"
+        livenessProbe:
+          tcpSocket:
+            port: 12345
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 12345
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gmx-layout-service
+spec:
+  selector:
+    app: gmx-layout-server
+  ports:
+  - protocol: TCP
+    port: 12345
+    targetPort: 12345
+  type: LoadBalancer
+```
+
+== Configuration Management
+
+=== Client Configuration
+
+==== Connection Settings
+Configure client connection via environment variables or configuration files:
+
+```bash
+export GMX_LAYOUT_HOST=layout.example.com
+export GMX_LAYOUT_PORT=12345
+export GMX_DATA_HOST=data.example.com
+export GMX_DATA_PORT=12346
+```
+
+==== Runtime Configuration
+```bash
+# Debug mode
+export GMX_DEBUG=true
+
+# Log level
+export GMX_LOG_LEVEL=INFO
+
+# Asset path
+export GMX_ASSETS_PATH=/opt/gmx/assets
+```
+
+=== Server Configuration
+
+==== Environment Variables
+```bash
+# Layout Server
+export LAYOUT_SERVER_HOST=0.0.0.0
+export LAYOUT_SERVER_PORT=12345
+export LAYOUT_SERVER_LOG_LEVEL=INFO
+
+# Data Server
+export DATA_SERVER_HOST=0.0.0.0
+export DATA_SERVER_PORT=12346
+export DATA_SERVER_LOG_LEVEL=INFO
+export DATA_SERVER_DB_PATH=/var/lib/gmx/data
+```
+
+==== Configuration Files
+Use JSON or YAML configuration files for complex setups:
+
+`config/layout-server.yaml`:
+```yaml
+server:
+  host: 0.0.0.0
+  port: 12345
+  max_connections: 100
+  timeout: 30
+
+logging:
+  level: INFO
+  file: /var/log/gmx/layout-server.log
+  rotation: daily
+
+layouts:
+  cache_size: 1000
+  default_layout: simple
+  validation: strict
+```
+
+== Monitoring and Observability
+
+=== Metrics Collection
+
+==== Server Metrics
+Monitor key server metrics:
+- Connection count and duration
+- Message throughput (messages/second)
+- Response times (P50, P95, P99)
+- Error rates
+- Memory and CPU usage
+- Network I/O
+
+==== Client Metrics
+Track client-side performance:
+- Startup time
+- Frame rate (FPS)
+- Memory usage
+- Connection stability
+- Layout rendering time
+
+=== Logging
+
+==== Log Levels
+* **DEBUG:** Detailed debugging information
+* **INFO:** General operational information
+* **WARNING:** Warning conditions
+* **ERROR:** Error conditions
+* **CRITICAL:** Critical error conditions
+
+==== Log Format
+Standardize log format across all components:
+```
+[TIMESTAMP] [LEVEL] [COMPONENT] [MESSAGE] [CONTEXT]
+2024-01-15T14:30:25Z INFO layout-server Client connected from 192.168.1.100:54321
+2024-01-15T14:30:26Z ERROR data-server Failed to process record update: invalid XML
+```
+
+==== Log Aggregation
+Use centralized logging solutions:
+- **ELK Stack:** Elasticsearch, Logstash, Kibana
+- **Fluentd/Fluent Bit:** Log forwarding and processing
+- **Grafana Loki:** Log aggregation and querying
+
+=== Health Checks
+
+==== Server Health Endpoints
+Implement health check endpoints for monitoring:
+
+```python
+# Layout Server health check
+@app.route('/health')
+def health():
+    return {
+        'status': 'healthy',
+        'timestamp': datetime.now().isoformat(),
+        'version': '1.0.0',
+        'connections': len(active_connections),
+        'uptime': get_uptime()
+    }
+
+# Data Server health check
+@app.route('/metrics')
+def metrics():
+    return {
+        'records_count': len(records),
+        'collections_count': len(collections),
+        'memory_usage': get_memory_usage(),
+        'last_update': last_update_time
+    }
+```
+
+==== Monitoring Integration
+Integrate with monitoring systems:
+- **Prometheus:** Metrics collection and alerting
+- **Grafana:** Dashboards and visualization
+- **Nagios/Icinga:** Traditional monitoring
+- **PagerDuty/OpsGenie:** Incident management
+
+== Security Considerations
+
+=== Network Security
+
+==== Firewall Configuration
+Configure firewalls to restrict access:
+```bash
+# Allow GMX ports from specific networks
+iptables -A INPUT -p tcp --dport 12345 -s 10.0.0.0/8 -j ACCEPT
+iptables -A INPUT -p tcp --dport 12346 -s 10.0.0.0/8 -j ACCEPT
+iptables -A INPUT -p tcp --dport 12345 -j DROP
+iptables -A INPUT -p tcp --dport 12346 -j DROP
+```
+
+==== TLS/SSL Termination
+Use reverse proxy for TLS termination:
+```nginx
+upstream gmx_layout {
+    server 127.0.0.1:12345;
+}
+
+upstream gmx_data {
+    server 127.0.0.1:12346;
+}
+
+server {
+    listen 443 ssl;
+    server_name gmx.example.com;
+
+    ssl_certificate /etc/ssl/certs/gmx.crt;
+    ssl_certificate_key /etc/ssl/private/gmx.key;
+
+    location /layout {
+        proxy_pass http://gmx_layout;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+
+    location /data {
+        proxy_pass http://gmx_data;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+=== Application Security
+
+==== Input Validation
+Implement strict input validation:
+- XML schema validation
+- Message size limits
+- Rate limiting per client
+- Malformed message rejection
+
+==== Authentication and Authorization
+Implement security layers:
+- Client certificate authentication
+- Token-based authentication
+- Role-based access control
+- Session management
+
+== Backup and Recovery
+
+=== Data Backup
+
+==== Server Data
+Backup server configurations and data:
+```bash
+# Layout definitions backup
+tar -czf layouts-backup-$(date +%Y%m%d).tar.gz /opt/gmx/layouts
+
+# Data server backup
+tar -czf data-backup-$(date +%Y%m%d).tar.gz /var/lib/gmx/data
+
+# Configuration backup
+tar -czf config-backup-$(date +%Y%m%d).tar.gz /etc/gmx
+```
+
+==== Database Backup
+If using persistent storage:
+```bash
+# PostgreSQL backup
+pg_dump gmx_database > gmx_db_backup_$(date +%Y%m%d).sql
+
+# MySQL backup
+mysqldump gmx_database > gmx_db_backup_$(date +%Y%m%d).sql
+```
+
+=== Disaster Recovery
+
+==== Recovery Procedures
+1. **Server Failure:**
+   - Restore from configuration backups
+   - Restart services
+   - Verify connectivity
+
+2. **Data Corruption:**
+   - Stop affected services
+   - Restore from data backups
+   - Validate data integrity
+   - Restart services
+
+3. **Complete System Failure:**
+   - Deploy to backup infrastructure
+   - Restore all data and configurations
+   - Update DNS/load balancer settings
+   - Verify full system functionality
+
+== Performance Optimization
+
+=== Server Optimization
+
+==== Connection Pooling
+Implement connection pooling for high-load scenarios:
+```python
+class ConnectionPool:
+    def __init__(self, max_connections=100):
+        self.max_connections = max_connections
+        self.active_connections = []
+
+    def get_connection(self):
+        if len(self.active_connections) < self.max_connections:
+            return new_connection()
+        return None
+```
+
+==== Caching
+Implement caching strategies:
+- Layout definition caching
+- Computed data caching
+- Connection state caching
+- Static asset caching
+
+==== Load Balancing
+Distribute load across multiple servers:
+```yaml
+# HAProxy configuration
+backend gmx_layout_servers
+    balance roundrobin
+    server layout1 10.0.1.10:12345 check
+    server layout2 10.0.1.11:12345 check
+    server layout3 10.0.1.12:12345 check
+
+backend gmx_data_servers
+    balance roundrobin
+    server data1 10.0.1.20:12346 check
+    server data2 10.0.1.21:12346 check
+    server data3 10.0.1.22:12346 check
+```
+
+=== Client Optimization
+
+==== Asset Management
+Optimize client assets:
+- Compress images and media
+- Use appropriate file formats
+- Implement asset caching
+- Preload critical assets
+
+==== Memory Management
+Monitor and optimize memory usage:
+- Profile memory consumption
+- Implement garbage collection hints
+- Avoid memory leaks
+- Use efficient data structures
+
+== Troubleshooting
+
+=== Common Issues
+
+==== Connection Problems
+1. **Cannot connect to server:**
+   - Check network connectivity
+   - Verify firewall rules
+   - Confirm server is running
+   - Check port configuration
+
+2. **Frequent disconnections:**
+   - Monitor network stability
+   - Check server resource usage
+   - Verify timeout settings
+   - Review error logs
+
+==== Performance Issues
+1. **Slow response times:**
+   - Monitor server CPU/memory
+   - Check network latency
+   - Review database performance
+   - Analyze application logs
+
+2. **High memory usage:**
+   - Check for memory leaks
+   - Monitor garbage collection
+   - Review caching strategies
+   - Optimize data structures
+
+=== Diagnostic Tools
+
+==== Network Diagnostics
+```bash
+# Test TCP connectivity
+telnet layout.example.com 12345
+
+# Monitor network traffic
+tcpdump -i eth0 port 12345
+
+# Check port status
+netstat -tulpn | grep :12345
+ss -tulpn | grep :12345
+```
+
+==== System Diagnostics
+```bash
+# Check system resources
+top
+htop
+iostat
+vmstat
+
+# Monitor disk usage
+df -h
+du -sh /opt/gmx
+
+# Check log files
+tail -f /var/log/gmx/layout-server.log
+journalctl -u gmx-layout-server -f
+```
+
+==== Application Diagnostics
+```bash
+# Check GMX process status
+pixi run info
+
+# Validate configuration
+pixi run check
+
+# Monitor application logs
+tail -f haxe-port/logs/gmx.log
+```
+
+=== Support and Escalation
+
+==== Log Collection
+When reporting issues, collect:
+- Application logs (client and server)
+- System logs
+- Configuration files
+- Network traces
+- Performance metrics
+
+==== Issue Classification
+- **P1 Critical:** System down, data loss
+- **P2 High:** Major functionality impaired
+- **P3 Medium:** Minor functionality issues
+- **P4 Low:** Enhancement requests
+
+== Maintenance Procedures
+
+=== Regular Maintenance
+
+==== Daily Tasks
+- Monitor system health and alerts
+- Review error logs
+- Check backup completion
+- Verify service availability
+
+==== Weekly Tasks
+- Analyze performance trends
+- Review security logs
+- Update monitoring dashboards
+- Test backup restoration
+
+==== Monthly Tasks
+- Security vulnerability assessment
+- Performance optimization review
+- Capacity planning analysis
+- Documentation updates
+
+=== Update Procedures
+
+==== Client Updates
+```bash
+# Build new version
+pixi run build-release
+
+# Package for distribution
+pixi run package-all
+
+# Deploy to staging
+# Test functionality
+# Deploy to production
+```
+
+==== Server Updates
+```bash
+# Backup current version
+tar -czf gmx-servers-backup.tar.gz /opt/gmx/servers
+
+# Deploy new version
+# Update configuration if needed
+# Restart services
+systemctl restart gmx-layout-server gmx-data-server
+
+# Verify functionality
+```
+
+== Best Practices
+
+=== Deployment Best Practices
+1. **Use staging environments** for testing changes
+2. **Implement blue-green deployments** for zero-downtime updates
+3. **Automate deployment processes** using CI/CD pipelines
+4. **Monitor deployments** with comprehensive observability
+5. **Maintain rollback procedures** for quick recovery
+
+=== Operational Best Practices
+1. **Document all procedures** and keep them updated
+2. **Implement proper monitoring** and alerting
+3. **Regular backup testing** and validation
+4. **Security audits** and vulnerability assessments
+5. **Performance baselines** and capacity planning
+
+=== Security Best Practices
+1. **Principle of least privilege** for access control
+2. **Regular security updates** and patches
+3. **Network segmentation** and firewall rules
+4. **Encrypted communications** for sensitive data
+5. **Audit logging** and monitoring
+
+== See Also
+
+- link:developer_guide.asciidoc[Developer's Guide] - Development workflow and Pixi tasks
+- link:server_guide.asciidoc[Server Guide] - Server implementation details
+- link:protocol_reference.asciidoc[Protocol Reference] - Message formats and protocols
+- link:../examples/[Examples] - Sample configurations and deployments

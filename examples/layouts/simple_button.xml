@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Simple Button Layout Example
+     This demonstrates the most basic GMX layout with a single interactive button
+     Target LUID: mainLuid
+     Associated Records: button_record
+-->
+<VBox luid="mainLuid" width="300" height="200" gap="20"
+      horizontalAlign="center" verticalAlign="middle"
+      backgroundColor="0xF0F0F0" paddingTop="20" paddingLeft="20" paddingRight="20" paddingBottom="20">
+
+    <!-- Welcome Message -->
+    <Label text="Welcome to GMX" fontSize="16" fontWeight="bold" color="0x333333"/>
+
+    <!-- Simple Interactive Button -->
+    <Button label="Click Me!" width="120" height="40"
+           ruid="button_record" fid="click_action"
+           fontSize="14"/>
+
+    <!-- Status Display -->
+    <Label text="Ready" ruid="button_record" fid="status_message"
+          fontSize="12" color="0x666666" textAlign="center"/>
+
+</VBox>

@@ -1,0 +1,467 @@
+= GMX Protocol Reference
+
+This document provides detailed specifications for all message types and protocols used in the GMX client-server communication.
+
+== Message Transport
+
+=== Socket Protocol
+* Transport: TCP Socket
+* Format: XML messages terminated with null character (`\0`)
+* Encoding: UTF-8
+* Default Port: 12345 (configurable via FlashVars)
+
+=== Connection Lifecycle
+1. Client initiates socket connection to server
+2. Server accepts connection and maintains session
+3. Bidirectional XML message exchange
+4. Connection maintained until explicit close or error
+
+== Message Categories
+
+=== Control Messages
+System-level messages for connection management and control.
+
+==== Connection Subscription
+```xml
+<ISISControlChannel action="SC" param="SUBSCRIBE"/>
+```
+
+==== Mode Changes
+```xml
+<ISISControlChannel action="M" param="mode_name"/>
+```
+
+==== Status Messages
+```xml
+<ISISControlChannel action="S" param="status_text"/>
+```
+
+=== Layout Messages
+Messages that define and update user interface layouts.
+
+==== Basic Layout Message
+```xml
+<ISISLayout luid="target_luid">
+  <!-- UI component definitions -->
+</ISISLayout>
+```
+
+*Attributes:*
+- `luid` (required) - Target Layout Unique ID where content should be rendered
+
+*Content:* Any valid GMX UI component XML
+
+==== Layout Refresh
+```xml
+<ISISRefresh action="reset"/>
+```
+
+Forces complete layout rebuild from main container.
+
+=== Record Messages
+Messages that update individual data records.
+
+==== Record Update
+```xml
+<ISISRecord ruid="record_identifier">
+  <Field fid="field_name" value="field_value"/>
+  <Field fid="another_field" value="another_value"/>
+  <!-- Additional fields as needed -->
+</ISISRecord>
+```
+
+*Attributes:*
+- `ruid` (required) - Record Unique ID
+
+*Field Attributes:*
+- `fid` (required) - Field identifier
+- `value` (required) - Field value
+- `send` (optional) - Send behavior flag
+
+==== Record with Attributes
+```xml
+<ISISRecord ruid="record_identifier">
+  <Field fid="field_name" value="field_value"/>
+  <Attribute ruid="attr_ruid" fid="attr_field" send="true"/>
+</ISISRecord>
+```
+
+*Attribute Elements:*
+Used for cross-record field references and computed values.
+
+=== Collection Messages
+Messages that manage collections of records.
+
+==== Collection Update
+```xml
+<ISISCollection cuid="collection_identifier">
+  <RuidList>
+    <Ruid ruid="record_1" select="positioning_command" ref="reference_record"/>
+    <Ruid ruid="record_2" select="positioning_command"/>
+    <!-- Additional records as needed -->
+  </RuidList>
+</ISISCollection>
+```
+
+*Attributes:*
+- `cuid` (required) - Collection Unique ID
+
+*Ruid Attributes:*
+- `ruid` (required) - Record identifier to operate on
+- `select` (required) - Positioning/operation command
+- `ref` (optional) - Reference record for relative positioning
+
+==== Collection Operations
+
+*Positioning Commands (`select` values):*
+
+- `first` - Insert as first item in collection
+- `last` - Insert as last item in collection
+- `before` - Insert before the record specified in `ref`
+- `after` - Insert after the record specified in `ref`
+- `child` - Insert as child of the record specified in `ref`
+- `parent` - Insert as parent of the record specified in `ref`
+
+*Deletion Commands:*
+
+- `clear` - Remove all items from collection (when `ruid` is empty)
+- `delete` - Remove specific record from collection
+- `splice` - Remove and replace record
+
+*Examples:*
+
+```xml
+<!-- Add record as first item -->
+<Ruid ruid="new_record" select="first"/>
+
+<!-- Add record after specific item -->
+<Ruid ruid="new_record" select="after" ref="existing_record"/>
+
+<!-- Delete specific record -->
+<Ruid ruid="target_record" select="delete"/>
+
+<!-- Clear entire collection -->
+<Ruid ruid="" select="clear"/>
+```
+
+== UI Component Reference
+
+=== Container Components
+
+==== VBox (Vertical Box)
+```xml
+<VBox luid="container_id" width="200" height="300">
+  <!-- Child components -->
+</VBox>
+```
+
+*Common Attributes:*
+- `luid` - Layout identifier
+- `width`, `height` - Dimensions
+- `visible` - Visibility flag
+- `enabled` - Interaction enabled
+
+==== HBox (Horizontal Box)
+```xml
+<HBox luid="container_id">
+  <!-- Child components arranged horizontally -->
+</HBox>
+```
+
+==== Canvas
+```xml
+<Canvas luid="canvas_id" width="400" height="300">
+  <!-- Absolute positioned components -->
+</Canvas>
+```
+
+=== Input Components
+
+==== Button
+```xml
+<Button label="Click Me" ruid="button_record" fid="button_field"/>
+```
+
+*Attributes:*
+- `label` - Button text
+- `ruid` - Associated record
+- `fid` - Field to update on click
+
+==== TextInput
+```xml
+<TextInput text="default_text" ruid="input_record" fid="text_field"/>
+```
+
+*Attributes:*
+- `text` - Default/current text
+- `ruid` - Associated record
+- `fid` - Field to bind
+
+==== TextArea
+```xml
+<TextArea text="multi-line text" width="300" height="100"
+          ruid="textarea_record" fid="content_field"/>
+```
+
+==== ComboBox
+```xml
+<ComboBox cuid="options_collection" ruid="selection_record" fid="selected_field"/>
+```
+
+*Attributes:*
+- `cuid` - Collection providing options
+- `ruid` - Record storing selection
+- `fid` - Field storing selected value
+
+==== RadioButton
+```xml
+<RadioButton label="Option 1" groupName="choice_group"
+             ruid="radio_record" fid="selection_field" value="option1"/>
+```
+
+*Attributes:*
+- `label` - Display text
+- `groupName` - Radio button group
+- `value` - Value when selected
+- `selected` - Boolean selection state
+
+=== Display Components
+
+==== Label
+```xml
+<Label text="Display Text" ruid="label_record" fid="text_field"/>
+```
+
+==== DataGrid
+```xml
+<DataGrid cuid="data_collection" width="500" height="300">
+  <Columns>
+    <DataGridColumn headerText="Name" dataField="name"/>
+    <DataGridColumn headerText="Email" dataField="email"/>
+  </Columns>
+</DataGrid>
+```
+
+*Attributes:*
+- `cuid` - Collection providing data rows
+
+=== Custom Components
+
+==== Compass
+```xml
+<Compass_X ruid="compass_record" fid="heading_field" width="100" height="100"/>
+```
+
+Displays magnetic compass with north heading.
+
+==== Turn Rate Indicator
+```xml
+<TurnRateIndicator_X ruid="turn_record" fid="rate_field" width="120" height="120"/>
+```
+
+Displays aircraft turn rate indicator.
+
+== Data Binding
+
+=== Field Binding
+Components can bind to record fields using `ruid` and `fid` attributes:
+
+```xml
+<TextInput ruid="user_record" fid="username" text="default_name"/>
+```
+
+When record `user_record` field `username` updates, the TextInput automatically reflects the change.
+
+=== Collection Binding
+Components can bind to collections using `cuid` attribute:
+
+```xml
+<ComboBox cuid="user_list" ruid="selection" fid="selected_user"/>
+```
+
+The ComboBox populates from collection `user_list` and stores selection in record `selection`.
+
+=== Cross-Record References
+Use Attribute elements for computed fields and references:
+
+```xml
+<ISISRecord ruid="computed_record">
+  <Field fid="display_name" value=""/>
+  <Attribute ruid="user_record" fid="first_name" send="true"/>
+  <Attribute ruid="user_record" fid="last_name" send="true"/>
+</ISISRecord>
+```
+
+== Error Handling
+
+=== Client Error Responses
+When the client encounters errors, it may send diagnostic information:
+
+```xml
+<ISISError type="layout_error" luid="problematic_luid"
+           message="Component build failed: invalid XML"/>
+```
+
+=== Server Error Handling
+Servers should validate:
+- XML well-formedness
+- Required attributes presence
+- GUID uniqueness and references
+- Component type validity
+
+=== Recovery Strategies
+- Send corrected messages for parsing errors
+- Use refresh messages to reset corrupted state
+- Implement heartbeat for connection monitoring
+- Graceful degradation for missing components
+
+== Message Sequencing
+
+=== Startup Sequence
+1. Client connects to server
+2. Server sends initial layout message to `mainLuid`
+3. Server sends initial record data
+4. Client renders interface and begins interactive session
+
+=== Update Sequence
+1. User interaction triggers client event
+2. Client sends record update to server
+3. Server processes update and sends response
+4. Server may send additional updates to other clients
+5. Client updates display based on received data
+
+=== Shutdown Sequence
+1. Client or server initiates connection close
+2. Pending messages are flushed
+3. Resources are cleaned up
+4. Socket connection is terminated
+
+== Performance Considerations
+
+=== Message Size
+- Keep individual messages under 64KB for optimal performance
+- Split large datasets across multiple collection messages
+- Use incremental updates rather than full rebuilds
+
+=== Update Frequency
+- Batch rapid updates to prevent UI flooding
+- Use appropriate update intervals for real-time data
+- Implement client-side caching for static content
+
+=== Memory Management
+- Ensure proper cleanup of removed records and collections
+- Avoid circular references in cross-record attributes
+- Monitor client memory usage with large datasets
+
+== Security Considerations
+
+=== Message Validation
+- Validate all incoming XML for well-formedness
+- Sanitize field values to prevent injection attacks
+- Verify GUID references exist before processing
+- Implement rate limiting for message frequency
+
+=== Access Control
+- Authenticate clients before processing messages
+- Implement role-based access to layouts and data
+- Log all message exchanges for audit purposes
+- Use secure transport (TLS) for sensitive data
+
+== Debugging and Diagnostics
+
+=== Message Tracing
+Enable debug modes in GMXMain:
+```actionscript
+GMXMain.debugSend = true;
+GMXMain.debugReceive = true;
+GMXMain.debugLayoutMessagesUsingGMXBuilder = true;
+```
+
+== Message Flow Examples
+
+=== Layout Update Flow
+```
+1. Server sends: <ISISLayout luid="mainLuid">[layout XML]</ISISLayout>
+2. Client builds UI components from layout
+3. Client establishes data bindings (RUIDs/CUIDs)
+4. Client ready for data updates
+```
+
+=== Record Update Flow
+```
+1. User interacts with UI component
+2. Client sends: <ISISRecord ruid="button_record"><Field fid="click_action" value="clicked"/></ISISRecord>
+3. Server processes update and responds
+4. Server broadcasts: <ISISRecord ruid="button_record"><Field fid="status_message" value="Button clicked!"/></ISISRecord>
+5. All clients update their displays
+```
+
+=== Collection Update Flow
+```
+1. Server sends: <ISISCollection cuid="alerts_list"><RuidList><Ruid ruid="new_alert" select="first"/></RuidList></ISISCollection>
+2. Client updates collection-bound components (DataGrid, ComboBox, etc.)
+3. Client requests missing record data if needed
+4. Server sends record data for new items
+```
+
+== Protocol Best Practices
+
+=== Layout Design
+- Use semantic container types (VBox for vertical, HBox for horizontal)
+- Provide meaningful LUIDs for targetable containers
+- Include proper spacing and alignment
+- Use consistent styling and sizing
+
+=== Record Structure
+- Group related fields logically
+- Use descriptive field IDs (FIDs)
+- Include validation and status fields
+- Implement cross-record references when appropriate
+
+=== Collection Management
+- Keep collections focused on single purposes
+- Use appropriate selection operations (first, last, before, after)
+- Maintain proper record relationships
+- Clean up unused collection entries
+
+=== Server Implementation
+- Implement proper error handling and logging
+- Use threading for concurrent client handling
+- Validate all incoming XML messages
+- Provide graceful connection management
+
+== Troubleshooting Protocol Issues
+
+=== Common Issues
+
+*Layout not displaying:*
+- Check LUID targeting in layout messages
+- Verify XML well-formedness
+- Ensure client connection to layout server
+
+*Data not updating:*
+- Verify RUID/CUID bindings in layout
+- Check data server connection
+- Confirm record/collection existence
+
+*Performance issues:*
+- Monitor update frequency
+- Check for memory leaks in long-running sessions
+- Optimize layout complexity
+
+*Connection problems:*
+- Verify host/port configuration
+- Check firewall settings
+- Ensure server processes are running
+
+=== Additional Common Issues
+- GUID conflicts causing update failures
+- XML parsing errors from malformed messages
+- Memory leaks from unreferenced components
+- Performance degradation from excessive updates
+
+=== Diagnostic Tools
+- Use Flash debugger for client-side issues
+- Implement server-side logging for message flow
+- Network packet capture for protocol analysis
+- Performance profiling for optimization

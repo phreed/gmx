@@ -1,4 +1,60 @@
+= GMX - Graphical Message eXchange
 
-see link:doc/developer_guide.asciidoc[Developer's Guide]
+GMX is a client-server application framework for building dynamic, data-driven user interfaces. The GMX client is a Flash/ActionScript application that connects to servers providing layout definitions and data content.
 
-see link:doc/operator_guide.asciidoc[Operator's Guide]
+== Architecture Overview
+
+GMX follows a client-server architecture where:
+
+* *GMX Client* - A Flash/ActionScript application that renders dynamic UIs
+* *Layout Server* - Provides UI layout definitions via XML messages
+* *Data Server* - Provides content as records and collections of records
+
+== Core Concepts
+
+=== GUID System
+GMX uses three types of globally unique identifiers (GUIDs):
+
+* *LUID* (Layout Unique ID) - Identifies layout components and containers
+* *RUID* (Record Unique ID) - Identifies individual data records
+* *CUID* (Collection Unique ID) - Identifies collections of related records
+
+=== Message Types
+* *Layout Messages* - XML-based UI definitions targeting specific LUIDs
+* *Record Messages* - Data updates for individual records (RUIDs)
+* *Collection Messages* - Batch operations on groups of records (CUIDs)
+
+== Quick Start
+
+=== Client Development
+See link:docs/developer_guide.asciidoc[Developer's Guide] for:
+* Building and deploying the GMX client
+* Creating custom UI components
+* Debugging and testing
+
+=== Server Development
+See link:docs/server_guide.asciidoc[Server Guide] for:
+* Implementing layout servers
+* Implementing data servers
+* Message protocols and formats
+
+=== Examples
+The link:examples/[examples directory] contains:
+* Sample layouts (`examples/layouts/`)
+* Sample records (`examples/records/`)
+* Sample collections (`examples/collections/`)
+* Reference server implementations (`examples/servers/`)
+
+== Documentation
+
+* link:docs/developer_guide.asciidoc[Developer's Guide] - Client development
+* link:docs/operator_guide.asciidoc[Operator's Guide] - Deployment and operations
+* link:docs/server_guide.asciidoc[Server Guide] - Server implementation
+* link:docs/protocol_reference.asciidoc[Protocol Reference] - Message formats
+* link:docs/component_reference.asciidoc[Component Reference] - Available UI components
+
+== License
+
+Copyright (c) Vanderbilt University, 2006-2009
+Developed under contract for Future Combat Systems (FCS)
+by the Institute for Software Integrated Systems, Vanderbilt Univ.

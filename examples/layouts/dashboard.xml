@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Dashboard Layout Example
+     This demonstrates a complex dashboard interface with multiple data sources
+     Target LUID: mainLuid
+     Associated Records: system_status, user_info, navigation_data
+     Associated Collections: alerts_list, recent_activities, system_metrics
+-->
+<HBox luid="mainLuid" width="1024" height="768" gap="5" paddingTop="10" paddingLeft="10" paddingRight="10">
+
+    <!-- Left Sidebar -->
+    <VBox luid="sidebar_container" width="250" height="100%" gap="10"
+          backgroundColor="0xF5F5F5" paddingTop="10" paddingLeft="10" paddingRight="10">
+
+        <!-- User Information Panel -->
+        <VBox gap="5" width="100%" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10">
+            <Label text="Current User" fontSize="14" fontWeight="bold"/>
+            <Label ruid="user_info" fid="display_name" fontSize="12"/>
+            <Label ruid="user_info" fid="role" fontSize="10" color="0x666666"/>
+            <Label ruid="user_info" fid="last_login" fontSize="10" color="0x999999"/>
+        </VBox>
+
+        <!-- Navigation Controls -->
+        <VBox gap="8" width="100%">
+            <Label text="Navigation" fontSize="14" fontWeight="bold"/>
+
+            <!-- Compass Display -->
+            <HBox gap="10" verticalAlign="middle">
+                <Compass_X width="80" height="80"
+                          ruid="navigation_data" fid="magnetic_heading"
+                          showDegrees="true"/>
+                <VBox gap="2">
+                    <Label text="Heading:" fontSize="10"/>
+                    <Label ruid="navigation_data" fid="heading_display" fontSize="12" fontWeight="bold"/>
+                    <Label text="Speed:" fontSize="10"/>
+                    <Label ruid="navigation_data" fid="speed_display" fontSize="12"/>
+                </VBox>
+            </HBox>
+
+            <!-- Turn Rate Indicator -->
+            <HBox gap="10" verticalAlign="middle">
+                <TurnRateIndicator_X width="80" height="80"
+                                   ruid="navigation_data" fid="turn_rate"/>
+                <VBox gap="2">
+                    <Label text="Turn Rate:" fontSize="10"/>
+                    <Label ruid="navigation_data" fid="turn_rate_display" fontSize="12"/>
+                </VBox>
+            </HBox>
+        </VBox>
+
+        <!-- System Status -->
+        <VBox gap="5" width="100%" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="10" paddingRight="10">
+            <Label text="System Status" fontSize="14" fontWeight="bold"/>
+            <HBox gap="10" verticalAlign="middle">
+                <Icon_X icon="info" width="16" height="16" ruid="system_status" fid="status_icon"/>
+                <Label ruid="system_status" fid="status_text" fontSize="12"/>
+            </HBox>
+            <Label text="Uptime:" fontSize="10"/>
+            <Label ruid="system_status" fid="uptime" fontSize="12" color="0x006600"/>
+            <Label text="Memory:" fontSize="10"/>
+            <Label ruid="system_status" fid="memory_usage" fontSize="12"/>
+        </VBox>
+
+    </VBox>
+
+    <!-- Main Content Area -->
+    <VBox luid="main_content" width="100%" height="100%" gap="10">
+
+        <!-- Top Status Bar -->
+        <HBox height="40" width="100%" gap="20" verticalAlign="middle"
+              backgroundColor="0x333333" paddingLeft="15" paddingRight="15">
+            <Label text="Dashboard" fontSize="16" fontWeight="bold" color="0xFFFFFF"/>
+            <Spacer width="100%"/>
+            <Label ruid="system_status" fid="current_time" fontSize="12" color="0xCCCCCC"/>
+            <Icon_X ruid="system_status" fid="connection_status" width="20" height="20"/>
+        </HBox>
+
+        <!-- Main Dashboard Content -->
+        <HBox width="100%" height="100%" gap="10">
+
+            <!-- Left Panel - Metrics and Charts -->
+            <VBox luid="metrics_panel" width="60%" height="100%" gap="10">
+
+                <!-- System Metrics Grid -->
+                <VBox gap="5" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="15" paddingRight="15">
+                    <Label text="System Metrics" fontSize="14" fontWeight="bold"/>
+                    <DataGrid width="100%" height="200"
+                             cuid="system_metrics"
+                             selectable="true" sortableColumns="true"
+                             alternatingItemColors="[0xF8F8F8, 0xFFFFFF]">
+                        <columns>
+                            <DataGridColumn headerText="Metric" dataField="metric_name" width="120"/>
+                            <DataGridColumn headerText="Current Value" dataField="current_value" width="100"/>
+                            <DataGridColumn headerText="Status" dataField="status" width="80"/>
+                            <DataGridColumn headerText="Last Updated" dataField="last_updated" width="120"/>
+                        </columns>
+                    </DataGrid>
+                </VBox>
+
+                <!-- Recent Activities -->
+                <VBox gap="5" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="15" paddingRight="15" height="100%">
+                    <HBox gap="10" verticalAlign="middle">
+                        <Label text="Recent Activities" fontSize="14" fontWeight="bold"/>
+                        <Spacer width="100%"/>
+                        <Button label="Refresh" width="70" height="25"
+                               ruid="activities_control" fid="refresh_action"/>
+                    </HBox>
+
+                    <DataGrid_ISIS width="100%" height="100%"
+                                  cuid="recent_activities"
+                                  ruid="activity_selection" fid="selected_activity"
+                                  multipleSelection="false">
+                        <columns>
+                            <DataGridColumn headerText="Time" dataField="timestamp" width="100"/>
+                            <DataGridColumn headerText="User" dataField="username" width="80"/>
+                            <DataGridColumn headerText="Action" dataField="action" width="120"/>
+                            <DataGridColumn headerText="Details" dataField="details" width="200"/>
+                        </columns>
+                    </DataGrid_ISIS>
+                </VBox>
+
+            </VBox>
+
+            <!-- Right Panel - Alerts and Controls -->
+            <VBox luid="alerts_panel" width="40%" height="100%" gap="10">
+
+                <!-- Active Alerts -->
+                <VBox gap="5" backgroundColor="0xFFEEEE" paddingTop="10" paddingBottom="10" paddingLeft="15" paddingRight="15">
+                    <HBox gap="10" verticalAlign="middle">
+                        <Icon_X icon="warning" width="20" height="20"/>
+                        <Label text="Active Alerts" fontSize="14" fontWeight="bold" color="0xCC0000"/>
+                        <Spacer width="100%"/>
+                        <Label ruid="alerts_summary" fid="alert_count" fontSize="12" fontWeight="bold" color="0xCC0000"/>
+                    </HBox>
+
+                    <DataGrid width="100%" height="150"
+                             cuid="alerts_list"
+                             selectable="true">
+                        <columns>
+                            <DataGridColumn headerText="Level" dataField="severity" width="60"/>
+                            <DataGridColumn headerText="Message" dataField="message" width="180"/>
+                            <DataGridColumn headerText="Time" dataField="alert_time" width="80"/>
+                        </columns>
+                    </DataGrid>
+                </VBox>
+
+                <!-- Quick Actions -->
+                <VBox gap="8" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="15" paddingRight="15">
+                    <Label text="Quick Actions" fontSize="14" fontWeight="bold"/>
+
+                    <VBox gap="5">
+                        <Button label="Emergency Stop" width="100%" height="35"
+                               ruid="emergency_controls" fid="emergency_stop"
+                               backgroundColor="0xCC0000" color="0xFFFFFF"/>
+
+                        <Button label="System Reset" width="100%" height="30"
+                               ruid="system_controls" fid="system_reset"/>
+
+                        <Button label="Backup Data" width="100%" height="30"
+                               ruid="system_controls" fid="backup_data"/>
+
+                        <Button label="Generate Report" width="100%" height="30"
+                               ruid="report_controls" fid="generate_report"/>
+                    </VBox>
+                </VBox>
+
+                <!-- Configuration Panel -->
+                <VBox gap="5" backgroundColor="0xFFFFFF" paddingTop="10" paddingBottom="10" paddingLeft="15" paddingRight="15" height="100%">
+                    <Label text="Configuration" fontSize="14" fontWeight="bold"/>
+
+                    <VBox gap="8">
+                        <!-- Update Frequency -->
+                        <HBox gap="10" verticalAlign="middle">
+                            <Label text="Update Rate:" width="80" fontSize="11"/>
+                            <ComboBox width="100" height="22"
+                                     cuid="update_rates"
+                                     ruid="config_settings" fid="update_frequency"
+                                     labelField="display_text" dataField="rate_value"/>
+                        </HBox>
+
+                        <!-- Display Options -->
+                        <VBox gap="3">
+                            <Label text="Display Options:" fontSize="11"/>
+                            <RadioButton label="Compact View" value="compact" groupName="display_mode"
+                                       ruid="config_settings" fid="display_mode"/>
+                            <RadioButton label="Detailed View" value="detailed" groupName="display_mode"
+                                       ruid="config_settings" fid="display_mode" selected="true"/>
+                            <RadioButton label="Minimal View" value="minimal" groupName="display_mode"
+                                       ruid="config_settings" fid="display_mode"/>
+                        </VBox>
+
+                        <!-- Theme Selection -->
+                        <HBox gap="10" verticalAlign="middle">
+                            <Label text="Theme:" width="80" fontSize="11"/>
+                            <ComboBox width="100" height="22"
+                                     cuid="theme_options"
+                                     ruid="config_settings" fid="selected_theme"
+                                     labelField="theme_name" dataField="theme_id"/>
+                        </HBox>
+
+                        <Spacer height="10"/>
+
+                        <Button label="Apply Settings" width="100%" height="25"
+                               ruid="config_settings" fid="apply_action"/>
+                    </VBox>
+                </VBox>
+
+            </VBox>
+
+        </HBox>
+
+    </VBox>
+
+</HBox>
