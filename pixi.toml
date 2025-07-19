@@ -7,21 +7,9 @@ version = "0.1.0"
 
 [dependencies]
 # Core dependencies for building and running GMX
+# Core dependencies for building and running GMX
 python = ">=3.8"
-nodejs = ">=14"
-curl = "*"
-unzip = "*"
-git = "*"
-make = "*"
-gcc = "*"        # For HashLink C compilation
-pkg-config = "*"
-# SDL2 for HashLink graphics
-sdl2 = "*"
-sdl2_image = "*"
-sdl2_mixer = "*"
-# OpenGL libraries
-mesa-libgl-devel-cos7-x86_64 = { version = "*", platform = "linux-64" }
-xorg-libx11-devel-cos7-x86_64 = { version = "*", platform = "linux-64" }
+# Note: curl, unzip, git should be available as system tools
 
 [pypi-dependencies]
 # Python tools for server examples
@@ -46,70 +34,93 @@ depends-on = [
 cmd = """
 bash -c '
 set -e
-HAXE_VERSION="4.3.4"
-HAXE_DIR="$PIXI_PROJECT_ROOT/.haxe"
-HAXE_BIN="$HAXE_DIR/haxe_${HAXE_VERSION}"
 
-if [ ! -d "$HAXE_BIN" ]; then
-    echo "Installing Haxe $HAXE_VERSION..."
-    mkdir -p "$HAXE_DIR"
-    cd "$HAXE_DIR"
+HAXE_VERSION="5.0.0-preview.1"
+INSTALL_DIR="$HOME/.local"
+BIN_DIR="$INSTALL_DIR/bin"
+HAXE_DIR="$INSTALL_DIR/haxe"
 
-    case "$(uname -s)" in
-        Linux*)
-            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-linux64.tar.gz"
-            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
-            ;;
-        Darwin*)
-            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-osx-installer.pkg"
-            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
-            echo "Note: On macOS, you may need to install manually from $HAXE_URL"
-            exit 0
-            ;;
-        CYGWIN*|MINGW*|MSYS*)
-            HAXE_ARCHIVE="haxe-${HAXE_VERSION}-win64.zip"
-            HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/${HAXE_VERSION}/${HAXE_ARCHIVE}"
-            ;;
-        *)
-            echo "Unsupported platform: $(uname -s)"
-            exit 1
-            ;;
-    esac
+# Create directories
+mkdir -p "$BIN_DIR"
+mkdir -p "$HAXE_DIR"
 
-    echo "Downloading $HAXE_URL"
-    curl -L -o "$HAXE_ARCHIVE" "$HAXE_URL"
-
-    if [[ "$HAXE_ARCHIVE" == *.tar.gz ]]; then
-        tar -xzf "$HAXE_ARCHIVE"
-        mv haxe_* "$HAXE_BIN"
-    elif [[ "$HAXE_ARCHIVE" == *.zip ]]; then
-        unzip "$HAXE_ARCHIVE"
-        mv haxe_* "$HAXE_BIN"
+# Check if already installed
+if [ -f "$BIN_DIR/haxe" ] && [ -f "$BIN_DIR/haxelib" ]; then
+    CURRENT_VERSION=$("$BIN_DIR/haxe" --version 2>/dev/null || echo "unknown")
+    if [ "$CURRENT_VERSION" = "$HAXE_VERSION" ]; then
+        echo "✅ Haxe $HAXE_VERSION already installed in $BIN_DIR"
+        exit 0
     fi
-
-    rm "$HAXE_ARCHIVE"
-    echo "Haxe installed to $HAXE_BIN"
-else
-    echo "Haxe already installed at $HAXE_BIN"
 fi
 
-# Create haxe wrapper script
-cat > "$HAXE_DIR/haxe" << EOF
-#!/bin/bash
-export HAXE_STD_PATH="$HAXE_BIN/std"
-exec "$HAXE_BIN/haxe" "\$@"
-EOF
+echo "📥 Installing Haxe $HAXE_VERSION to $INSTALL_DIR..."
 
-cat > "$HAXE_DIR/haxelib" << EOF
-#!/bin/bash
-export HAXE_STD_PATH="$HAXE_BIN/std"
-exec "$HAXE_BIN/haxelib" "\$@"
-EOF
+# Check for required tools
+if ! command -v curl &> /dev/null; then
+    echo "❌ curl is required but not found. Please install curl first."
+    exit 1
+fi
 
-chmod +x "$HAXE_DIR/haxe" "$HAXE_DIR/haxelib"
-echo "Haxe wrapper scripts created"
+if ! command -v tar &> /dev/null; then
+    echo "❌ tar is required but not found. Please install tar first."
+    exit 1
+fi
+
+# Download and install Haxe
+cd "$HAXE_DIR"
+HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/5.0.0-preview.1/haxe-5.0.0-preview.1-linux64.tar.gz"
+
+echo "Downloading Haxe from $HAXE_URL..."
+curl -L -o haxe.tar.gz "$HAXE_URL"
+
+echo "Extracting Haxe..."
+tar -xzf haxe.tar.gz --strip-components=1
+rm haxe.tar.gz
+
+# Create symlinks in ~/.local/bin
+ln -sf "$HAXE_DIR/haxe" "$BIN_DIR/haxe"
+ln -sf "$HAXE_DIR/haxelib" "$BIN_DIR/haxelib"
+
+# Ensure ~/.local/bin is in PATH
+echo ""
+echo "✅ Haxe installed successfully!"
+echo "📍 Location: $HAXE_DIR"
+echo "🔗 Symlinks: $BIN_DIR/haxe, $BIN_DIR/haxelib"
+echo ""
+echo "⚠️  Make sure ~/.local/bin is in your PATH:"
+echo '   export PATH="$HOME/.local/bin:$PATH"'
+echo ""
+
+# Verify installation
+"$BIN_DIR/haxe" --version
 '
-"""description = "Install Haxe compiler"
+"""
+description = "Install Haxe compiler to ~/.local/bin"
+
+[tasks.check-haxe]
+cmd = """
+bash -c '
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
+if ! command -v haxe &> /dev/null; then
+    echo "❌ Haxe not found in PATH. Please run: pixi run install-haxe"
+    echo "Expected locations: ~/.local/bin/haxe or ~/bin/haxe"
+    exit 1
+fi
+
+HAXE_VERSION=$(haxe --version)
+echo "✅ Found Haxe: $HAXE_VERSION"
+
+if ! command -v haxelib &> /dev/null; then
+    echo "❌ haxelib not found in PATH"
+    exit 1
+fi
+
+echo "✅ Found haxelib"
+'
+"""
+description = "Check that Haxe is installed in system PATH"
 
 [tasks.install-hashlink]
 cmd = """
@@ -161,27 +172,30 @@ else
 fi
 
 # Create hl wrapper script
-cat > "$HL_DIR/hl" << EOF
+cat > "$HL_DIR/hl" << 'EOF'
 #!/bin/bash
-exec "$HL_BIN/hl" "\$@"
+exec "$HL_BIN/hl" "$@"
 EOF
 
 chmod +x "$HL_DIR/hl"
 echo "HashLink wrapper script created"
 '
-"""description = "Install HashLink runtime"
+"""
+description = "Install HashLink runtime"
 
 [tasks.install-libs]
 description = "Install Haxe libraries"
-depends-on = ["install-haxe"]
+depends-on = ["check-haxe"]
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 echo "Installing Haxe libraries..."
 
-# Create haxelib setup directory
-mkdir -p "$PIXI_PROJECT_ROOT/.haxelib"
-haxelib setup "$PIXI_PROJECT_ROOT/.haxelib"
+# Create haxelib setup directory in standard location
+mkdir -p "$HOME/.local/share/haxe/lib"
+echo "$HOME/.local/share/haxe/lib" > "$HOME/.haxelib"
 
 # Install required libraries
 haxelib install heaps --quiet
@@ -212,12 +226,13 @@ depends-on = ["build-dev"]
 
 [tasks.build-dev]
 description = "Build development version"
-depends-on = ["install-haxe", "install-hashlink", "install-libs"]
-cwd = "haxe-port"
+depends-on = ["check-haxe", "install-hashlink", "install-libs"]
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
-export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "Building GMX development version..."
 haxe build.hxml
@@ -233,12 +248,13 @@ fi
 
 [tasks.build-release]
 description = "Build optimized release version"
-depends-on = ["install-haxe", "install-hashlink", "install-libs"]
-cwd = "haxe-port"
+depends-on = ["check-haxe", "install-hashlink", "install-libs"]
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
-export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "Building GMX release version..."
 haxe build-release.hxml
@@ -292,11 +308,12 @@ hl bin/gmx.hl
 [tasks.dev]
 description = "Development mode: build and run with file watching"
 depends-on = ["build-dev"]
-cwd = "haxe-port"
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
-export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "🔄 Starting development mode..."
 echo "Watching for changes in src/ directory..."
@@ -471,15 +488,16 @@ echo "✅ Test task completed"
 
 [tasks.check]
 description = "Check Haxe code compilation without building"
-depends-on = ["install-haxe", "install-libs"]
-cwd = "haxe-port"
+depends-on = ["check-haxe", "install-libs"]
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
-export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "🔍 Checking Haxe code..."
-haxe --no-output --main Main -cp src -lib heaps -lib hlsdl -lib format
+haxe --no-output --main Main -cp src -lib heaps -lib hlsdl -lib format -hl /tmp/check.hl
 
 if [ $? -eq 0 ]; then
     echo "✅ Code check passed"
@@ -492,12 +510,11 @@ fi
 
 [tasks.docs]
 description = "Generate documentation"
-depends-on = ["install-haxe", "install-libs"]
-cwd = "haxe-port"
+depends-on = ["check-haxe", "install-libs"]
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.haxe:$PATH"
-export HAXELIB_PATH="$PIXI_PROJECT_ROOT/.haxelib"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 
 echo "📚 Generating documentation..."
 mkdir -p docs/api
@@ -530,17 +547,20 @@ echo "Target:  Haxe/HashLink"
 echo ""
 
 echo "📁 Directories:"
-echo "  Source: haxe-port/src"
-echo "  Build:  haxe-port/bin"
-echo "  Dist:   haxe-port/dist"
+echo "  Source: haxe/src"
+echo "  Build:  haxe/bin"
+echo "  Dist:   haxe/dist"
 echo "  Examples: examples/"
 echo ""
 
 echo "🔧 Tool Status:"
-if command -v "$PIXI_PROJECT_ROOT/.haxe/haxe" &> /dev/null; then
-    echo "  ✅ Haxe: $(\"$PIXI_PROJECT_ROOT/.haxe/haxe\" --version)"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
+if command -v haxe &> /dev/null; then
+    echo "  ✅ Haxe: $(haxe --version)"
 else
-    echo "  ❌ Haxe: Not installed"
+    echo "  ❌ Haxe: Not found in PATH"
 fi
 
 if command -v "$PIXI_PROJECT_ROOT/.hashlink/hl" &> /dev/null; then
@@ -551,8 +571,8 @@ fi
 
 echo ""
 echo "📦 Build Status:"
-if [ -f "haxe-port/bin/gmx.hl" ]; then
-    echo "  ✅ GMX Binary: Available ($(stat -c%s \"haxe-port/bin/gmx.hl\" 2>/dev/null || stat -f%z \"haxe-port/bin/gmx.hl\" 2>/dev/null) bytes)"
+if [ -f "haxe/bin/gmx.hl" ]; then
+    echo "  ✅ GMX Binary: Available ($(stat -c%s \"haxe/bin/gmx.hl\" 2>/dev/null || stat -f%z \"haxe/bin/gmx.hl\" 2>/dev/null) bytes)"
 else
     echo "  ❌ GMX Binary: Not built"
 fi
