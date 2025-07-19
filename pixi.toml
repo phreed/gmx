@@ -7,9 +7,16 @@ version = "0.1.0"
 
 [dependencies]
 # Core dependencies for building and running GMX
-# Core dependencies for building and running GMX
 python = ">=3.8"
-# Note: curl, unzip, git should be available as system tools
+# Build tools
+cmake = "*"
+make = "*"
+git = "*"
+pkg-config = "*"
+# HashLink build dependencies - using available conda-forge packages
+libpng = "*"
+sqlite = "*"
+# Note: curl, unzip should be available as system tools
 
 [pypi-dependencies]
 # Python tools for server examples
@@ -126,59 +133,52 @@ description = "Check that Haxe is installed in system PATH"
 cmd = """
 bash -c '
 set -e
-HL_VERSION="1.14"
-HL_DIR="$PIXI_PROJECT_ROOT/.hashlink"
-HL_BIN="$HL_DIR/hl_${HL_VERSION}"
+HL_VERSION="1.15"
+HL_DIR="$HOME/.local"
+HL_SRC_DIR="$HOME/.local/src/hashlink"
+HL_BIN="$HL_DIR/bin/hl"
 
-if [ ! -d "$HL_BIN" ]; then
-    echo "Installing HashLink $HL_VERSION..."
-    mkdir -p "$HL_DIR"
-    cd "$HL_DIR"
-
-    case "$(uname -s)" in
-        Linux*)
-            HL_ARCHIVE="hl-${HL_VERSION}-linux.tar.gz"
-            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
-            ;;
-        Darwin*)
-            HL_ARCHIVE="hl-${HL_VERSION}-osx.tar.gz"
-            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
-            ;;
-        CYGWIN*|MINGW*|MSYS*)
-            HL_ARCHIVE="hl-${HL_VERSION}-win.zip"
-            HL_URL="https://github.com/HaxeFoundation/hashlink/releases/download/${HL_VERSION}/${HL_ARCHIVE}"
-            ;;
-        *)
-            echo "Unsupported platform: $(uname -s)"
-            exit 1
-            ;;
-    esac
-
-    echo "Downloading $HL_URL"
-    curl -L -o "$HL_ARCHIVE" "$HL_URL"
-
-    if [[ "$HL_ARCHIVE" == *.tar.gz ]]; then
-        tar -xzf "$HL_ARCHIVE"
-        mv hl-* "$HL_BIN"
-    elif [[ "$HL_ARCHIVE" == *.zip ]]; then
-        unzip "$HL_ARCHIVE"
-        mv hl-* "$HL_BIN"
-    fi
-
-    rm "$HL_ARCHIVE"
-    echo "HashLink installed to $HL_BIN"
-else
-    echo "HashLink already installed at $HL_BIN"
+# Check if already installed
+if [ -f "$HL_BIN" ]; then
+    echo "✅ HashLink already installed at $HL_BIN"
+    exit 0
 fi
 
-# Create hl wrapper script
-cat > "$HL_DIR/hl" << 'EOF'
-#!/bin/bash
-exec "$HL_BIN/hl" "$@"
-EOF
+echo "📥 Installing HashLink $HL_VERSION from source to $HL_DIR..."
 
-chmod +x "$HL_DIR/hl"
-echo "HashLink wrapper script created"
+# Create directories
+mkdir -p "$HL_DIR/bin" "$HL_DIR/lib" "$HL_DIR/include"
+mkdir -p "$HOME/.local/src"
+
+# Clone HashLink source
+if [ ! -d "$HL_SRC_DIR" ]; then
+    echo "Cloning HashLink source..."
+    git clone https://github.com/HaxeFoundation/hashlink.git "$HL_SRC_DIR" --depth 1 --branch $HL_VERSION
+fi
+
+cd "$HL_SRC_DIR"
+
+# Build HashLink with minimal dependencies (core only)
+echo "Building HashLink (core components only)..."
+# Build only the core hashlink without optional libraries
+make hl PREFIX="$HL_DIR"
+
+# Install HashLink
+echo "Installing HashLink to $HL_DIR..."
+mkdir -p "$HL_DIR/bin" "$HL_DIR/lib"
+cp hl "$HL_DIR/bin/"
+cp libhl.so "$HL_DIR/lib/" 2>/dev/null || cp libhl.dylib "$HL_DIR/lib/" 2>/dev/null || true
+
+echo "✅ HashLink $HL_VERSION installed successfully!"
+echo "📍 Location: $HL_DIR"
+echo "🔧 Binary: $HL_BIN"
+echo ""
+echo "⚠️  Make sure ~/.local/bin is in your PATH:"
+echo "   export PATH=\"$HOME/.local/bin:$PATH\""
+echo ""
+
+# Verify installation
+"$HL_BIN" --version
 '
 """
 description = "Install HashLink runtime"
@@ -230,7 +230,7 @@ depends-on = ["check-haxe", "install-hashlink", "install-libs"]
 cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
@@ -252,7 +252,7 @@ depends-on = ["check-haxe", "install-hashlink", "install-libs"]
 cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 

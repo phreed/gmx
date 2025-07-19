@@ -23,7 +23,7 @@
 --debug
 
 # Additional defines for HashLink
--D hl-ver=1.13
+-D hl-ver=1.15.0
 -D no-compilation
 -D no-root
 

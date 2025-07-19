@@ -155,9 +155,9 @@ class FormComponent extends Object {
     public var onFieldChanged:FieldVO->Void;
     public var onSelected:Void->Void;
 
-    protected var background:Graphics;
-    protected var interactive:Interactive;
-    protected var isSelected:Bool = false;
+    private var background:Graphics;
+    private var interactive:Interactive;
+    private var isSelected:Bool = false;
 
     public function new(parent:Object, field:FieldVO) {
         super(parent);
@@ -165,11 +165,11 @@ class FormComponent extends Object {
         initialize();
     }
 
-    protected function initialize():Void {
+    private function initialize():Void {
         // Override in subclasses
     }
 
-    protected function createBackground(width:Float, height:Float, color:Int = 0xF0F0F0):Void {
+    private function createBackground(width:Float, height:Float, color:Int = 0xF0F0F0):Void {
         background = new Graphics(this);
         background.beginFill(color);
         background.lineStyle(1, 0xCCCCCC);
@@ -195,7 +195,7 @@ class FormComponent extends Object {
         updateVisualState();
     }
 
-    protected function updateVisualState():Void {
+    private function updateVisualState():Void {
         if (background != null) {
             background.clear();
             var color = isSelected ? 0xE0E0FF : 0xF0F0F0;
@@ -207,7 +207,7 @@ class FormComponent extends Object {
         }
     }
 
-    protected function notifyFieldChanged():Void {
+    private function notifyFieldChanged():Void {
         if (onFieldChanged != null) {
             onFieldChanged(field);
         }
@@ -230,7 +230,7 @@ class TextFieldComponent extends FormComponent {
     private var textInput:TextInput;
     private var label:Text;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(200, 40);
 
         // Create label
@@ -268,7 +268,7 @@ class ButtonComponent extends FormComponent {
     private var buttonText:Text;
     private var buttonBg:Graphics;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(120, 30);
 
         buttonBg = new Graphics(this);
@@ -297,7 +297,7 @@ class LabelComponent extends FormComponent {
 
     private var labelText:Text;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(150, 25);
 
         labelText = new Text(hxd.res.DefaultFont.get(), this);
@@ -317,7 +317,7 @@ class ComboBoxComponent extends FormComponent {
     private var dropdownButton:Graphics;
     private var options:Array<String>;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(150, 25);
 
         // Parse options from field value
@@ -364,7 +364,7 @@ class CheckBoxComponent extends FormComponent {
     private var checkboxLabel:Text;
     private var isChecked:Bool = false;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(120, 25);
 
         isChecked = field.value == "true";
@@ -410,12 +410,12 @@ class RadioButtonComponent extends FormComponent {
 
     private var radioGraphics:Graphics;
     private var radioLabel:Text;
-    private var isSelected:Bool = false;
+    private var isRadioSelected:Bool = false;
 
-    override protected function initialize():Void {
+    override function initialize():Void {
         createBackground(120, 25);
 
-        isSelected = field.value == "true";
+        isRadioSelected = field.value == "true";
 
         radioGraphics = new Graphics(this);
         updateRadioGraphics();
@@ -428,7 +428,7 @@ class RadioButtonComponent extends FormComponent {
 
         var radioInteractive = new Interactive(16, 16, radioGraphics);
         radioInteractive.onClick = function(event:Event) {
-            isSelected = true;
+            isRadioSelected = true;
             field.value = "true";
             updateRadioGraphics();
             notifyFieldChanged();
@@ -442,7 +442,7 @@ class RadioButtonComponent extends FormComponent {
         radioGraphics.drawCircle(13, 13, 8);
         radioGraphics.endFill();
 
-        if (isSelected) {
+        if (isRadioSelected) {
             radioGraphics.beginFill(0x006600);
             radioGraphics.drawCircle(13, 13, 4);
             radioGraphics.endFill();

@@ -1,6 +1,14 @@
+# built directories
 bin/
 obj/
+
+# IDE directories
 .idea/
 
 # pixi environments
-.pixi
+.pixi/
+.pixi/
+
+# Python cache directories
+tests/__pycache__/
+*/__pycache__/
