@@ -13,9 +13,3 @@ The GMX system is **functionally complete** at the server level. The client-serv
 1. API changes between Haxe/Heaps versions
 2. Some deprecated method calls (like `toFront()`, `getChildByName()`)
 3. Missing properties in newer library versions
-
-The system demonstrates that:
-* The GMX architecture migration from Flash/ActionScript to Haxe/HashLink is viable.
-* The core functionality is working.
-
-The asciidoc files do not follow covention.

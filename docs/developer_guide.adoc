@@ -52,21 +52,25 @@ The modern GMX application uses:
 
 ==== 1. Clone and Initial Setup
 
-```bash
+[source,bash]
+----
 # Navigate to project directory
 cd gmx
 
 # Install dependencies and setup environment
 pixi run install-haxe
+----
 
+[source,bash]
+----
 # Verify installation
 pixi run haxe --version
 pixi run hl --version
-```
+----
 
 ==== 2. Project Structure
 
-```
+----
 gmx/
 ├── haxe/                          # Haxe implementation
 │   ├── src/                       # Source code
@@ -85,56 +89,62 @@ gmx/
 ├── tests/                       # Test suite
 ├── docs/                        # Documentation
 ├── pixi.toml                    # Project configuration
-└── README.asciidoc
-```
+└── README.adoc
+----
 
 ==== 3. Development Workflow Setup
 
-```bash
+[source,bash]
+----
 # Install Node.js dependencies (if using npm scripts)
 cd haxe
 npm install
 
 # Setup development environment
 npm run setup
-```
+----
 
 == Building the Application
 
 === Development Builds
 
 ==== Quick Development Build
-```bash
+[source,bash]
+----
 # From project root
 pixi run build-haxe
 
 # Or from haxe directory
 cd haxe
 npm run build
-```
+----
 
 ==== Development with Auto-Rebuild
-```bash
+[source,bash]
+----
 cd haxe
 npm run dev
-```
+----
 
 ==== Watch Mode (with nodemon)
-```bash
+[source,bash]
+----
 cd haxe
 npm run watch
-```
+----
 
 === Release Builds
 
 ==== Optimized Release Build
-```bash
+[source,bash]
+----
 cd haxe
 npm run build-release
-```
+----
 
 ==== Cross-Platform Packaging
-```bash
+[source,bash]
+----
 # Windows executable
 npm run package-windows
 
@@ -146,22 +156,24 @@ npm run package-linux
 
 # macOS application
 npm run package-mac
-```
+----
 
 === Build Configuration
 
 ==== Development Configuration (build.hxml)
-```hxml
+[source,hxml]
+----
 -cp src
 -main Main
 -hl bin/gmx.hl
 -lib heaps
 -lib hxsl
 -D windowSize=800x600
-```
+----
 
 ==== Release Configuration (build-release.hxml)
-```hxml
+[source,hxml]
+----
 -cp src
 -main Main
 -hl bin/gmx.hl
@@ -172,7 +184,7 @@ npm run package-mac
 -D analyzer-optimize
 -D no-traces
 --no-debug
-```
+----
 
 == Architecture Overview
 
@@ -180,14 +192,14 @@ npm run package-mac
 
 The Haxe implementation follows a modular architecture:
 
-```
+----
 Main.hx (Heaps App)
 ├── GMXApplication.hx (Main Application Logic)
 ├── PopUpManager.hx (Modal and Popup Management)
 ├── GMXBuilder.hx (Form Builder Interface)
 └── Services/
     └── ControlChannel.hx (Network Communication)
-```
+----
 
 === Key Components Migration
 
@@ -223,7 +235,8 @@ Main.hx (Heaps App)
 
 All original ActionScript Value Objects have been converted to Haxe classes with full XML serialization compatibility:
 
-```haxe
+[source,haxe]
+----
 // Example: FieldVO.hx
 package gmx.data;
 
@@ -243,7 +256,7 @@ class FieldVO {
         // XML deserialization logic
     }
 }
-```
+----
 
 == Development Workflow
 
@@ -264,7 +277,8 @@ class FieldVO {
 === Debugging
 
 ==== Debug Output
-```haxe
+[source,haxe]
+----
 // Use trace() for debugging output
 trace("Debug message: " + variable);
 
@@ -272,10 +286,11 @@ trace("Debug message: " + variable);
 #if debug
 trace("Debug-only message");
 #end
-```
+----
 
 ==== HashLink Debugging Tools
-```bash
+[source,bash]
+----
 # Run with profiling
 hl --profile bin/gmx.hl
 
@@ -284,7 +299,7 @@ hl --profile-mem bin/gmx.hl
 
 # Stack trace on crash
 hl --debug bin/gmx.hl
-```
+----
 
 === IDE Setup
 
@@ -304,32 +319,36 @@ hl --debug bin/gmx.hl
 
 The comprehensive test suite is located in `tests/` directory:
 
-```
+----
 tests/
 ├── __init__.py         # Test package initialization
 ├── test_gmx.py        # Main test suite
 └── README.md          # Testing documentation
-```
+----
 
 === Running Tests
 
 ==== Complete Test Suite
-```bash
+
+[source,bash]
+----
 # Run all tests (takes ~15-20 seconds)
 python tests/test_gmx.py
 
 # Verbose output for debugging
 python tests/test_gmx.py --verbose
-```
+----
 
 ==== Quick Testing
-```bash
+
+[source,bash]
+----
 # Server-only tests (faster, ~7-10 seconds)
 python tests/test_gmx.py --server-only
 
 # Skip compilation tests (~10-12 seconds)
 python tests/test_gmx.py --quick
-```
+----
 
 === Test Coverage
 
@@ -366,7 +385,8 @@ The test suite validates:
 
 The Haxe implementation uses custom UI components built with Heaps.io:
 
-```haxe
+[source,haxe]
+----
 // Example custom component
 package gmx.ui;
 
@@ -399,13 +419,14 @@ class CustomButton extends Object {
         background.endFill();
     }
 }
-```
+----
 
 === Layout System
 
 Heaps.io Flow containers replace Flex layout:
 
-```haxe
+[source,haxe]
+----
 // Create flow layout
 var flow = new h2d.Flow(parent);
 flow.layout = Vertical;
@@ -414,22 +435,22 @@ flow.verticalSpacing = 10;
 // Add components
 flow.addChild(new CustomButton(flow, 100, 30));
 flow.addChild(new CustomButton(flow, 100, 30));
-```
+----
 
 === Event Handling
 
 Direct callbacks replace Flash event system:
 
-```haxe
+[source,haxe]
+----
 // Modern event handling
 button.onClick = function() {
     trace("Button clicked!");
-    // Handle click
 };
 
 // Vs old Flash way
 button.addEventListener(MouseEvent.CLICK, onButtonClick);
-```
+----
 
 == Network Services
 
@@ -437,8 +458,10 @@ button.addEventListener(MouseEvent.CLICK, onButtonClick);
 
 The network communication layer has been enhanced:
 
-```haxe
+[source,haxe]
+----
 package gmx.services;
+
 
 import sys.net.Socket;
 import haxe.io.Bytes;
@@ -471,7 +494,7 @@ class ControlChannel {
         socket.output.flush();
     }
 }
-```
+----
 
 === Protocol Compatibility
 
@@ -486,39 +509,44 @@ The network protocol remains fully compatible with existing servers:
 
 === Asset Organization
 
-```
+----
 haxe/assets/
 ├── images/           # PNG, JPG images
-├── fonts/           # TTF, OTF fonts
-├── sounds/          # WAV, OGG audio
+├── fonts/            # TTF, OTF fonts
+├── audio/            # WAV, OGG audio files
 ├── data/            # XML, JSON data files
 └── shaders/         # GLSL shaders (optional)
-```
+----
 
 === Loading Assets
 
-```haxe
+[source,haxe]
+----
 // Runtime asset loading
 var texture = hxd.Res.load("images/texture.png").toTexture();
+var font = hxd.Res.load("fonts/custom.ttf").toFont();
 
-// Embedded assets (compile-time)
+// Compile-time embedding
 @:file("assets/icon.png")
 class IconAsset extends hxd.res.Image {}
-```
+----
+----
 
 === Asset Optimization
 
-```bash
+[source,bash]
+----
 # Image optimization for smaller builds
 for img in assets/images/*.png; do
-    pngquant --quality=65-80 --ext .png --force "$img"
+    pngcrush "$img" "${img%.png}_optimized.png"
+    mv "${img%.png}_optimized.png" "$img"
 done
 
 # Audio compression
-for audio in assets/sounds/*.wav; do
+for audio in assets/audio/*.wav; do
     ffmpeg -i "$audio" -c:a libvorbis -q:a 4 "${audio%.wav}.ogg"
 done
-```
+----
 
 == Migration Notes
 
@@ -527,51 +555,57 @@ done
 ==== Type System Differences
 
 *ActionScript (weak typing):*
-```actionscript
+[source,actionscript]
+----
 var data:Object = getValue(); // Could be anything
 var name:String = data.name;  // Runtime error possible
-```
+----
 
 *Haxe (strong typing):*
-```haxe
+[source,haxe]
+----
 var data:MyDataType = getValue(); // Compile-time type checking
 var name:String = data.name;      // Type-safe access
-```
+----
 
 ==== Event System Migration
 
 *Old Flash Events:*
-```actionscript
+[source,actionscript]
+----
 button.addEventListener(MouseEvent.CLICK, onButtonClick);
 
-private function onButtonClick(event:MouseEvent):void {
+function onButtonClick(event:MouseEvent):void {
     // Handle event
 }
-```
+----
 
 *New Heaps Callbacks:*
-```haxe
+[source,haxe]
+----
 button.onClick = function(event) {
     // Handle click directly
 };
-```
+----
 
 ==== Display List Changes
 
 *Flash Display Objects:*
-```actionscript
+[source,actionscript]
+----
 var sprite:Sprite = new Sprite();
 addChild(sprite);
 sprite.x = 100;
 sprite.y = 50;
-```
+----
 
 *Heaps Objects:*
-```haxe
+[source,haxe]
+----
 var object:Object = new Object(parent);
 object.x = 100;
 object.y = 50;
-```
+----
 
 === Compatibility Maintained
 
@@ -586,23 +620,25 @@ object.y = 50;
 === Build Optimizations
 
 ==== Release Build Settings
-```hxml
+[source,hxml]
+----
 -dce full                    # Dead code elimination
 -O2                         # Level 2 optimizations
 -D analyzer-optimize        # Advanced optimizations
 -D no-traces               # Remove trace statements
 --no-debug                 # Remove debug information
-```
+----
 
 ==== Platform-Specific Optimizations
-```bash
+[source,bash]
+----
 # Link-time optimization (Linux/macOS)
 export CFLAGS="-O3 -flto"
-export LDFLAGS="-O3 -flto"
+pixi run build-haxe
 
 # Strip symbols for smaller binaries
 strip bin/gmx-linux
-```
+----
 
 === Runtime Performance
 
@@ -615,7 +651,8 @@ The Haxe/HashLink implementation provides significant performance improvements:
 
 === Profiling Tools
 
-```bash
+[source,bash]
+----
 # HashLink built-in profiler
 hl --profile bin/gmx.hl > profile.txt
 
@@ -626,14 +663,16 @@ hl --profile-mem bin/gmx.hl
 htop              # Linux process monitoring
 Activity Monitor  # macOS system monitor
 Task Manager      # Windows performance monitor
-```
+----
 
 == Troubleshooting
 
 === Common Build Issues
 
 ==== Missing Dependencies
-```bash
+
+[source,bash]
+----
 # Verify Haxe installation
 haxe --version
 
@@ -643,54 +682,62 @@ hl --version
 # Reinstall libraries
 haxelib install heaps
 haxelib install hxsl
-```
+----
 
 ==== Compilation Errors
-```bash
+[source,bash]
+----
 # Clean build directory
 rm -rf bin/*
+rm -rf build/
 
 # Rebuild from scratch
 npm run clean
 npm run build
-```
+----
 
 ==== Runtime Errors
-```bash
+
+[source,bash]
+----
 # Enable debug mode
 npm run build-debug
-npm run run
+hl --debug bin/gmx.hl
 
 # Check for missing assets
 ls -la assets/
-```
+----
 
 === Graphics Issues
 
 ==== Hardware Acceleration Problems
-```bash
+
+[source,bash]
+----
 # Force software rendering
 export HEAPS_DRIVER=software
-./gmx-application
+./bin/gmx
 
-# Update graphics drivers
 # Check OpenGL support:
 glxinfo | grep OpenGL  # Linux
-```
+----
 
 ==== Display Issues
-```bash
+[source,bash]
+----
 # Check SDL2 installation
 sdl2-config --version
 
 # Verify display environment
 echo $DISPLAY  # Linux
-```
+----
 
 === Network Debugging
 
 ==== Connection Issues
-```bash
+
+[source,bash]
+----
 # Test server connectivity
 telnet localhost 12345
 
@@ -699,15 +746,17 @@ netstat -tulnp | grep 12345
 
 # Verify server is running
 ps aux | grep python
-```
+----
 
 ==== Protocol Debugging
-```haxe
+
+[source,haxe]
+----
 // Enable network debugging
 #if debug
 trace("Sending XML: " + xml.toString());
 #end
-```
+----
 
 == Contributing
 
@@ -731,7 +780,8 @@ trace("Sending XML: " + xml.toString());
 
 Before submitting changes:
 
-```bash
+[source,bash]
+----
 # Run full test suite
 python tests/test_gmx.py
 
@@ -740,7 +790,7 @@ npm run build-release
 npm run package-windows
 npm run package-linux
 npm run package-macos
-```
+----
 
 == Future Roadmap
 

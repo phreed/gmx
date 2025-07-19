@@ -11,7 +11,7 @@ The GMX application has been successfully migrated from a deprecated Adobe AIR/F
 === Technology Stack Transformation
 
 ==== Before: Adobe AIR/Flash Stack
-```
+----
 ┌─────────────────────────────────────┐
 │           Adobe AIR Runtime         │
 ├─────────────────────────────────────┤
@@ -25,10 +25,10 @@ The GMX application has been successfully migrated from a deprecated Adobe AIR/F
 ├─────────────────────────────────────┤
 │   Flash Socket/URLLoader/XML       │
 └─────────────────────────────────────┘
-```
+----
 
 ==== After: Haxe/HashLink Stack
-```
+----
 ┌─────────────────────────────────────┐
 │         HashLink VM (JIT)           │
 ├─────────────────────────────────────┤
@@ -38,11 +38,9 @@ The GMX application has been successfully migrated from a deprecated Adobe AIR/F
 ├─────────────────────────────────────┤
 │      Custom UI Components          │
 ├─────────────────────────────────────┤
-│    Heaps Graphics/Objects          │
-├─────────────────────────────────────┤
-│   Haxe sys.net/Native XML          │
+│        Native Sockets               │
 └─────────────────────────────────────┘
-```
+----
 
 === Key Drivers for Migration
 
@@ -156,7 +154,9 @@ The GMX application has been successfully migrated from a deprecated Adobe AIR/F
 == Development Experience Transformation
 
 === ActionScript/Flex Development (Before)
-```actionscript
+
+[source,actionscript]
+----
 // ActionScript 3.0 - Verbose, limited type safety
 package com.gmx.ui {
     import mx.containers.VBox;
@@ -179,10 +179,12 @@ package com.gmx.ui {
         }
     }
 }
-```
+----
 
 === Haxe Development (After)
-```haxe
+
+[source,haxe]
+----
 // Haxe - Modern, type-safe, concise
 package gmx.ui;
 
@@ -209,7 +211,7 @@ class MyComponent extends Object {
         // Clean, type-safe event handling
     }
 }
-```
+----
 
 == Migration Process and Timeline
 
@@ -295,7 +297,9 @@ class MyComponent extends Object {
 == Build and Deployment Transformation
 
 === Before: Complex Flash/AIR Build Process
-```bash
+
+[source,bash]
+----
 # Multi-step, error-prone process
 amxmlc Main.mxml                     # Compile SWF
 adt -certificate -cn SelfSigned ...  # Create certificate
@@ -307,10 +311,15 @@ adt -package -target apk-debug ...   # Platform-specific packages
 # - Platform-specific installers
 # - Security warnings
 # - Large download sizes
-```
+----
 
 === After: Simple, Automated Build Process
-```bash
+
+[source,bash]
+----
+
+[source,bash]
+----
 # Streamlined, automated workflow
 cd haxe
 npm run setup     # One-time setup
@@ -322,7 +331,7 @@ npm run package   # Create native executables
 # - No runtime dependencies
 # - Code signing support
 # - Smaller file sizes
-```
+----
 
 == Compatibility Preservation
 
@@ -346,7 +355,8 @@ npm run package   # Create native executables
 == Performance Analysis
 
 === Memory Usage Comparison
-```
+
+----
 Flash/AIR Memory Profile:
 ├── AIR Runtime: ~80-120 MB
 ├── Flash VM: ~30-50 MB
@@ -358,10 +368,11 @@ Haxe/HashLink Memory Profile:
 ├── Application: ~15-45 MB
 ├── Assets: ~7-20 MB
 └── Total: 30-80 MB
-```
+----
 
 === Startup Performance Analysis
-```
+
+----
 Flash/AIR Startup Sequence:
 1. AIR Runtime initialization: 1-2 seconds
 2. Flash VM startup: 1-2 seconds
@@ -373,7 +384,7 @@ Haxe/HashLink Startup Sequence:
 2. Application initialization: 0.2-0.7 seconds
 3. Asset loading: 0.2-1.0 seconds
 Total: 0.5-2.0 seconds
-```
+----
 
 == Migration Challenges and Solutions
 

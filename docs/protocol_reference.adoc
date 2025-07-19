@@ -22,29 +22,37 @@ This document provides detailed specifications for all message types and protoco
 System-level messages for connection management and control.
 
 ==== Connection Subscription
-```xml
+
+[source,xml]
+----
 <ISISControlChannel action="SC" param="SUBSCRIBE"/>
-```
+----
 
 ==== Mode Changes
-```xml
+
+[source,xml]
+----
 <ISISControlChannel action="M" param="mode_name"/>
-```
+----
 
 ==== Status Messages
-```xml
+
+[source,xml]
+----
 <ISISControlChannel action="S" param="status_text"/>
-```
+----
 
 === Layout Messages
 Messages that define and update user interface layouts.
 
 ==== Basic Layout Message
-```xml
+
+[source,xml]
+----
 <ISISLayout luid="target_luid">
   <!-- UI component definitions -->
 </ISISLayout>
-```
+----
 
 *Attributes:*
 - `luid` (required) - Target Layout Unique ID where content should be rendered
@@ -52,9 +60,11 @@ Messages that define and update user interface layouts.
 *Content:* Any valid GMX UI component XML
 
 ==== Layout Refresh
-```xml
+
+[source,xml]
+----
 <ISISRefresh action="reset"/>
-```
+----
 
 Forces complete layout rebuild from main container.
 
@@ -62,13 +72,15 @@ Forces complete layout rebuild from main container.
 Messages that update individual data records.
 
 ==== Record Update
-```xml
+
+[source,xml]
+----
 <ISISRecord ruid="record_identifier">
   <Field fid="field_name" value="field_value"/>
   <Field fid="another_field" value="another_value"/>
   <!-- Additional fields as needed -->
 </ISISRecord>
-```
+----
 
 *Attributes:*
 - `ruid` (required) - Record Unique ID
@@ -79,12 +91,14 @@ Messages that update individual data records.
 - `send` (optional) - Send behavior flag
 
 ==== Record with Attributes
-```xml
+
+[source,xml]
+----
 <ISISRecord ruid="record_identifier">
   <Field fid="field_name" value="field_value"/>
   <Attribute ruid="attr_ruid" fid="attr_field" send="true"/>
 </ISISRecord>
-```
+----
 
 *Attribute Elements:*
 Used for cross-record field references and computed values.
@@ -93,7 +107,9 @@ Used for cross-record field references and computed values.
 Messages that manage collections of records.
 
 ==== Collection Update
-```xml
+
+[source,xml]
+----
 <ISISCollection cuid="collection_identifier">
   <RuidList>
     <Ruid ruid="record_1" select="positioning_command" ref="reference_record"/>
@@ -101,7 +117,7 @@ Messages that manage collections of records.
     <!-- Additional records as needed -->
   </RuidList>
 </ISISCollection>
-```
+----
 
 *Attributes:*
 - `cuid` (required) - Collection Unique ID
@@ -130,30 +146,33 @@ Messages that manage collections of records.
 
 *Examples:*
 
-```xml
+[source,xml]
+----
 <!-- Add record as first item -->
 <Ruid ruid="new_record" select="first"/>
 
 <!-- Add record after specific item -->
-<Ruid ruid="new_record" select="after" ref="existing_record"/>
+<Ruid ruid="new_record" select="after:existing_record"/>
 
-<!-- Delete specific record -->
-<Ruid ruid="target_record" select="delete"/>
+<!-- Remove specific record -->
+<Ruid ruid="remove_record" select="remove"/>
 
 <!-- Clear entire collection -->
 <Ruid ruid="" select="clear"/>
-```
+----
 
 == UI Component Reference
 
 === Container Components
 
 ==== VBox (Vertical Box)
-```xml
+
+[source,xml]
+----
 <VBox luid="container_id" width="200" height="300">
   <!-- Child components -->
 </VBox>
-```
+----
 
 *Common Attributes:*
 - `luid` - Layout identifier
@@ -162,25 +181,31 @@ Messages that manage collections of records.
 - `enabled` - Interaction enabled
 
 ==== HBox (Horizontal Box)
-```xml
+
+[source,xml]
+----
 <HBox luid="container_id">
   <!-- Child components arranged horizontally -->
 </HBox>
-```
+----
 
 ==== Canvas
-```xml
+
+[source,xml]
+----
 <Canvas luid="canvas_id" width="400" height="300">
   <!-- Absolute positioned components -->
 </Canvas>
-```
+----
 
 === Input Components
 
 ==== Button
-```xml
+
+[source,xml]
+----
 <Button label="Click Me" ruid="button_record" fid="button_field"/>
-```
+----
 
 *Attributes:*
 - `label` - Button text
@@ -188,9 +213,11 @@ Messages that manage collections of records.
 - `fid` - Field to update on click
 
 ==== TextInput
-```xml
+
+[source,xml]
+----
 <TextInput text="default_text" ruid="input_record" fid="text_field"/>
-```
+----
 
 *Attributes:*
 - `text` - Default/current text
@@ -198,15 +225,19 @@ Messages that manage collections of records.
 - `fid` - Field to bind
 
 ==== TextArea
-```xml
+
+[source,xml]
+----
 <TextArea text="multi-line text" width="300" height="100"
           ruid="textarea_record" fid="content_field"/>
-```
+----
 
 ==== ComboBox
-```xml
+
+[source,xml]
+----
 <ComboBox cuid="options_collection" ruid="selection_record" fid="selected_field"/>
-```
+----
 
 *Attributes:*
 - `cuid` - Collection providing options
@@ -214,10 +245,12 @@ Messages that manage collections of records.
 - `fid` - Field storing selected value
 
 ==== RadioButton
-```xml
+
+[source,xml]
+----
 <RadioButton label="Option 1" groupName="choice_group"
              ruid="radio_record" fid="selection_field" value="option1"/>
-```
+----
 
 *Attributes:*
 - `label` - Display text
@@ -228,19 +261,23 @@ Messages that manage collections of records.
 === Display Components
 
 ==== Label
-```xml
+
+[source,xml]
+----
 <Label text="Display Text" ruid="label_record" fid="text_field"/>
-```
+----
 
 ==== DataGrid
-```xml
+
+[source,xml]
+----
 <DataGrid cuid="data_collection" width="500" height="300">
   <Columns>
-    <DataGridColumn headerText="Name" dataField="name"/>
-    <DataGridColumn headerText="Email" dataField="email"/>
+    <DataGridColumn headerText="Name" dataField="name" width="150"/>
+    <DataGridColumn headerText="Value" dataField="value" width="100"/>
   </Columns>
 </DataGrid>
-```
+----
 
 *Attributes:*
 - `cuid` - Collection providing data rows
@@ -248,59 +285,66 @@ Messages that manage collections of records.
 === Custom Components
 
 ==== Compass
-```xml
+
+[source,xml]
+----
 <Compass_X ruid="compass_record" fid="heading_field" width="100" height="100"/>
-```
+----
 
 Displays magnetic compass with north heading.
 
 ==== Turn Rate Indicator
-```xml
+
+[source,xml]
+----
 <TurnRateIndicator_X ruid="turn_record" fid="rate_field" width="120" height="120"/>
-```
+----
 
 Displays aircraft turn rate indicator.
 
 == Data Binding
 
-=== Field Binding
 Components can bind to record fields using `ruid` and `fid` attributes:
 
-```xml
+[source,xml]
+----
 <TextInput ruid="user_record" fid="username" text="default_name"/>
-```
+----
 
-When record `user_record` field `username` updates, the TextInput automatically reflects the change.
+Updates to `user_record.username` automatically reflect in the TextInput.
 
-=== Collection Binding
 Components can bind to collections using `cuid` attribute:
 
-```xml
+[source,xml]
+----
 <ComboBox cuid="user_list" ruid="selection" fid="selected_user"/>
-```
+----
 
-The ComboBox populates from collection `user_list` and stores selection in record `selection`.
+The ComboBox displays all records in `user_list` collection.
 
-=== Cross-Record References
+=== Advanced Binding
+
 Use Attribute elements for computed fields and references:
 
-```xml
+[source,xml]
+----
 <ISISRecord ruid="computed_record">
   <Field fid="display_name" value=""/>
-  <Attribute ruid="user_record" fid="first_name" send="true"/>
-  <Attribute ruid="user_record" fid="last_name" send="true"/>
+  <Attribute ruid="user_record" fid="first_name" send="false"/>
+  <Attribute ruid="user_record" fid="last_name" send="false"/>
 </ISISRecord>
-```
+----
 
 == Error Handling
 
 === Client Error Responses
 When the client encounters errors, it may send diagnostic information:
 
-```xml
+[source,xml]
+----
 <ISISError type="layout_error" luid="problematic_luid"
            message="Component build failed: invalid XML"/>
-```
+----
 
 === Server Error Handling
 Servers should validate:
@@ -371,38 +415,41 @@ Servers should validate:
 
 === Message Tracing
 Enable debug modes in GMXMain:
-```actionscript
+[source,actionscript]
+----
 GMXMain.debugSend = true;
 GMXMain.debugReceive = true;
-GMXMain.debugLayoutMessagesUsingGMXBuilder = true;
-```
+----
 
 == Message Flow Examples
 
 === Layout Update Flow
-```
+
+----
 1. Server sends: <ISISLayout luid="mainLuid">[layout XML]</ISISLayout>
 2. Client builds UI components from layout
 3. Client establishes data bindings (RUIDs/CUIDs)
 4. Client ready for data updates
-```
+----
 
 === Record Update Flow
-```
+
+----
 1. User interacts with UI component
 2. Client sends: <ISISRecord ruid="button_record"><Field fid="click_action" value="clicked"/></ISISRecord>
 3. Server processes update and responds
 4. Server broadcasts: <ISISRecord ruid="button_record"><Field fid="status_message" value="Button clicked!"/></ISISRecord>
 5. All clients update their displays
-```
+----
 
 === Collection Update Flow
-```
+
+----
 1. Server sends: <ISISCollection cuid="alerts_list"><RuidList><Ruid ruid="new_alert" select="first"/></RuidList></ISISCollection>
 2. Client updates collection-bound components (DataGrid, ComboBox, etc.)
 3. Client requests missing record data if needed
 4. Server sends record data for new items
-```
+----
 
 == Protocol Best Practices
 

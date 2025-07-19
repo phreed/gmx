@@ -4,7 +4,7 @@ This directory contains comprehensive examples demonstrating the GMX (Graphical 
 
 == Directory Structure
 
-```
+----
 examples/
 ├── layouts/           # Layout XML examples
 │   ├── basic_form.xml      # User registration form
@@ -21,31 +21,35 @@ examples/
 ├── servers/           # Server implementation examples
 │   ├── layout_server.py     # Python layout server
 │   └── data_server.py       # Python data server
-└── README.asciidoc    # This file
-```
+└── README.adoc        # This file
+----
 
 == Quick Start
 
 === Using Pixi (Recommended)
-```bash
+
+[source,bash]
+----
 # Complete setup and run
 pixi run setup
 pixi run start-servers    # Start example servers
 pixi run run             # Build and run client
-```
+----
 
 === Manual Setup
-```bash
+
+[source,bash]
+----
 # Start servers
 cd examples/servers
 python layout_server.py &
-python data_server.py --port 12346 &
+python data_server.py &
 
 # Build and run client (in another terminal)
-cd haxe-port
+cd haxe
 pixi run build
 pixi run run
-```
+----
 
 == Examples Overview
 
@@ -72,10 +76,10 @@ pixi run run
 
 For detailed information about these examples, see:
 
-- **link:../docs/developer_guide.asciidoc[Developer's Guide]** - Complete development workflow and Pixi tasks
-- **link:../docs/server_guide.asciidoc[Server Guide]** - Server implementation and data models
-- **link:../docs/protocol_reference.asciidoc[Protocol Reference]** - Message formats and flow examples
-- **link:../docs/component_reference.asciidoc[Component Reference]** - Layout examples and component usage
+- **link:../docs/developer_guide.adoc[Developer's Guide]** - Complete development workflow and Pixi tasks
+- **link:../docs/server_guide.adoc[Server Guide]** - Server implementation and data models
+- **link:../docs/protocol_reference.adoc[Protocol Reference]** - Message formats and flow examples
+- **link:../docs/component_reference.adoc[Component Reference]** - Layout examples and component usage
 
 == License
 

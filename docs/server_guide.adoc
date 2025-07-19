@@ -59,11 +59,13 @@ Provides content as records and collections.
 - Default main container uses `luid="mainLuid"`
 
 Example LUID usage:
-```xml
+
+[source,xml]
+----
 <VBox luid="sidebar_container" width="200">
   <!-- layout content -->
 </VBox>
-```
+----
 
 === Record Unique IDs (RUIDs)
 - Identify individual data records
@@ -72,12 +74,14 @@ Example LUID usage:
 - Default main record uses `ruid="mainRuid"`
 
 Example RUID usage:
-```xml
+
+[source,xml]
+----
 <Record ruid="user_123">
   <Field fid="username" value="john_doe"/>
   <Field fid="email" value="john@example.com"/>
 </Record>
-```
+----
 
 === Collection Unique IDs (CUIDs)
 - Identify collections of related records
@@ -85,14 +89,16 @@ Example RUID usage:
 - Support hierarchical relationships between records
 
 Example CUID usage:
-```xml
+
+[source,xml]
+----
 <Collection cuid="user_list">
   <RuidList>
     <Ruid ruid="user_123" select="last"/>
     <Ruid ruid="user_124" select="last"/>
   </RuidList>
 </Collection>
-```
+----
 
 == Message Protocols
 
@@ -100,7 +106,9 @@ Example CUID usage:
 Layout messages update UI components by targeting specific LUIDs.
 
 Basic format:
-```xml
+
+[source,xml]
+----
 <ISISLayout luid="target_container">
   <!-- UI component definitions -->
   <VBox>
@@ -108,24 +116,28 @@ Basic format:
     <TextInput text="Enter text"/>
   </VBox>
 </ISISLayout>
-```
+----
 
 === Record Messages
 Record messages update individual data records.
 
 Basic format:
-```xml
+
+[source,xml]
+----
 <ISISRecord ruid="record_id">
   <Field fid="field_name" value="new_value"/>
   <Field fid="another_field" value="another_value"/>
 </ISISRecord>
-```
+----
 
 === Collection Messages
 Collection messages perform batch operations on groups of records.
 
 Basic format:
-```xml
+
+[source,xml]
+----
 <ISISCollection cuid="collection_id">
   <RuidList>
     <Ruid ruid="record_1" select="first"/>
@@ -133,7 +145,7 @@ Basic format:
     <Ruid ruid="record_3" select="delete"/>
   </RuidList>
 </ISISCollection>
-```
+----
 
 Collection operations (`select` attribute):
 - `first` - Insert as first item
@@ -149,7 +161,9 @@ Collection operations (`select` attribute):
 == Server Implementation Examples
 
 === Basic Layout Server (Python)
-```python
+
+[source,python]
+----
 import socket
 import threading
 import xml.etree.ElementTree as ET
@@ -201,10 +215,12 @@ class LayoutServer:
                 args=(client_socket, address)
             )
             client_thread.start()
-```
+----
 
 === Basic Data Server (Python)
-```python
+
+[source,python]
+----
 class DataServer:
     def __init__(self, host='localhost', port=12346):
         self.host = host
@@ -234,7 +250,7 @@ class DataServer:
                     client.send(message.encode())
                 except:
                     self.clients.remove(client)
-```
+----
 
 == Security Considerations
 
@@ -246,12 +262,14 @@ GMX clients require appropriate Flash security policies:
 3. Socket policy files for socket connections
 
 Example socket policy file:
-```xml
+
+[source,xml]
+----
 <?xml version="1.0"?>
 <cross-domain-policy>
     <allow-access-from domain="*" to-ports="12345,12346"/>
 </cross-domain-policy>
-```
+----
 
 === Authentication
 Implement authentication mechanisms:
@@ -308,9 +326,11 @@ Implement authentication mechanisms:
 GMX provides example servers that can be easily started using Pixi tasks:
 
 ==== Layout Server
-```bash
+
+[source,bash]
+----
 pixi run start-layout-server
-```
+----
 
 Starts the Python layout server on `localhost:12345`. The server provides:
 - Example layout definitions (simple button, form, dashboard)
@@ -318,9 +338,11 @@ Starts the Python layout server on `localhost:12345`. The server provides:
 - Layout validation and error handling
 
 ==== Data Server
-```bash
+
+[source,bash]
+----
 pixi run start-data-server
-```
+----
 
 Starts the Python data server on `localhost:12346`. The server provides:
 - Record and collection management
@@ -328,9 +350,11 @@ Starts the Python data server on `localhost:12346`. The server provides:
 - CRUD operations for records
 
 ==== Both Servers
-```bash
+
+[source,bash]
+----
 pixi run start-servers
-```
+----
 
 Starts both servers concurrently in the background with:
 - Process ID monitoring
@@ -341,7 +365,8 @@ Starts both servers concurrently in the background with:
 
 For a complete development environment:
 
-```bash
+[source,bash]
+----
 # Terminal 1: Start servers
 pixi run start-servers
 
@@ -349,7 +374,7 @@ pixi run start-servers
 pixi run setup    # One-time setup
 pixi run build
 pixi run run
-```
+----
 
 === Server Configuration
 
@@ -402,11 +427,13 @@ Both example servers provide comprehensive logging:
 
 ==== Health Monitoring
 Implement health check endpoints:
-```python
+
+[source,python]
+----
 @app.route('/health')
 def health_check():
     return {'status': 'healthy', 'timestamp': datetime.now()}
-```
+----
 
 ==== Performance Metrics
 Monitor key metrics:
@@ -437,7 +464,9 @@ Demonstrates record structure for form data:
 - Status fields: `form_valid`, `validation_errors`
 
 Example implementation:
-```xml
+
+[source,xml]
+----
 <ISISRecord ruid="user_form_record">
     <Field fid="username" value=""/>
     <Field fid="email" value=""/>
@@ -452,7 +481,7 @@ Example implementation:
     <Field fid="validation_errors" value=""/>
     <Attribute ruid="validation_record" fid="status_message" send="true"/>
 </ISISRecord>
-```
+----
 
 ==== System Status Record
 Comprehensive system monitoring record:
@@ -510,7 +539,9 @@ User role selection options:
 - Data Analyst (analysis access)
 
 Example implementation:
-```xml
+
+[source,xml]
+----
 <ISISCollection cuid="role_options">
     <RuidList>
         <Ruid ruid="role_admin" select="last"/>
@@ -521,7 +552,7 @@ Example implementation:
         <Ruid ruid="role_analyst" select="last"/>
     </RuidList>
 </ISISCollection>
-```
+----
 
 ==== Alerts List Collection
 Active system alerts and warnings:
@@ -558,7 +589,9 @@ Real-time system performance metrics:
 
 ==== Data Validation and Business Rules
 Implement server-side validation:
-```python
+
+[source,python]
+----
 def validate_user_record(record):
     errors = []
 
@@ -575,11 +608,13 @@ def validate_user_record(record):
         errors.append("Password must be at least 8 characters")
 
     return errors
-```
+----
 
 ==== Computed Fields and Derived Values
 Implement computed fields that automatically update:
-```python
+
+[source,python]
+----
 def update_computed_fields(record):
     # Display name computed from first and last name
     if 'first_name' in record and 'last_name' in record:
@@ -592,11 +627,13 @@ def update_computed_fields(record):
         record['status'] = 'pending'
     else:
         record['status'] = 'inactive'
-```
+----
 
 ==== Hierarchical Data Relationships
 Support parent-child relationships in collections:
-```python
+
+[source,python]
+----
 def build_hierarchical_collection(parent_ruid, child_ruids):
     collection_xml = f'<ISISCollection cuid="hierarchy_{parent_ruid}">'
     collection_xml += '<RuidList>'
@@ -610,13 +647,13 @@ def build_hierarchical_collection(parent_ruid, child_ruids):
 
     collection_xml += '</RuidList></ISISCollection>'
     return collection_xml
-```
+----
 
 == See Also
 
-- link:protocol_reference.asciidoc[Protocol Reference] - Detailed message formats
-- link:component_reference.asciidoc[Component Reference] - Available UI components
+- link:protocol_reference.adoc[Protocol Reference] - Detailed message formats
+- link:component_reference.adoc[Component Reference] - Available UI components
 - link:../examples/servers/[Server Examples] - Reference implementations
 - link:../examples/records/[Record Examples] - Sample record structures
 - link:../examples/collections/[Collection Examples] - Sample collection definitions
-- link:developer_guide.asciidoc[Developer Guide] - Pixi task system
+- link:developer_guide.adoc[Developer Guide] - Pixi task system

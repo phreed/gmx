@@ -29,6 +29,7 @@ GMX uses three types of globally unique identifiers (GUIDs):
 * *CUID* (Collection Unique ID) - Identifies collections of related records
 
 === Message Types
+
 * *Layout Messages* - XML-based UI definitions targeting specific LUIDs
 * *Record Messages* - Data updates for individual records (RUIDs)
 * *Collection Messages* - Batch operations on groups of records (CUIDs)
@@ -36,11 +37,14 @@ GMX uses three types of globally unique identifiers (GUIDs):
 == Quick Start
 
 === Prerequisites
+
 * Pixi package manager for dependency management
 * Node.js 14.0+ for build scripts
 
 === Installation and Setup
-```bash
+
+[source,bash]
+----
 # Install dependencies and setup environment
 pixi run install-haxe
 
@@ -50,23 +54,26 @@ npm run build
 
 # Run the application
 npm run run
-```
+----
 
 === Client Development
-See link:docs/developer_guide.asciidoc[Developer's Guide] for:
+See link:docs/developer_guide.adoc[Developer's Guide] for:
+
 * Modern Haxe/HashLink development workflow
 * Building and deploying across platforms
 * Creating custom UI components with Heaps.io
 * Testing and debugging with comprehensive test suite
 
 === Server Development
-See link:docs/server_guide.asciidoc[Server Guide] for:
+See link:docs/server_guide.adoc[Server Guide] for:
+
 * Implementing layout servers
 * Implementing data servers
 * Message protocols and formats
 
 === Deployment
-See link:docs/deployment_guide.asciidoc[Deployment Guide] for:
+See link:docs/deployment_guide.adoc[Deployment Guide] for:
+
 * Cross-platform packaging (Windows, Linux, macOS)
 * Flatpak packaging for Linux distributions
 * Enterprise deployment strategies
@@ -74,25 +81,28 @@ See link:docs/deployment_guide.asciidoc[Deployment Guide] for:
 
 === Examples
 The link:examples/[examples directory] contains:
+
 * Sample layouts (`examples/layouts/`)
 * Sample records (`examples/records/`)
 * Sample collections (`examples/collections/`)
 * Reference Python server implementations (`examples/servers/`)
 
 === Testing
-```bash
+
+[source,bash]
+----
 # Run comprehensive test suite
 python tests/test_gmx.py
 
 # Quick server-only tests
 python tests/test_gmx.py --server-only
-```
+----
 
 == Documentation
 
 === Primary Guides
 
-==== link:docs/developer_guide.asciidoc[Developer's Guide]
+==== link:docs/developer_guide.adoc[Developer's Guide]
 Complete guide for developing with the modern Haxe/HashLink GMX implementation:
 
 * Development environment setup and prerequisites
@@ -103,7 +113,7 @@ Complete guide for developing with the modern Haxe/HashLink GMX implementation:
 * Testing framework and debugging tools
 * Performance optimization and profiling
 
-==== link:docs/deployment_guide.asciidoc[Deployment Guide]
+==== link:docs/deployment_guide.adoc[Deployment Guide]
 Comprehensive deployment documentation for all platforms:
 
 * Cross-platform deployment (Windows, Linux, macOS)
@@ -114,7 +124,7 @@ Comprehensive deployment documentation for all platforms:
 * Performance monitoring and optimization
 * Troubleshooting common deployment issues
 
-==== link:docs/migration_reference.asciidoc[Migration Reference]
+==== link:docs/migration_reference.adoc[Migration Reference]
 Complete reference for the Flash/AIR to Haxe/HashLink migration:
 
 * Technology stack transformation details
@@ -127,7 +137,7 @@ Complete reference for the Flash/AIR to Haxe/HashLink migration:
 
 === Reference Documentation
 
-==== link:docs/server_guide.asciidoc[Server Implementation Guide]
+==== link:docs/server_guide.adoc[Server Implementation Guide]
 Server-side development and protocol implementation:
 
 * Layout server implementation
@@ -136,7 +146,7 @@ Server-side development and protocol implementation:
 * Message formats and data structures
 * Server deployment and scaling
 
-==== link:docs/protocol_reference.asciidoc[Protocol Reference]
+==== link:docs/protocol_reference.adoc[Protocol Reference]
 Detailed protocol and message format specifications:
 
 * XML message structure and schemas
@@ -145,7 +155,7 @@ Detailed protocol and message format specifications:
 * Data serialization formats
 * Error handling and status codes
 
-==== link:docs/component_reference.asciidoc[Component Reference]
+==== link:docs/component_reference.adoc[Component Reference]
 UI component library and API documentation:
 
 * Available UI components and their properties
@@ -154,7 +164,7 @@ UI component library and API documentation:
 * Layout and styling systems
 * Component interaction patterns
 
-==== link:docs/operator_guide.asciidoc[Operator's Guide]
+==== link:docs/operator_guide.adoc[Operator's Guide]
 Operational deployment and maintenance:
 
 * System requirements and dependencies
@@ -175,21 +185,22 @@ The GMX application has been successfully migrated from Adobe AIR/Flash to Haxe/
 
 == Getting Help
 
-* *Development Issues*: See link:docs/developer_guide.asciidoc[Developer's Guide] troubleshooting section
-* *Deployment Problems*: Check link:docs/deployment_guide.asciidoc[Deployment Guide] troubleshooting
-* *Server Implementation*: Refer to link:docs/server_guide.asciidoc[Server Guide] and examples
-* *Protocol Questions*: Consult link:docs/protocol_reference.asciidoc[Protocol Reference]
-* *Migration Context*: Review link:docs/migration_reference.asciidoc[Migration Reference]
+* *Development Issues*: See link:docs/developer_guide.adoc[Developer's Guide] troubleshooting section
+* *Deployment Problems*: Check link:docs/deployment_guide.adoc[Deployment Guide] troubleshooting
+* *Server Implementation*: Refer to link:docs/server_guide.adoc[Server Guide] and examples
+* *Protocol Questions*: Consult link:docs/protocol_reference.adoc[Protocol Reference]
+* *Migration Context*: Review link:docs/migration_reference.adoc[Migration Reference]
 
 == Contributing
 
 When updating documentation:
 
-1. Follow AsciiDoc formatting standards
-2. Update both content and cross-references
-3. Test examples and code snippets
-4. Maintain consistency across guides
-5. Update documentation index when adding new documents
+
+. Follow AsciiDoc formatting standards
+. Update both content and cross-references
+. Test examples and code snippets
+. Maintain consistency across guides
+. Update documentation index when adding new documents
 
 == Archive
 

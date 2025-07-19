@@ -35,27 +35,30 @@ The modern GMX application deployment provides:
 * MSVC Build Tools
 
 ==== Setup
-```bash
+
+[source,bash]
+----
 # Install Visual Studio Build Tools
 # Download from: https://visualstudio.microsoft.com/downloads/
 
 # Verify installation
 where cl.exe
 where link.exe
-```
+----
 
 ==== Build Commands
-```bash
+
+[source,bash]
+----
 # Development build
 cd haxe
 npm run build
 
-# Release build for Windows
+# Release build (optimized)
 npm run build-release
-npm run package-windows
 
 # Output: dist/gmx-windows.exe
-```
+----
 
 ==== Distribution
 * *Executable*: `gmx-windows.exe` (self-contained)
@@ -72,7 +75,8 @@ Users can simply download and run the executable - no installation required.
 * GCC 9.0 or newer
 * Development libraries:
 
-```bash
+[source,bash]
+----
 # Ubuntu/Debian
 sudo apt-get install build-essential libgl1-mesa-dev libasound2-dev libudev-dev
 
@@ -82,24 +86,26 @@ sudo yum install mesa-libGL-devel alsa-lib-devel systemd-devel
 
 # Arch Linux
 sudo pacman -S base-devel mesa alsa-lib systemd
+sudo dnf install gcc-c++ SDL2-devel alsa-lib-devel systemd-devel  # Fedora
 
 # openSUSE
 sudo zypper install -t pattern devel_basis
 sudo zypper install Mesa-libGL-devel alsa-lib-devel systemd-devel
-```
+----
 
 ==== Build Commands
-```bash
+
+[source,bash]
+----
 # Development build
 cd haxe
 npm run build
 
-# Release build for Linux
+# Release build (optimized)
 npm run build-release
-npm run package-linux
 
 # Output: dist/gmx-linux
-```
+----
 
 ==== Distribution Options
 
@@ -112,12 +118,13 @@ npm run package-linux
 ===== Flatpak Package (Recommended)
 Flatpak provides enhanced security and dependency management:
 
-```bash
+[source,bash]
+----
 # Build Flatpak package
 ./build.sh package-flatpak
 
 # Output: dist/GMX-stable.flatpak
-```
+----
 
 *Flatpak Benefits:*
 * Sandboxed execution for enhanced security
@@ -134,29 +141,34 @@ Flatpak provides enhanced security and dependency management:
 * Apple Developer account (for code signing)
 
 ==== Setup
-```bash
+
+[source,bash]
+----
 # Install Xcode Command Line Tools
 xcode-select --install
 
 # Verify installation
 clang --version
-```
+----
 
 ==== Build Commands
-```bash
+
+[source,bash]
+----
 # Development build
 cd haxe
 npm run build
 
-# Release build for macOS
+# Release build (optimized)
 npm run build-release
-npm run package-macos
 
 # Output: dist/GMX.app
-```
+----
 
 ==== Code Signing (Production)
-```bash
+
+[source,bash]
+----
 # Sign the application
 codesign --force --sign "Developer ID Application: Your Name" dist/GMX.app
 
@@ -165,7 +177,7 @@ codesign --verify --verbose dist/GMX.app
 
 # Create notarized DMG for distribution
 ./scripts/create-dmg.sh
-```
+----
 
 ==== Distribution
 * *App Bundle*: `GMX.app` (macOS application bundle)
@@ -189,7 +201,8 @@ Flatpak is a universal package format for Linux that provides:
 
 ==== On Target Systems
 
-```bash
+[source,bash]
+----
 # Ubuntu/Debian
 sudo apt update && sudo apt install flatpak
 
@@ -204,20 +217,24 @@ sudo zypper install flatpak
 
 # Add Flathub repository
 flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-```
+----
 
 === Building Flatpak Package
 
 ==== Prerequisites for Building
-```bash
+
+[source,bash]
+----
 # Install development tools
 sudo apt install flatpak-builder librsvg2-bin  # Ubuntu/Debian
 sudo dnf install flatpak-builder librsvg2-tools  # Fedora
 sudo pacman -S flatpak-builder librsvg  # Arch Linux
-```
+----
 
 ==== Build Process
-```bash
+
+[source,bash]
+----
 # Navigate to project directory
 cd gmx
 
@@ -228,7 +245,7 @@ cd ..
 
 # Build Flatpak package
 ./build.sh package-flatpak
-```
+----
 
 ==== Build Output
 After successful build:
@@ -239,36 +256,44 @@ After successful build:
 === Installing GMX Flatpak
 
 ==== From Bundle File
-```bash
+
+[source,bash]
+----
 # Install the generated bundle
 flatpak install --user dist/GMX-stable.flatpak
 
 # Or system-wide (requires sudo)
 sudo flatpak install dist/GMX-stable.flatpak
-```
+----
 
 ==== From Local Repository
-```bash
+
+[source,bash]
+----
 # Add local repository
 flatpak remote-add --no-gpg-verify --if-not-exists gmx-local flatpak-repo
 
 # Install from repository
 flatpak install gmx-local com.gmx.Application
-```
+----
 
 ==== Verification
-```bash
+
+[source,bash]
+----
 # Check if installed
 flatpak list | grep gmx
 
 # Show application info
 flatpak info com.gmx.Application
-```
+----
 
 === Running GMX Flatpak
 
 ==== Command Line
-```bash
+
+[source,bash]
+----
 # Run the application
 flatpak run com.gmx.Application
 
@@ -277,7 +302,7 @@ flatpak run com.gmx.Application /path/to/file.xml
 
 # Run with debug output
 flatpak run --env=GMX_DEBUG=1 com.gmx.Application
-```
+----
 
 ==== Desktop Integration
 After installation, GMX appears in application menu under:
@@ -294,7 +319,9 @@ The GMX Flatpak has access to:
 * *Downloads*: XDG Downloads folder
 
 ==== Data Locations
-```bash
+
+[source,bash]
+----
 # Application data
 ~/.local/share/gmx/
 
@@ -306,10 +333,12 @@ The GMX Flatpak has access to:
 
 # Flatpak-specific data
 ~/.var/app/com.gmx.Application/
-```
+----
 
 ==== Custom Permissions
-```bash
+
+[source,bash]
+----
 # Grant access to specific directories
 flatpak override --user --filesystem=/media com.gmx.Application
 flatpak override --user --filesystem=/mnt com.gmx.Application
@@ -319,14 +348,16 @@ flatpak override --user --unshare=network com.gmx.Application
 
 # Reset permissions
 flatpak override --user --reset com.gmx.Application
-```
+----
 
 == Cross-Platform Build Pipeline
 
 === Automated Build System
 
 ==== GitHub Actions (CI/CD)
-```yaml
+
+[source,yaml]
+----
 # .github/workflows/build.yml
 name: Cross-Platform Build
 
@@ -384,10 +415,12 @@ jobs:
           cd haxe
           npm install
           npm run package-macos
-```
+----
 
 ==== Docker Builds (Linux)
-```dockerfile
+
+[source,dockerfile]
+----
 # Dockerfile.build
 FROM ubuntu:22.04
 
@@ -411,12 +444,14 @@ ENV PATH="/opt/hl-1.13.0:$PATH"
 WORKDIR /app
 COPY . .
 RUN cd haxe && npm install && npm run setup && npm run package-linux
-```
+----
 
 === Manual Cross-Platform Build
 
 ==== Build Script
-```bash
+
+[source,bash]
+----
 #!/bin/bash
 # build-all-platforms.sh
 
@@ -450,34 +485,38 @@ echo "  Windows: haxe/dist/gmx-windows.exe"
 echo "  Linux:   haxe/dist/gmx-linux"
 echo "  macOS:   haxe/dist/GMX.app"
 echo "  Flatpak: dist/GMX-stable.flatpak"
-```
+----
 
 == Performance Optimization
 
 === Build Optimizations
 
 ==== Release Configuration
-```hxml
+
+[source,hxml]
+----
 # build-release.hxml optimizations
 -dce full                    # Dead code elimination
 -O2                         # Level 2 optimizations
 -D analyzer-optimize        # Advanced optimizations
 -D no-traces               # Remove trace statements
 --no-debug                 # Remove debug information
-```
+----
 
 ==== Platform-Specific Optimizations
-```bash
+
+[source,bash]
+----
 # Windows - Use link-time optimization
 export CFLAGS="-O3 -flto"
 export LDFLAGS="-O3 -flto"
 
-# Linux - Strip symbols for smaller size
-strip dist/gmx-linux
+# Linux - Static linking for better portability
+npm run build-release -- --static
 
 # macOS - Universal binary (Intel + Apple Silicon)
 lipo -create gmx-x64 gmx-arm64 -output gmx-universal
-```
+----
 
 === Runtime Performance Metrics
 
@@ -508,72 +547,84 @@ lipo -create gmx-x64 gmx-arm64 -output gmx-universal
 == Asset Management
 
 === Asset Pipeline
-```bash
+
+----
 # Asset organization
 haxe/assets/
-├── images/           # PNG, JPG images
+├── images/          # PNG, JPG images
 ├── fonts/           # TTF, OTF fonts
 ├── sounds/          # WAV, OGG audio
 ├── data/            # XML, JSON data files
 └── shaders/         # GLSL shaders (if needed)
-```
+----
 
 === Asset Optimization
-```bash
+
+[source,bash]
+----
 # Image optimization
 for img in assets/images/*.png; do
-    pngquant --quality=65-80 --ext .png --force "$img"
+    pngcrush "$img" "${img%.png}_optimized.png"
+    mv "${img%.png}_optimized.png" "$img"
 done
 
 # Audio compression
 for audio in assets/sounds/*.wav; do
     ffmpeg -i "$audio" -c:a libvorbis -q:a 4 "${audio%.wav}.ogg"
 done
-```
+----
 
 === Resource Embedding
-```haxe
+
+[source,haxe]
+----
 // Embed assets at compile time for better performance
 @:file("assets/icon.png")
 class IconAsset extends hxd.res.Image {}
 
 // Runtime asset loading
 var texture = hxd.Res.load("assets/texture.png").toTexture();
-```
+----
 
 == Security Considerations
 
 === Code Signing
 
 ==== Windows Authenticode
-```bash
+
+[source,bash]
+----
 # Use Microsoft Authenticode
 signtool sign /f certificate.pfx /p password /t timestamp-server dist/gmx-windows.exe
 
 # Verify signature
 signtool verify /v dist/gmx-windows.exe
-```
+----
 
 ==== macOS Code Signing
-```bash
+
+[source,bash]
+----
 # Developer ID signing
 codesign --force --sign "Developer ID Application: Company Name" --timestamp dist/GMX.app
 
-# Notarization for Gatekeeper
-xcrun notarytool submit GMX.dmg --keychain-profile "notary-profile" --wait
+# Notarization submission
+xcrun altool --notarize-app --primary-bundle-id com.gmx.application --file dist/GMX.dmg
 
 # Verify notarization
 spctl -a -t exec -vv dist/GMX.app
-```
+----
 
 ==== Linux Package Signing
-```bash
+
+[source,bash]
+----
 # GPG signing for package verification
 gpg --armor --detach-sig dist/gmx-linux
 
 # Verify signature
 gpg --verify dist/gmx-linux.sig dist/gmx-linux
-```
+----
 
 === Runtime Security Benefits
 * *No Flash vulnerabilities*: Eliminates Flash Player security risks
@@ -593,48 +644,50 @@ gpg --verify dist/gmx-linux.sig dist/gmx-linux
 === Package Managers
 
 ==== Windows
-```bash
+
+[source,bash]
+----
 # Chocolatey package
 choco install gmx-application
 
-# Winget package
-winget install GMX.Application
+# Windows Package Manager
+winget install gmx-application
 
 # Scoop package
 scoop install gmx-application
-```
+----
 
 ==== Linux
-```bash
+
+[source,bash]
+----
 # Flatpak (recommended)
 flatpak install --user dist/GMX-stable.flatpak
-
-# Snap package
-sudo snap install gmx-application
 
 # AppImage (portable)
 chmod +x GMX-x86_64.AppImage && ./GMX-x86_64.AppImage
 
 # Direct binary
 chmod +x gmx-linux && ./gmx-linux
-```
+----
 
 ==== macOS
-```bash
+
+[source,bash]
+----
 # Homebrew cask
 brew install --cask gmx-application
 
-# MacPorts
-sudo port install gmx-application
-
 # Direct installation
 # Download GMX.dmg and drag to Applications folder
-```
+----
 
 === Enterprise Deployment
 
 ==== Group Policy (Windows)
-```xml
+
+[source,xml]
+----
 <!-- GMX.msi deployment via Group Policy -->
 <Package>
     <DisplayName>GMX Application</DisplayName>
@@ -643,19 +696,21 @@ sudo port install gmx-application
     <AutoUpdate>true</AutoUpdate>
     <Version>2.0.0</Version>
 </Package>
-```
+----
 
 ==== Configuration Management
 
 ===== Ansible Playbook
-```yaml
+
+[source,yaml]
+----
 ---
 - name: Deploy GMX Application
   hosts: workstations
   tasks:
     - name: Download GMX binary
       get_url:
-        url: "https://releases.company.com/gmx/latest/gmx-linux"
+        url: "https://releases.gmx.example.com/gmx-linux"
         dest: "/opt/gmx/bin/gmx"
         mode: '0755'
 
@@ -665,14 +720,16 @@ sudo port install gmx-application
           [Desktop Entry]
           Name=GMX Application
           Exec=/opt/gmx/bin/gmx
-          Icon=/opt/gmx/share/icons/gmx.png
+          Icon=/opt/gmx/share/gmx.png
           Type=Application
           Categories=Development;Office;
         dest: "/usr/share/applications/gmx.desktop"
-```
+----
 
 ===== Chef Recipe
-```ruby
+
+[source,ruby]
+----
 # Install GMX Application
 remote_file '/opt/gmx/bin/gmx' do
   source 'https://releases.company.com/gmx/latest/gmx-linux'
@@ -697,12 +754,14 @@ systemd_unit 'gmx.service' do
   EOU
   action [:create, :enable, :start]
 end
-```
+----
 
 == Monitoring and Updates
 
 === Application Telemetry
-```haxe
+
+[source,haxe]
+----
 // Basic usage analytics (opt-in)
 class Analytics {
     public static function trackStartup():Void {
@@ -719,10 +778,12 @@ class Analytics {
         // Track feature usage for improvements
     }
 }
-```
+----
 
 === Auto-Update System
-```haxe
+
+[source,haxe]
+----
 class UpdateChecker {
     public static function checkForUpdates():Void {
         // Check for new versions
@@ -740,10 +801,12 @@ class UpdateChecker {
         // Apply update and restart
     }
 }
-```
+----
 
 === Error Reporting
-```haxe
+
+[source,haxe]
+----
 class ErrorReporter {
     public static function reportError(error:Dynamic):Void {
         // Send error reports to development team
@@ -759,14 +822,16 @@ class ErrorReporter {
         sendErrorReport(report);
     }
 }
-```
+----
 
 == Troubleshooting
 
 === Common Deployment Issues
 
 ==== Missing Dependencies
-```bash
+
+[source,bash]
+----
 # Linux: Check for missing libraries
 ldd gmx-linux
 
@@ -776,10 +841,12 @@ sudo yum install mesa-libGL alsa-lib  # CentOS/RHEL
 
 # Windows: Missing Visual C++ Redistributable
 # Download and install from Microsoft
-```
+----
 
 ==== Graphics Issues
-```bash
+
+[source,bash]
+----
 # Force software rendering if hardware acceleration fails
 export HEAPS_DRIVER=software
 ./gmx-linux
@@ -788,10 +855,12 @@ export HEAPS_DRIVER=software
 glxinfo | grep OpenGL  # Linux
 dxdiag  # Windows
 system_profiler SPDisplaysDataType  # macOS
-```
+----
 
 ==== Permission Issues
-```bash
+
+[source,bash]
+----
 # Linux/macOS: Executable permissions
 chmod +x gmx-linux
 
@@ -801,10 +870,12 @@ sudo spctl --master-disable  # Temporarily disable
 
 # Linux: SELinux context
 restorecon -v /opt/gmx/bin/gmx
-```
+----
 
 ==== Flatpak Troubleshooting
-```bash
+
+[source,bash]
+----
 # Runtime issues
 flatpak install org.freedesktop.Platform//22.08
 flatpak install org.freedesktop.Sdk//22.08
@@ -814,10 +885,12 @@ flatpak run --command=bash --devel com.gmx.Application
 
 # Reset application data
 flatpak run --command=rm --devel com.gmx.Application -rf ~/.var/app/com.gmx.Application/
-```
+----
 
 === Log Analysis
-```bash
+
+[source,bash]
+----
 # Application logs location
 # Windows: %APPDATA%\GMX\logs\
 # Linux: ~/.local/share/GMX/logs/
@@ -831,10 +904,12 @@ GMX_DEBUG=1 ./gmx-application
 # Linux: journalctl -f | grep gmx
 # macOS: tail -f /var/log/system.log | grep GMX
 # Windows: Event Viewer > Application Logs
-```
+----
 
 === Performance Profiling
-```bash
+
+[source,bash]
+----
 # HashLink profiler
 hl --profile gmx.hl > profile.txt
 
@@ -846,13 +921,13 @@ htop              # Linux process monitoring
 Activity Monitor  # macOS system monitor
 Task Manager      # Windows performance monitor
 Resource Monitor  # Windows detailed monitoring
-```
+----
 
 == Support and Maintenance
 
 === Documentation
 * User manual: Available in application Help menu
-* Administrator guide: `docs/operator_guide.asciidoc`
+* Administrator guide: `docs/operator_guide.adoc`
 * API documentation: Generated from source comments
 * Troubleshooting: This guide and `docs/` directory
 
@@ -869,7 +944,9 @@ Resource Monitor  # Windows detailed monitoring
 * *Major updates*: Annually (architecture changes, major features)
 
 === Version Management
-```bash
+
+[source,bash]
+----
 # Check application version
 ./gmx-application --version
 
@@ -878,7 +955,7 @@ flatpak info com.gmx.Application
 
 # Update notifications
 # Automatic checking can be enabled in application settings
-```
+----
 
 == Migration from Legacy AIR Version
 
