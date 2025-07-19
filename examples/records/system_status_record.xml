@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- System Status Record Example
+     This demonstrates a record structure for system monitoring and status information
+     RUID: system_status
+     Used with: dashboard.xml layout
+-->
+<ISISRecord ruid="system_status">
+
+    <!-- System Identification -->
+    <Field fid="system_name" value="GMX Dashboard System"/>
+    <Field fid="system_version" value="1.0.0"/>
+    <Field fid="instance_id" value="gmx_001"/>
+
+    <!-- Current Status Information -->
+    <Field fid="status_text" value="System Operational"/>
+    <Field fid="status_icon" value="success"/>
+    <Field fid="overall_health" value="good"/>
+    <Field fid="health_percentage" value="95"/>
+
+    <!-- Time and Date Information -->
+    <Field fid="current_time" value="2024-01-15 14:30:25"/>
+    <Field fid="startup_time" value="2024-01-15 08:00:00"/>
+    <Field fid="uptime" value="6h 30m 25s"/>
+    <Field fid="uptime_seconds" value="23425"/>
+
+    <!-- Resource Usage -->
+    <Field fid="memory_usage" value="1.2 GB / 4.0 GB"/>
+    <Field fid="memory_percentage" value="30"/>
+    <Field fid="cpu_usage" value="15.3%"/>
+    <Field fid="disk_usage" value="45.2 GB / 100 GB"/>
+    <Field fid="disk_percentage" value="45"/>
+
+    <!-- Network Status -->
+    <Field fid="connection_status" value="connected"/>
+    <Field fid="network_latency" value="12ms"/>
+    <Field fid="data_received" value="245.7 MB"/>
+    <Field fid="data_sent" value="156.3 MB"/>
+    <Field fid="active_connections" value="8"/>
+
+    <!-- Service Status -->
+    <Field fid="layout_server_status" value="online"/>
+    <Field fid="data_server_status" value="online"/>
+    <Field fid="auth_server_status" value="online"/>
+    <Field fid="logging_service_status" value="online"/>
+
+    <!-- Performance Metrics -->
+    <Field fid="average_response_time" value="125ms"/>
+    <Field fid="requests_per_minute" value="45"/>
+    <Field fid="error_rate" value="0.02%"/>
+    <Field fid="throughput" value="1.2 MB/s"/>
+
+    <!-- Alert Counts -->
+    <Field fid="critical_alerts" value="0"/>
+    <Field fid="warning_alerts" value="2"/>
+    <Field fid="info_alerts" value="5"/>
+    <Field fid="total_alerts" value="7"/>
+
+    <!-- System Configuration -->
+    <Field fid="debug_mode" value="false"/>
+    <Field fid="maintenance_mode" value="false"/>
+    <Field fid="auto_restart" value="true"/>
+    <Field fid="backup_enabled" value="true"/>
+
+    <!-- Last Operations -->
+    <Field fid="last_backup" value="2024-01-15 02:00:00"/>
+    <Field fid="last_restart" value="2024-01-15 08:00:00"/>
+    <Field fid="last_update" value="2024-01-14 18:30:00"/>
+
+    <!-- Cross-Record References -->
+    <Attribute ruid="user_info" fid="session_count" send="true"/>
+    <Attribute ruid="alerts_summary" fid="alert_count" send="true"/>
+    <Attribute ruid="performance_metrics" fid="cpu_trend" send="false"/>
+
+</ISISRecord>

@@ -1,0 +1,11 @@
+
+== Current Issue:
+
+Your application is now running,
+though it's encountering a runtime error (`Can't cast h2d.Flow to h2d.Interactive`)
+which is a different issue - a coding problem in your application logic, not an environment issue.
+This is normal development debugging and shows that the HashLink runtime
+and GUI environment are working perfectly.
+
+The repeated error messages suggest there's a type casting issue in your resize handler,
+but the application is successfully running with a GUI window in your Wayland environment!

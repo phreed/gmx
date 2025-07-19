@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Navigation Data Record Example
+     This demonstrates a record structure for navigation and positioning information
+     RUID: navigation_data
+     Used with: dashboard.xml layout, compass and turn rate indicator components
+-->
+<ISISRecord ruid="navigation_data">
+
+    <!-- Position Information -->
+    <Field fid="latitude" value="36.1627"/>
+    <Field fid="longitude" value="-86.7816"/>
+    <Field fid="altitude" value="182.5"/>
+    <Field fid="altitude_units" value="meters"/>
+
+    <!-- Heading and Direction -->
+    <Field fid="magnetic_heading" value="045"/>
+    <Field fid="true_heading" value="047"/>
+    <Field fid="heading_display" value="045° NE"/>
+    <Field fid="magnetic_declination" value="2.5"/>
+
+    <!-- Speed and Motion -->
+    <Field fid="ground_speed" value="65.2"/>
+    <Field fid="air_speed" value="68.1"/>
+    <Field fid="speed_units" value="km/h"/>
+    <Field fid="speed_display" value="65.2 km/h"/>
+    <Field fid="vertical_speed" value="0.0"/>
+
+    <!-- Turn Rate Information -->
+    <Field fid="turn_rate" value="0.5"/>
+    <Field fid="turn_rate_units" value="degrees/second"/>
+    <Field fid="turn_rate_display" value="0.5°/s R"/>
+    <Field fid="turn_direction" value="right"/>
+
+    <!-- Course and Track -->
+    <Field fid="course_over_ground" value="046"/>
+    <Field fid="track_made_good" value="045"/>
+    <Field fid="cross_track_error" value="12.3"/>
+    <Field fid="course_deviation" value="1.2"/>
+
+    <!-- GPS and Navigation System Status -->
+    <Field fid="gps_status" value="active"/>
+    <Field fid="satellite_count" value="8"/>
+    <Field fid="fix_quality" value="3D"/>
+    <Field fid="hdop" value="1.2"/>
+    <Field fid="pdop" value="1.8"/>
+
+    <!-- Waypoint Information -->
+    <Field fid="active_waypoint" value="WPT001"/>
+    <Field fid="waypoint_name" value="Checkpoint Alpha"/>
+    <Field fid="distance_to_waypoint" value="2.4"/>
+    <Field fid="bearing_to_waypoint" value="087"/>
+    <Field fid="eta_to_waypoint" value="00:02:15"/>
+
+    <!-- Environmental Data -->
+    <Field fid="wind_speed" value="12.5"/>
+    <Field fid="wind_direction" value="270"/>
+    <Field fid="wind_display" value="12.5 kt from W"/>
+    <Field fid="outside_temperature" value="22.3"/>
+    <Field fid="barometric_pressure" value="1013.2"/>
+
+    <!-- Navigation System Configuration -->
+    <Field fid="coordinate_system" value="WGS84"/>
+    <Field fid="display_units" value="metric"/>
+    <Field fid="compass_variation" value="auto"/>
+    <Field fid="navigation_mode" value="gps"/>
+
+    <!-- Timing Information -->
+    <Field fid="utc_time" value="19:45:32"/>
+    <Field fid="local_time" value="14:45:32"/>
+    <Field fid="time_zone" value="CDT"/>
+    <Field fid="last_update" value="2024-01-15 14:45:32"/>
+
+    <!-- Trip Information -->
+    <Field fid="trip_distance" value="125.7"/>
+    <Field fid="trip_time" value="01:55:23"/>
+    <Field fid="average_speed" value="64.8"/>
+    <Field fid="max_speed" value="78.2"/>
+
+    <!-- Status and Alerts -->
+    <Field fid="navigation_status" value="on_course"/>
+    <Field fid="alert_level" value="normal"/>
+    <Field fid="deviation_alert" value="false"/>
+    <Field fid="speed_alert" value="false"/>
+
+    <!-- Cross-Record References -->
+    <Attribute ruid="system_status" fid="gps_service_status" send="true"/>
+    <Attribute ruid="alerts_summary" fid="navigation_warnings" send="true"/>
+    <Attribute ruid="route_plan" fid="next_waypoint" send="false"/>
+
+</ISISRecord>

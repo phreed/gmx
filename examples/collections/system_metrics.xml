@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- System Metrics Collection Example
+     This demonstrates a collection structure for real-time system performance metrics
+     CUID: system_metrics
+     Used with: dashboard.xml layout DataGrid component
+-->
+<ISISCollection cuid="system_metrics">
+
+    <RuidList>
+        <!-- CPU Usage Metric -->
+        <Ruid ruid="metric_cpu_usage" select="first"/>
+
+        <!-- Memory Usage Metric -->
+        <Ruid ruid="metric_memory_usage" select="last"/>
+
+        <!-- Disk I/O Metric -->
+        <Ruid ruid="metric_disk_io" select="last"/>
+
+        <!-- Network Throughput Metric -->
+        <Ruid ruid="metric_network_throughput" select="last"/>
+
+        <!-- Database Connections Metric -->
+        <Ruid ruid="metric_db_connections" select="last"/>
+
+        <!-- Active Users Metric -->
+        <Ruid ruid="metric_active_users" select="last"/>
+
+        <!-- Response Time Metric -->
+        <Ruid ruid="metric_response_time" select="last"/>
+
+        <!-- Error Rate Metric -->
+        <Ruid ruid="metric_error_rate" select="last"/>
+
+        <!-- Cache Hit Rate Metric -->
+        <Ruid ruid="metric_cache_hit_rate" select="last"/>
+
+        <!-- Queue Length Metric -->
+        <Ruid ruid="metric_queue_length" select="last"/>
+
+        <!-- Temperature Metric -->
+        <Ruid ruid="metric_temperature" select="last"/>
+
+        <!-- Power Consumption Metric -->
+        <Ruid ruid="metric_power_consumption" select="last"/>
+    </RuidList>
+
+</ISISCollection>
+
+<!-- Supporting Records for Metric Items -->
+
+<!-- CPU Usage Metric -->
+<ISISRecord ruid="metric_cpu_usage">
+    <Field fid="metric_id" value="cpu_usage"/>
+    <Field fid="metric_name" value="CPU Usage"/>
+    <Field fid="current_value" value="15.3%"/>
+    <Field fid="numeric_value" value="15.3"/>
+    <Field fid="unit" value="percent"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="75"/>
+    <Field fid="threshold_critical" value="90"/>
+    <Field fid="last_updated" value="14:45:32"/>
+    <Field fid="update_frequency" value="5"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="8.1"/>
+    <Field fid="max_value" value="22.7"/>
+    <Field fid="average_value" value="14.8"/>
+</ISISRecord>
+
+<!-- Memory Usage Metric -->
+<ISISRecord ruid="metric_memory_usage">
+    <Field fid="metric_id" value="memory_usage"/>
+    <Field fid="metric_name" value="Memory Usage"/>
+    <Field fid="current_value" value="2.1 GB"/>
+    <Field fid="numeric_value" value="2.1"/>
+    <Field fid="unit" value="GB"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="3.2"/>
+    <Field fid="threshold_critical" value="3.8"/>
+    <Field fid="last_updated" value="14:45:32"/>
+    <Field fid="update_frequency" value="10"/>
+    <Field fid="trend" value="increasing"/>
+    <Field fid="min_value" value="1.8"/>
+    <Field fid="max_value" value="2.4"/>
+    <Field fid="average_value" value="2.0"/>
+</ISISRecord>
+
+<!-- Disk I/O Metric -->
+<ISISRecord ruid="metric_disk_io">
+    <Field fid="metric_id" value="disk_io"/>
+    <Field fid="metric_name" value="Disk I/O"/>
+    <Field fid="current_value" value="125 MB/s"/>
+    <Field fid="numeric_value" value="125"/>
+    <Field fid="unit" value="MB/s"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="500"/>
+    <Field fid="threshold_critical" value="800"/>
+    <Field fid="last_updated" value="14:45:31"/>
+    <Field fid="update_frequency" value="5"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="45"/>
+    <Field fid="max_value" value="320"/>
+    <Field fid="average_value" value="140"/>
+</ISISRecord>
+
+<!-- Network Throughput Metric -->
+<ISISRecord ruid="metric_network_throughput">
+    <Field fid="metric_id" value="network_throughput"/>
+    <Field fid="metric_name" value="Network Throughput"/>
+    <Field fid="current_value" value="1.2 Mbps"/>
+    <Field fid="numeric_value" value="1.2"/>
+    <Field fid="unit" value="Mbps"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="8.0"/>
+    <Field fid="threshold_critical" value="9.5"/>
+    <Field fid="last_updated" value="14:45:33"/>
+    <Field fid="update_frequency" value="5"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="0.8"/>
+    <Field fid="max_value" value="2.1"/>
+    <Field fid="average_value" value="1.3"/>
+</ISISRecord>
+
+<!-- Database Connections Metric -->
+<ISISRecord ruid="metric_db_connections">
+    <Field fid="metric_id" value="db_connections"/>
+    <Field fid="metric_name" value="DB Connections"/>
+    <Field fid="current_value" value="8"/>
+    <Field fid="numeric_value" value="8"/>
+    <Field fid="unit" value="connections"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="45"/>
+    <Field fid="threshold_critical" value="55"/>
+    <Field fid="last_updated" value="14:45:30"/>
+    <Field fid="update_frequency" value="15"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="3"/>
+    <Field fid="max_value" value="15"/>
+    <Field fid="average_value" value="9"/>
+</ISISRecord>
+
+<!-- Active Users Metric -->
+<ISISRecord ruid="metric_active_users">
+    <Field fid="metric_id" value="active_users"/>
+    <Field fid="metric_name" value="Active Users"/>
+    <Field fid="current_value" value="23"/>
+    <Field fid="numeric_value" value="23"/>
+    <Field fid="unit" value="users"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="100"/>
+    <Field fid="threshold_critical" value="150"/>
+    <Field fid="last_updated" value="14:45:28"/>
+    <Field fid="update_frequency" value="30"/>
+    <Field fid="trend" value="increasing"/>
+    <Field fid="min_value" value="12"/>
+    <Field fid="max_value" value="28"/>
+    <Field fid="average_value" value="20"/>
+</ISISRecord>
+
+<!-- Response Time Metric -->
+<ISISRecord ruid="metric_response_time">
+    <Field fid="metric_id" value="response_time"/>
+    <Field fid="metric_name" value="Avg Response Time"/>
+    <Field fid="current_value" value="125ms"/>
+    <Field fid="numeric_value" value="125"/>
+    <Field fid="unit" value="ms"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="500"/>
+    <Field fid="threshold_critical" value="1000"/>
+    <Field fid="last_updated" value="14:45:32"/>
+    <Field fid="update_frequency" value="10"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="85"/>
+    <Field fid="max_value" value="180"/>
+    <Field fid="average_value" value="135"/>
+</ISISRecord>
+
+<!-- Error Rate Metric -->
+<ISISRecord ruid="metric_error_rate">
+    <Field fid="metric_id" value="error_rate"/>
+    <Field fid="metric_name" value="Error Rate"/>
+    <Field fid="current_value" value="0.02%"/>
+    <Field fid="numeric_value" value="0.02"/>
+    <Field fid="unit" value="percent"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="1.0"/>
+    <Field fid="threshold_critical" value="5.0"/>
+    <Field fid="last_updated" value="14:45:29"/>
+    <Field fid="update_frequency" value="15"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="0.00"/>
+    <Field fid="max_value" value="0.15"/>
+    <Field fid="average_value" value="0.03"/>
+</ISISRecord>
+
+<!-- Cache Hit Rate Metric -->
+<ISISRecord ruid="metric_cache_hit_rate">
+    <Field fid="metric_id" value="cache_hit_rate"/>
+    <Field fid="metric_name" value="Cache Hit Rate"/>
+    <Field fid="current_value" value="94.2%"/>
+    <Field fid="numeric_value" value="94.2"/>
+    <Field fid="unit" value="percent"/>
+    <Field fid="status" value="Good"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="80"/>
+    <Field fid="threshold_critical" value="60"/>
+    <Field fid="last_updated" value="14:45:27"/>
+    <Field fid="update_frequency" value="20"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="89.1"/>
+    <Field fid="max_value" value="96.8"/>
+    <Field fid="average_value" value="93.5"/>
+</ISISRecord>
+
+<!-- Queue Length Metric -->
+<ISISRecord ruid="metric_queue_length">
+    <Field fid="metric_id" value="queue_length"/>
+    <Field fid="metric_name" value="Queue Length"/>
+    <Field fid="current_value" value="3"/>
+    <Field fid="numeric_value" value="3"/>
+    <Field fid="unit" value="items"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="25"/>
+    <Field fid="threshold_critical" value="50"/>
+    <Field fid="last_updated" value="14:45:33"/>
+    <Field fid="update_frequency" value="5"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="0"/>
+    <Field fid="max_value" value="8"/>
+    <Field fid="average_value" value="2"/>
+</ISISRecord>
+
+<!-- Temperature Metric -->
+<ISISRecord ruid="metric_temperature">
+    <Field fid="metric_id" value="system_temperature"/>
+    <Field fid="metric_name" value="System Temperature"/>
+    <Field fid="current_value" value="42°C"/>
+    <Field fid="numeric_value" value="42"/>
+    <Field fid="unit" value="celsius"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="65"/>
+    <Field fid="threshold_critical" value="80"/>
+    <Field fid="last_updated" value="14:45:25"/>
+    <Field fid="update_frequency" value="60"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="38"/>
+    <Field fid="max_value" value="47"/>
+    <Field fid="average_value" value="41"/>
+</ISISRecord>
+
+<!-- Power Consumption Metric -->
+<ISISRecord ruid="metric_power_consumption">
+    <Field fid="metric_id" value="power_consumption"/>
+    <Field fid="metric_name" value="Power Consumption"/>
+    <Field fid="current_value" value="285W"/>
+    <Field fid="numeric_value" value="285"/>
+    <Field fid="unit" value="watts"/>
+    <Field fid="status" value="Normal"/>
+    <Field fid="status_color" value="0x00AA00"/>
+    <Field fid="threshold_warning" value="400"/>
+    <Field fid="threshold_critical" value="500"/>
+    <Field fid="last_updated" value="14:45:26"/>
+    <Field fid="update_frequency" value="30"/>
+    <Field fid="trend" value="stable"/>
+    <Field fid="min_value" value="245"/>
+    <Field fid="max_value" value="320"/>
+    <Field fid="average_value" value="290"/>
+</ISISRecord>

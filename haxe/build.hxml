@@ -1,0 +1,33 @@
+# Haxe build configuration for GMX application
+# Targeting HashLink for cross-platform deployment
+
+# Main class
+-main Main
+
+# Source directories
+-cp src
+
+# Target HashLink
+-hl bin/gmx.hl
+
+# Libraries
+-lib heaps
+-lib hlsdl
+-lib format
+
+# Compiler flags
+-D resourcesPath=res
+-dce full
+
+# Debug build
+--debug
+
+# Additional defines for HashLink
+-D hl-ver=1.15.0
+-D no-compilation
+-D no-root
+
+# Resolution and window settings
+-D windowTitle=GMX
+-D windowWidth=800
+-D windowHeight=600

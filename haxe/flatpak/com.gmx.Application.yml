@@ -1,0 +1,110 @@
+app-id: com.gmx.Application
+runtime: org.freedesktop.Platform
+runtime-version: '22.08'
+sdk: org.freedesktop.Sdk
+command: gmx
+
+finish-args:
+  # Network access for control channel communication
+  - --share=network
+
+  # GUI access
+  - --share=ipc
+  - --socket=x11
+  - --socket=wayland
+
+  # Audio access (if needed for notifications)
+  - --socket=pulseaudio
+
+  # File system access for data files
+  - --filesystem=home:rw
+  - --filesystem=xdg-documents:rw
+  - --filesystem=xdg-download:rw
+
+  # Environment variables
+  - --env=GMX_DATA_DIR=$XDG_DATA_HOME/gmx
+  - --env=GMX_CONFIG_DIR=$XDG_CONFIG_HOME/gmx
+
+  # OpenGL access for hardware acceleration
+  - --device=dri
+
+modules:
+  # HashLink runtime dependencies
+  - name: hashlink-deps
+    buildsystem: simple
+    build-commands:
+      - mkdir -p /app/lib
+    sources: []
+
+  # GMX Application
+  - name: gmx-application
+    buildsystem: simple
+    build-commands:
+      # Create application directories
+      - mkdir -p /app/bin
+      - mkdir -p /app/share/applications
+      - mkdir -p /app/share/icons/hicolor/64x64/apps
+      - mkdir -p /app/share/icons/hicolor/128x128/apps
+      - mkdir -p /app/share/icons/hicolor/256x256/apps
+      - mkdir -p /app/share/metainfo
+
+      # Install the main executable
+      - install -Dm755 gmx-linux /app/bin/gmx
+
+      # Install assets if they exist
+      - if [ -d assets ]; then cp -r assets /app/share/gmx/; fi
+
+      # Install desktop file
+      - install -Dm644 com.gmx.Application.desktop /app/share/applications/
+
+      # Install icons
+      - if [ -f icons/gmx-64.png ]; then install -Dm644 icons/gmx-64.png /app/share/icons/hicolor/64x64/apps/com.gmx.Application.png; fi
+      - if [ -f icons/gmx-128.png ]; then install -Dm644 icons/gmx-128.png /app/share/icons/hicolor/128x128/apps/com.gmx.Application.png; fi
+      - if [ -f icons/gmx-256.png ]; then install -Dm644 icons/gmx-256.png /app/share/icons/hicolor/256x256/apps/com.gmx.Application.png; fi
+
+      # Install AppData/MetaInfo
+      - install -Dm644 com.gmx.Application.metainfo.xml /app/share/metainfo/
+
+      # Create wrapper script for proper environment setup
+      - |
+        cat > /app/bin/gmx-wrapper << 'EOF'
+        #!/bin/bash
+        export GMX_DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/gmx"
+        export GMX_CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/gmx"
+        mkdir -p "$GMX_DATA_DIR" "$GMX_CONFIG_DIR"
+        exec /app/bin/gmx "$@"
+        EOF
+      - chmod +x /app/bin/gmx-wrapper
+
+      # Make the wrapper the main command
+      - ln -sf gmx-wrapper /app/bin/gmx-flatpak
+
+    sources:
+      # Main application binary (built separately)
+      - type: file
+        path: ../bin/gmx-linux
+        dest-filename: gmx-linux
+
+      # Desktop integration files
+      - type: file
+        path: com.gmx.Application.desktop
+
+      - type: file
+        path: com.gmx.Application.metainfo.xml
+
+      # Application assets
+      - type: dir
+        path: ../assets
+        dest: assets
+
+      # Application icons
+      - type: dir
+        path: icons
+        dest: icons
+
+cleanup:
+  - /include
+  - /lib/pkgconfig
+  - /share/man
+  - '*.la'
+  - '*.a'

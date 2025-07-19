@@ -1,0 +1,14 @@
+= Recuring issues
+
+== Does GMX work?
+
+The system demonstrates that:
+* The GMX architecture migration from Flash/ActionScript to Haxe/HashLink is viable.
+* The core functionality is working.
+
+== Asciidoc Breaks (by the AI)
+
+The asciidoc files do not follow covention.
+* The blocks use markdown syntax instead of asciidoc syntax.
+* The lists should get a single preceeding blank line.
+* The lines of text should be ventilated.

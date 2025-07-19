@@ -1,0 +1,222 @@
+= GMX - Graphical Message eXchange
+
+GMX is a modern client-server application framework for building dynamic, data-driven user interfaces. The GMX client has been successfully migrated from Adobe Flash/ActionScript to Haxe/HashLink, providing better performance, cross-platform compatibility, and future-proofing while maintaining full compatibility with existing servers and data formats.
+
+== Architecture Overview
+
+GMX follows a client-server architecture where:
+
+* *GMX Client* - A modern Haxe/HashLink application that renders dynamic UIs with native performance
+* *Layout Server* - Provides UI layout definitions via XML messages
+* *Data Server* - Provides content as records and collections of records
+
+=== Technology Stack
+
+The modern GMX implementation uses:
+
+* *Haxe* - Modern, type-safe programming language
+* *HashLink* - High-performance virtual machine with JIT compilation
+* *Heaps.io* - Cross-platform graphics and UI engine
+* *Native Deployment* - Self-contained executables for Windows, Linux, macOS
+
+== Core Concepts
+
+=== GUID System
+GMX uses three types of globally unique identifiers (GUIDs):
+
+* *LUID* (Layout Unique ID) - Identifies layout components and containers
+* *RUID* (Record Unique ID) - Identifies individual data records
+* *CUID* (Collection Unique ID) - Identifies collections of related records
+
+=== Message Types
+
+* *Layout Messages* - XML-based UI definitions targeting specific LUIDs
+* *Record Messages* - Data updates for individual records (RUIDs)
+* *Collection Messages* - Batch operations on groups of records (CUIDs)
+
+== Quick Start
+
+=== Prerequisites
+
+* Pixi package manager for dependency management
+* Node.js 14.0+ for build scripts
+
+=== Installation and Setup
+
+[source,bash]
+----
+# Install dependencies and setup environment
+pixi run install-haxe
+
+# Build the application
+cd haxe
+npm run build
+
+# Run the application
+npm run run
+----
+
+=== Client Development
+See link:docs/developer_guide.adoc[Developer's Guide] for:
+
+* Modern Haxe/HashLink development workflow
+* Building and deploying across platforms
+* Creating custom UI components with Heaps.io
+* Testing and debugging with comprehensive test suite
+
+=== Server Development
+See link:docs/server_guide.adoc[Server Guide] for:
+
+* Implementing layout servers
+* Implementing data servers
+* Message protocols and formats
+
+=== Deployment
+See link:docs/deployment_guide.adoc[Deployment Guide] for:
+
+* Cross-platform packaging (Windows, Linux, macOS)
+* Flatpak packaging for Linux distributions
+* Enterprise deployment strategies
+* Performance optimization and monitoring
+
+=== Examples
+The link:examples/[examples directory] contains:
+
+* Sample layouts (`examples/layouts/`)
+* Sample records (`examples/records/`)
+* Sample collections (`examples/collections/`)
+* Reference Python server implementations (`examples/servers/`)
+
+=== Testing
+
+[source,bash]
+----
+# Run comprehensive test suite
+python tests/test_gmx.py
+
+# Quick server-only tests
+python tests/test_gmx.py --server-only
+----
+
+== Documentation
+
+=== Primary Guides
+
+==== link:docs/developer_guide.adoc[Developer's Guide]
+Complete guide for developing with the modern Haxe/HashLink GMX implementation:
+
+* Development environment setup and prerequisites
+* Modern Haxe/HashLink workflow replacing Flash/ActionScript
+* Building and packaging for Windows, Linux, macOS
+* Custom UI component development with Heaps.io
+* Network services and protocol implementation
+* Testing framework and debugging tools
+* Performance optimization and profiling
+
+==== link:docs/deployment_guide.adoc[Deployment Guide]
+Comprehensive deployment documentation for all platforms:
+
+* Cross-platform deployment (Windows, Linux, macOS)
+* Flatpak packaging for Linux distributions
+* Code signing and security considerations
+* Enterprise deployment strategies
+* Automated build pipelines and CI/CD
+* Performance monitoring and optimization
+* Troubleshooting common deployment issues
+
+==== link:docs/migration_reference.adoc[Migration Reference]
+Complete reference for the Flash/AIR to Haxe/HashLink migration:
+
+* Technology stack transformation details
+* Performance metrics and improvements
+* Feature migration matrix and compatibility
+* Development experience comparison
+* Migration process timeline and lessons learned
+* Risk assessment and ROI analysis
+* Best practices for similar migrations
+
+=== Reference Documentation
+
+==== link:docs/server_guide.adoc[Server Implementation Guide]
+Server-side development and protocol implementation:
+
+* Layout server implementation
+* Data server implementation
+* XML socket communication protocols
+* Message formats and data structures
+* Server deployment and scaling
+
+==== link:docs/protocol_reference.adoc[Protocol Reference]
+Detailed protocol and message format specifications:
+
+* XML message structure and schemas
+* GUID system (LUID, RUID, CUID)
+* Socket communication protocols
+* Data serialization formats
+* Error handling and status codes
+
+==== link:docs/component_reference.adoc[Component Reference]
+UI component library and API documentation:
+
+* Available UI components and their properties
+* Component lifecycle and event handling
+* Custom component development patterns
+* Layout and styling systems
+* Component interaction patterns
+
+==== link:docs/operator_guide.adoc[Operator's Guide]
+Operational deployment and maintenance:
+
+* System requirements and dependencies
+* Installation and configuration procedures
+* Monitoring and logging
+* Backup and recovery procedures
+* Security configuration and updates
+
+== Migration Summary
+
+The GMX application has been successfully migrated from Adobe AIR/Flash to Haxe/HashLink, achieving:
+
+* *Performance*: 3-4x faster startup, 70-80% memory reduction
+* *Security*: Elimination of Flash Player vulnerabilities
+* *Cross-Platform*: Native support for Windows, Linux, macOS
+* *Future-Proof*: Modern technology stack with active development
+* *Compatibility*: Full preservation of data formats and protocols
+
+== Getting Help
+
+* *Development Issues*: See link:docs/developer_guide.adoc[Developer's Guide] troubleshooting section
+* *Deployment Problems*: Check link:docs/deployment_guide.adoc[Deployment Guide] troubleshooting
+* *Server Implementation*: Refer to link:docs/server_guide.adoc[Server Guide] and examples
+* *Protocol Questions*: Consult link:docs/protocol_reference.adoc[Protocol Reference]
+* *Migration Context*: Review link:docs/migration_reference.adoc[Migration Reference]
+
+== Contributing
+
+When updating documentation:
+
+
+. Follow AsciiDoc formatting standards
+. Update both content and cross-references
+. Test examples and code snippets
+. Maintain consistency across guides
+. Update documentation index when adding new documents
+
+== Archive
+
+The `docs/archive/` subdirectory contains the original markdown documentation that was merged into the AsciiDoc guides:
+
+* `haxe_readme.md` - Original Haxe implementation README
+* `migration_summary.md` - Migration status and progress
+* `deployment_guide.md` - Platform deployment instructions
+* `flatpak_guide.md` - Linux Flatpak packaging guide
+* `before_after_comparison.md` - Detailed migration comparison
+* `tests_readme.md` - Test suite documentation
+
+These archived files are preserved for reference but superseded by the integrated AsciiDoc documentation.
+
+== License
+
+Copyright (c) Vanderbilt University, 2006-2009
+Developed under contract for Future Combat Systems (FCS)
+by the Institute for Software Integrated Systems, Vanderbilt Univ.

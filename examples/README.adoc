@@ -1,0 +1,88 @@
+= GMX Examples Directory
+
+This directory contains comprehensive examples demonstrating the GMX (Graphical Message eXchange) framework, including layouts, records, collections, and server implementations.
+
+== Directory Structure
+
+----
+examples/
+├── layouts/           # Layout XML examples
+│   ├── basic_form.xml      # User registration form
+│   ├── dashboard.xml       # Complex dashboard interface
+│   └── simple_button.xml   # Basic interactive button
+├── records/           # Record XML examples
+│   ├── navigation_record.xml     # GPS and navigation data
+│   ├── system_status_record.xml  # System monitoring data
+│   └── user_form_record.xml      # Form input data
+├── collections/       # Collection XML examples
+│   ├── alerts_list.xml      # Active system alerts
+│   ├── role_options.xml     # User role selections
+│   └── system_metrics.xml   # Performance metrics
+├── servers/           # Server implementation examples
+│   ├── layout_server.py     # Python layout server
+│   └── data_server.py       # Python data server
+└── README.adoc        # This file
+----
+
+== Quick Start
+
+=== Using Pixi (Recommended)
+
+[source,bash]
+----
+# Complete setup and run
+pixi run setup
+pixi run start-servers    # Start example servers
+pixi run run             # Build and run client
+----
+
+=== Manual Setup
+
+[source,bash]
+----
+# Start servers
+cd examples/servers
+python layout_server.py &
+python data_server.py &
+
+# Build and run client (in another terminal)
+cd haxe
+pixi run build
+pixi run run
+----
+
+== Examples Overview
+
+=== Layouts
+- **simple_button.xml** - Basic button with data binding (`mainLuid` → `button_record`)
+- **basic_form.xml** - User registration form with validation (`mainLuid` → `user_form_record`, `role_options`)
+- **dashboard.xml** - Complex real-time dashboard with multiple data sources
+
+=== Records
+- **user_form_record.xml** - Form data structure with validation fields
+- **system_status_record.xml** - System monitoring and health metrics
+- **navigation_record.xml** - GPS positioning and navigation data
+
+=== Collections
+- **role_options.xml** - User role definitions for form dropdowns
+- **alerts_list.xml** - System alerts with severity levels
+- **system_metrics.xml** - Real-time performance metrics
+
+=== Servers
+- **layout_server.py** - Python server managing layout definitions (port 12345)
+- **data_server.py** - Python server managing records and collections (port 12346)
+
+== Documentation
+
+For detailed information about these examples, see:
+
+- **link:../docs/developer_guide.adoc[Developer's Guide]** - Complete development workflow and Pixi tasks
+- **link:../docs/server_guide.adoc[Server Guide]** - Server implementation and data models
+- **link:../docs/protocol_reference.adoc[Protocol Reference]** - Message formats and flow examples
+- **link:../docs/component_reference.adoc[Component Reference]** - Layout examples and component usage
+
+== License
+
+Copyright (c) Vanderbilt University, 2006-2009
+Developed under contract for Future Combat Systems (FCS)
+by the Institute for Software Integrated Systems, Vanderbilt Univ.

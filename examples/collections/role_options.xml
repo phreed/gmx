@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Role Options Collection Example
+     This demonstrates a collection structure for user role selection options
+     CUID: role_options
+     Used with: basic_form.xml layout ComboBox component
+-->
+<ISISCollection cuid="role_options">
+
+    <RuidList>
+        <!-- Administrator Role -->
+        <Ruid ruid="role_admin" select="last"/>
+
+        <!-- Manager Role -->
+        <Ruid ruid="role_manager" select="last"/>
+
+        <!-- User Role -->
+        <Ruid ruid="role_user" select="last"/>
+
+        <!-- Guest Role -->
+        <Ruid ruid="role_guest" select="last"/>
+
+        <!-- Operator Role -->
+        <Ruid ruid="role_operator" select="last"/>
+
+        <!-- Analyst Role -->
+        <Ruid ruid="role_analyst" select="last"/>
+    </RuidList>
+
+</ISISCollection>
+
+<!-- Supporting Records for Role Options -->
+
+<!-- Administrator Role Record -->
+<ISISRecord ruid="role_admin">
+    <Field fid="role_id" value="admin"/>
+    <Field fid="display_name" value="Administrator"/>
+    <Field fid="description" value="Full system access and management capabilities"/>
+    <Field fid="permission_level" value="10"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>
+
+<!-- Manager Role Record -->
+<ISISRecord ruid="role_manager">
+    <Field fid="role_id" value="manager"/>
+    <Field fid="display_name" value="Manager"/>
+    <Field fid="description" value="Management access with team oversight"/>
+    <Field fid="permission_level" value="8"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>
+
+<!-- User Role Record -->
+<ISISRecord ruid="role_user">
+    <Field fid="role_id" value="user"/>
+    <Field fid="display_name" value="Standard User"/>
+    <Field fid="description" value="Standard user access for daily operations"/>
+    <Field fid="permission_level" value="5"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>
+
+<!-- Guest Role Record -->
+<ISISRecord ruid="role_guest">
+    <Field fid="role_id" value="guest"/>
+    <Field fid="display_name" value="Guest"/>
+    <Field fid="description" value="Limited read-only access"/>
+    <Field fid="permission_level" value="2"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>
+
+<!-- Operator Role Record -->
+<ISISRecord ruid="role_operator">
+    <Field fid="role_id" value="operator"/>
+    <Field fid="display_name" value="System Operator"/>
+    <Field fid="description" value="Operational control with monitoring capabilities"/>
+    <Field fid="permission_level" value="7"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>
+
+<!-- Analyst Role Record -->
+<ISISRecord ruid="role_analyst">
+    <Field fid="role_id" value="analyst"/>
+    <Field fid="display_name" value="Data Analyst"/>
+    <Field fid="description" value="Data analysis and reporting access"/>
+    <Field fid="permission_level" value="6"/>
+    <Field fid="active" value="true"/>
+</ISISRecord>

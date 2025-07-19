@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Basic Form Layout Example
+     This demonstrates a simple user input form with various components
+     Target LUID: mainLuid
+     Associated Records: user_form_record, validation_record
+-->
+<VBox luid="mainLuid" width="400" height="500" gap="10" paddingTop="20" paddingLeft="20" paddingRight="20">
+
+    <!-- Form Title -->
+    <Label text="User Registration Form" fontSize="18" fontWeight="bold" color="0x333333"/>
+
+    <!-- Spacer for visual separation -->
+    <Spacer height="10"/>
+
+    <!-- User Information Section -->
+    <VBox gap="8" width="100%">
+
+        <!-- Username Field -->
+        <HBox gap="10" verticalAlign="middle">
+            <Label text="Username:" width="100" textAlign="right"/>
+            <TextInput width="200" height="25"
+                      ruid="user_form_record" fid="username"
+                      maxChars="50" restrict="A-Za-z0-9_"/>
+        </HBox>
+
+        <!-- Email Field -->
+        <HBox gap="10" verticalAlign="middle">
+            <Label text="Email:" width="100" textAlign="right"/>
+            <TextInput width="200" height="25"
+                      ruid="user_form_record" fid="email"
+                      maxChars="100"/>
+        </HBox>
+
+        <!-- Password Field -->
+        <HBox gap="10" verticalAlign="middle">
+            <Label text="Password:" width="100" textAlign="right"/>
+            <TextInput width="200" height="25"
+                      ruid="user_form_record" fid="password"
+                      displayAsPassword="true" maxChars="50"/>
+        </HBox>
+
+        <!-- Role Selection -->
+        <HBox gap="10" verticalAlign="middle">
+            <Label text="Role:" width="100" textAlign="right"/>
+            <ComboBox width="200" height="25"
+                     cuid="role_options"
+                     ruid="user_form_record" fid="selected_role"
+                     labelField="display_name" dataField="role_id"/>
+        </HBox>
+
+        <!-- Account Type Radio Buttons -->
+        <HBox gap="10" verticalAlign="middle">
+            <Label text="Account Type:" width="100" textAlign="right"/>
+            <VBox gap="5">
+                <RadioButton label="Standard" value="standard" groupName="account_type"
+                           ruid="user_form_record" fid="account_type" selected="true"/>
+                <RadioButton label="Premium" value="premium" groupName="account_type"
+                           ruid="user_form_record" fid="account_type"/>
+                <RadioButton label="Enterprise" value="enterprise" groupName="account_type"
+                           ruid="user_form_record" fid="account_type"/>
+            </VBox>
+        </HBox>
+
+        <!-- Bio/Comments -->
+        <HBox gap="10" verticalAlign="top">
+            <Label text="Bio:" width="100" textAlign="right"/>
+            <TextArea width="200" height="80"
+                     ruid="user_form_record" fid="bio"
+                     wordWrap="true" maxChars="500"/>
+        </HBox>
+
+    </VBox>
+
+    <!-- Spacer before buttons -->
+    <Spacer height="20"/>
+
+    <!-- Action Buttons -->
+    <HBox gap="15" horizontalAlign="center">
+        <Button label="Submit" width="80" height="30"
+               ruid="user_form_record" fid="submit_action"
+               styleName="submitButton"/>
+        <Button label="Reset" width="80" height="30"
+               ruid="user_form_record" fid="reset_action"
+               styleName="cancelButton"/>
+        <Button label="Cancel" width="80" height="30"
+               ruid="user_form_record" fid="cancel_action"
+               styleName="cancelButton"/>
+    </HBox>
+
+    <!-- Status/Validation Messages -->
+    <Spacer height="10"/>
+    <Label ruid="validation_record" fid="status_message"
+          width="100%" textAlign="center" color="0x006600"/>
+
+</VBox>

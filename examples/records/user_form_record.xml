@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- User Form Record Example
+     This demonstrates a record structure for user registration form data
+     RUID: user_form_record
+     Used with: basic_form.xml layout
+-->
+<ISISRecord ruid="user_form_record">
+
+    <!-- Basic User Information Fields -->
+    <Field fid="username" value=""/>
+    <Field fid="email" value=""/>
+    <Field fid="password" value=""/>
+    <Field fid="bio" value=""/>
+
+    <!-- Selection Fields -->
+    <Field fid="selected_role" value="user"/>
+    <Field fid="account_type" value="standard"/>
+
+    <!-- Action Fields - Updated by button clicks -->
+    <Field fid="submit_action" value=""/>
+    <Field fid="reset_action" value=""/>
+    <Field fid="cancel_action" value=""/>
+
+    <!-- Validation and Status Fields -->
+    <Field fid="form_valid" value="false"/>
+    <Field fid="validation_errors" value=""/>
+    <Field fid="submission_status" value="ready"/>
+
+    <!-- Computed/Display Fields -->
+    <Field fid="display_name" value=""/>
+    <Field fid="creation_timestamp" value=""/>
+    <Field fid="last_modified" value=""/>
+
+    <!-- Cross-Record References -->
+    <Attribute ruid="validation_record" fid="status_message" send="true"/>
+    <Attribute ruid="user_preferences" fid="default_theme" send="false"/>
+
+</ISISRecord>

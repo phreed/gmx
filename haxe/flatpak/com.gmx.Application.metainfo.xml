@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.gmx.Application</id>
+
+  <name>GMX Application</name>
+  <summary>Graphical form builder and editor for database applications</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>LicenseRef-proprietary</project_license>
+
+  <description>
+    <p>
+      GMX Application is a powerful graphical form builder and editor designed for creating
+      database-driven user interfaces. Originally built with Adobe AIR/Flash, it has been
+      completely rewritten using modern Haxe/HashLink technology for better performance
+      and cross-platform compatibility.
+    </p>
+    <p>
+      Key features include:
+    </p>
+    <ul>
+      <li>Visual form designer with drag-and-drop components</li>
+      <li>Real-time property editing and preview</li>
+      <li>XML-based data serialization and export</li>
+      <li>Network communication for client-server architectures</li>
+      <li>Component library with text fields, buttons, checkboxes, and more</li>
+      <li>Syntax-highlighted XML viewer with copy functionality</li>
+    </ul>
+    <p>
+      This modernized version offers significant performance improvements over the original
+      Flash-based application, with faster startup times, lower memory usage, and native
+      desktop integration without requiring additional runtime dependencies.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">com.gmx.Application.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main application interface with component toolbox and form builder</caption>
+      <image>https://example.com/screenshots/gmx-main-interface.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Property editor and XML output viewer</caption>
+      <image>https://example.com/screenshots/gmx-property-editor.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Component selection and form preview</caption>
+      <image>https://example.com/screenshots/gmx-form-preview.png</image>
+    </screenshot>
+  </screenshots>
+
+  <url type="homepage">https://example.com/gmx</url>
+  <url type="bugtracker">https://github.com/company/gmx/issues</url>
+  <url type="help">https://docs.example.com/gmx</url>
+  <url type="donation">https://example.com/support</url>
+
+  <provides>
+    <binary>gmx</binary>
+    <mediatype>application/x-gmx-form</mediatype>
+    <mediatype>application/xml</mediatype>
+  </provides>
+
+  <releases>
+    <release version="2.0.0" date="2024-01-15">
+      <description>
+        <p>Major rewrite from Adobe AIR/Flash to Haxe/HashLink</p>
+        <ul>
+          <li>3-4x faster startup time compared to Flash version</li>
+          <li>70-80% reduction in memory usage</li>
+          <li>Native Linux desktop integration</li>
+          <li>Improved UI with hardware-accelerated graphics</li>
+          <li>Enhanced network communication with auto-reconnect</li>
+          <li>Better error handling and debugging capabilities</li>
+          <li>Cross-platform compatibility without runtime dependencies</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.5.2" date="2023-06-10">
+      <description>
+        <p>Final Adobe AIR version with bug fixes</p>
+        <ul>
+          <li>Fixed XML serialization issues</li>
+          <li>Improved component selection handling</li>
+          <li>Enhanced network stability</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+
+  <developer_name>GMX Development Team</developer_name>
+
+  <categories>
+    <category>Development</category>
+    <category>Office</category>
+    <category>Database</category>
+  </categories>
+
+  <keywords>
+    <keyword>form</keyword>
+    <keyword>builder</keyword>
+    <keyword>editor</keyword>
+    <keyword>database</keyword>
+    <keyword>ui</keyword>
+    <keyword>xml</keyword>
+    <keyword>designer</keyword>
+    <keyword>visual</keyword>
+  </keywords>
+
+  <content_rating type="oars-1.1" />
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+
+  <custom>
+    <value key="Purism::form_factor">workstation</value>
+    <value key="Purism::form_factor">mobile</value>
+  </custom>
+</component>

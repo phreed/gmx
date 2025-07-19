@@ -1,3 +1,0 @@
-FIRST: navigate to the src directory
-
-asdoc --target-player=10.0.0 -source-path . -doc-classes GMXMain -main-title "This is a test main" -window-title "This is test Window" -output TEST
