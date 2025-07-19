@@ -16,6 +16,11 @@ pkg-config = "*"
 # HashLink build dependencies - using available conda-forge packages
 libpng = "*"
 sqlite = "*"
+# Additional dependencies for HashLink native libraries
+libjpeg-turbo = "*"
+openal-soft = "*"
+libvorbis = "*"
+mbedtls = "*"
 # Note: curl, unzip should be available as system tools
 
 [pypi-dependencies]
@@ -108,7 +113,7 @@ description = "Install Haxe compiler to ~/.local/bin"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 if ! command -v haxe &> /dev/null; then
     echo "❌ Haxe not found in PATH. Please run: pixi run install-haxe"
@@ -135,39 +140,69 @@ bash -c '
 set -e
 HL_VERSION="1.15"
 HL_DIR="$HOME/.local"
-HL_SRC_DIR="$HOME/.local/src/hashlink"
 HL_BIN="$HL_DIR/bin/hl"
 
 # Check if already installed
 if [ -f "$HL_BIN" ]; then
     echo "✅ HashLink already installed at $HL_BIN"
+    LD_LIBRARY_PATH="$HL_DIR/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$LD_LIBRARY_PATH" "$HL_BIN" --version
     exit 0
 fi
 
-echo "📥 Installing HashLink $HL_VERSION from source to $HL_DIR..."
+echo "📥 Installing HashLink $HL_VERSION prebuilt binaries to $HL_DIR..."
 
 # Create directories
-mkdir -p "$HL_DIR/bin" "$HL_DIR/lib" "$HL_DIR/include"
-mkdir -p "$HOME/.local/src"
+mkdir -p "$HL_DIR/bin" "$HL_DIR/lib"
 
-# Clone HashLink source
-if [ ! -d "$HL_SRC_DIR" ]; then
-    echo "Cloning HashLink source..."
-    git clone https://github.com/HaxeFoundation/hashlink.git "$HL_SRC_DIR" --depth 1 --branch $HL_VERSION
+# Determine architecture and OS
+ARCH=$(uname -m)
+OS=$(uname -s)
+
+if [ "$OS" = "Linux" ]; then
+    if [ "$ARCH" = "x86_64" ]; then
+        DOWNLOAD_URL="https://github.com/HaxeFoundation/hashlink/releases/download/latest/hashlink-b7e7f91-linux-amd64.tar.gz"
+    else
+        echo "❌ Unsupported architecture: $ARCH"
+        echo "Building from source..."
+        # Fallback to source build for unsupported architectures
+        git clone https://github.com/HaxeFoundation/hashlink.git /tmp/hashlink --depth 1 --branch $HL_VERSION
+        cd /tmp/hashlink
+        make hl PREFIX="$HL_DIR"
+        cp hl "$HL_DIR/bin/"
+        cp libhl.so "$HL_DIR/lib/" 2>/dev/null || true
+        rm -rf /tmp/hashlink
+        echo "✅ HashLink built from source"
+        LD_LIBRARY_PATH="$HL_DIR/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$LD_LIBRARY_PATH" "$HL_BIN" --version
+        exit 0
+    fi
+elif [ "$OS" = "Darwin" ]; then
+    DOWNLOAD_URL="https://github.com/HaxeFoundation/hashlink/releases/download/latest/hashlink-b7e7f91-darwin.tar.gz"
+else
+    echo "❌ Unsupported OS: $OS"
+    exit 1
 fi
 
-cd "$HL_SRC_DIR"
+echo "Downloading HashLink from: $DOWNLOAD_URL"
+curl -L "$DOWNLOAD_URL" -o /tmp/hashlink.tar.gz
 
-# Build HashLink with minimal dependencies (core only)
-echo "Building HashLink (core components only)..."
-# Build only the core hashlink without optional libraries
-make hl PREFIX="$HL_DIR"
+echo "Extracting HashLink..."
+cd /tmp
+tar -xzf hashlink.tar.gz
 
-# Install HashLink
-echo "Installing HashLink to $HL_DIR..."
-mkdir -p "$HL_DIR/bin" "$HL_DIR/lib"
-cp hl "$HL_DIR/bin/"
-cp libhl.so "$HL_DIR/lib/" 2>/dev/null || cp libhl.dylib "$HL_DIR/lib/" 2>/dev/null || true
+# Find the extracted directory (it might be named differently)
+EXTRACT_DIR=$(find /tmp -maxdepth 1 -type d -name "*hashlink*" -o -name "hl-*" | head -1)
+if [ -z "$EXTRACT_DIR" ]; then
+    echo "❌ Could not find extracted HashLink directory"
+    exit 1
+fi
+
+echo "Installing HashLink from $EXTRACT_DIR to $HL_DIR..."
+cp "$EXTRACT_DIR/hl" "$HL_DIR/bin/" 2>/dev/null || cp "$EXTRACT_DIR"/hl* "$HL_DIR/bin/"
+cp "$EXTRACT_DIR"/*.so "$HL_DIR/lib/" 2>/dev/null || cp "$EXTRACT_DIR"/*.dylib "$HL_DIR/lib/" 2>/dev/null || true
+cp "$EXTRACT_DIR"/*.hdll "$HL_DIR/lib/" 2>/dev/null || true
+
+# Clean up
+rm -rf /tmp/hashlink.tar.gz "$EXTRACT_DIR"
 
 echo "✅ HashLink $HL_VERSION installed successfully!"
 echo "📍 Location: $HL_DIR"
@@ -178,7 +213,7 @@ echo "   export PATH=\"$HOME/.local/bin:$PATH\""
 echo ""
 
 # Verify installation
-"$HL_BIN" --version
+LD_LIBRARY_PATH="$HL_DIR/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$LD_LIBRARY_PATH" "$HL_BIN" --version
 '
 """
 description = "Install HashLink runtime"
@@ -189,7 +224,7 @@ depends-on = ["check-haxe"]
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 echo "Installing Haxe libraries..."
 
@@ -206,6 +241,7 @@ haxelib install format --quiet
 echo "Haxe libraries installed successfully"
 '
 """
+
 
 [tasks.setup-directories]
 description = "Setup project directories"
@@ -232,7 +268,7 @@ cwd = "haxe"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "Building GMX development version..."
@@ -254,7 +290,7 @@ cwd = "haxe"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "Building GMX release version..."
@@ -295,7 +331,7 @@ cwd = "haxe"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 if [ ! -f "bin/gmx.hl" ]; then
@@ -315,7 +351,7 @@ cwd = "haxe"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PIXI_PROJECT_ROOT/.hashlink:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "🔄 Starting development mode..."
@@ -496,7 +532,7 @@ cwd = "haxe"
 cmd = """
 bash -c '
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 echo "🔍 Checking Haxe code..."
@@ -558,7 +594,7 @@ echo ""
 
 echo "🔧 Tool Status:"
 export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="$HOME/.local/lib:$PIXI_PROJECT_ROOT/.pixi/envs/default/lib:$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
 export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 if command -v haxe &> /dev/null; then
     echo "  ✅ Haxe: $(haxe --version)"

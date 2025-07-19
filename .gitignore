@@ -12,3 +12,6 @@ obj/
 # Python cache directories
 tests/__pycache__/
 */__pycache__/
+
+# HashLink dynamic libraries (should be in ~/.local/lib/)
+*.hdll
