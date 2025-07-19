@@ -42,7 +42,7 @@ cmd = """
 bash -c '
 set -e
 
-HAXE_VERSION="5.0.0-preview.1"
+HAXE_VERSION="4.3.7"
 INSTALL_DIR="$HOME/.local"
 BIN_DIR="$INSTALL_DIR/bin"
 HAXE_DIR="$INSTALL_DIR/haxe"
@@ -75,7 +75,7 @@ fi
 
 # Download and install Haxe
 cd "$HAXE_DIR"
-HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/5.0.0-preview.1/haxe-5.0.0-preview.1-linux64.tar.gz"
+HAXE_URL="https://github.com/HaxeFoundation/haxe/releases/download/4.3.7/haxe-4.3.7-linux64.tar.gz"
 
 echo "Downloading Haxe from $HAXE_URL..."
 curl -L -o haxe.tar.gz "$HAXE_URL"
@@ -197,8 +197,9 @@ echo "Installing Haxe libraries..."
 mkdir -p "$HOME/.local/share/haxe/lib"
 echo "$HOME/.local/share/haxe/lib" > "$HOME/.haxelib"
 
-# Install required libraries
-haxelib install heaps --quiet
+# Install required libraries with stable versions compatible with Haxe 4.3.7
+haxelib install heaps 2.0.0 --quiet
+haxelib set heaps 2.0.0
 haxelib install hlsdl --quiet
 haxelib install format --quiet
 
@@ -290,10 +291,12 @@ depends-on = ["clean", "build"]
 [tasks.run]
 description = "Build and run GMX application"
 depends-on = ["build-dev"]
-cwd = "haxe-port"
+cwd = "haxe"
 cmd = """
 bash -c '
-export PATH="$PIXI_PROJECT_ROOT/.hashlink:$PATH"
+export PATH="$HOME/.local/bin:$HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$HOME/bin/neko-2.3.0-linux64:$HOME/bin:$LD_LIBRARY_PATH"
+export NEKOPATH="$HOME/bin/neko-2.3.0-linux64"
 
 if [ ! -f "bin/gmx.hl" ]; then
     echo "❌ Build file not found. Run build first."

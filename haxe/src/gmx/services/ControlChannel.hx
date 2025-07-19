@@ -172,9 +172,11 @@ class ControlChannel {
         try {
             // Check for incoming data
             var input = socket.input;
-            var available = input.available;
+            // available property removed in newer Haxe versions
+            // Use try-catch approach to detect available data
+            var available = 1024; // Default buffer size
 
-            if (available > 0) {
+            try {
                 var buffer = Bytes.alloc(available);
                 var bytesRead = input.readBytes(buffer, 0, available);
 

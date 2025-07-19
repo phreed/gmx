@@ -1,0 +1,13 @@
+GMX Assets Directory
+
+This directory contains assets for the GMX application.
+Currently serves as a placeholder to resolve the Heaps.io resource system requirement.
+
+Assets that may be added here include:
+- Images (.png, .jpg)
+- Fonts (.ttf, .fnt)
+- Audio files (.wav, .ogg)
+- Data files (.json, .xml)
+
+The Heaps.io framework automatically scans this directory and makes assets available
+through the hxd.Res class.

@@ -30,10 +30,10 @@ class XMLDisplay extends Object {
     private var currentXML:Xml;
 
     // Colors for syntax highlighting
-    private static inline var COLOR_ELEMENT:Int = 0x0000FF;
-    private static inline var COLOR_ATTRIBUTE:Int = 0xFF0000;
-    private static inline var COLOR_TEXT:Int = 0x000000;
-    private static inline var COLOR_COMMENT:Int = 0x008000;
+    static inline var COLOR_ELEMENT:Int = 0x0000FF;
+    static inline var COLOR_ATTRIBUTE:Int = 0xFF0000;
+    static inline var COLOR_TEXT:Int = 0x000000;
+    static inline var COLOR_COMMENT:Int = 0x008000;
 
     public function new(parent:Object) {
         super(parent);
@@ -386,13 +386,13 @@ class XMLTextArea extends Object {
         var trimmed = StringTools.trim(line);
 
         if (trimmed.indexOf("<!--") >= 0) {
-            return COLOR_COMMENT;
+            return 0x008000; // Green for comments
         } else if (trimmed.indexOf("<") >= 0 && trimmed.indexOf(">") >= 0) {
-            return COLOR_ELEMENT;
+            return 0x0000FF; // Blue for elements
         } else if (trimmed.indexOf("=") >= 0 && trimmed.indexOf('"') >= 0) {
-            return COLOR_ATTRIBUTE;
+            return 0xFF0000; // Red for attributes
         } else {
-            return COLOR_TEXT;
+            return 0x000000; // Black for text
         }
     }
 

@@ -51,8 +51,10 @@ class PopUpManager extends Object {
             popup.isModal = true;
         }
 
-        // Bring popup to front
-        popup.toFront();
+        // Bring popup to front - toFront() method removed in newer Heaps versions
+        if (popup.parent != null) {
+            popup.parent.addChildAt(popup, popup.parent.numChildren - 1);
+        }
 
         // Set up close handlers
         popup.onClose = function() {

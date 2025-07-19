@@ -419,7 +419,7 @@ class GMXBuilder extends Object {
             selectionBorder.name = "selectionBorder";
         } else {
             // Remove selection border
-            var border = component.getChildByName("selectionBorder");
+            var border = findChildByName(component, "selectionBorder");
             if (border != null) {
                 border.remove();
             }
@@ -541,6 +541,19 @@ class GMXBuilder extends Object {
     private function refreshDisplay():Void {
         refreshXMLDisplay();
         trace("Display refreshed");
+    }
+
+    /**
+     * Helper method to find child by name (replaces deprecated getChildByName)
+     */
+    private function findChildByName(parent:Object, name:String):Object {
+        for (i in 0...parent.numChildren) {
+            var child = parent.getChildAt(i);
+            if (child.name == name) {
+                return child;
+            }
+        }
+        return null;
     }
 
     /**

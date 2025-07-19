@@ -120,9 +120,11 @@ class AttributeEditToolBox extends Object {
         input.text = defaultValue;
         input.textColor = 0x000000;
         input.backgroundColor = 0xFFFFFF;
-        input.borderColor = 0x999999;
-        input.borderHeight = 1;
-        input.borderWidth = 1;
+        // Border properties removed in newer Heaps versions
+        // Use custom graphics for borders if needed
+        var border = new Graphics(input.parent);
+        border.lineStyle(1, 0x999999);
+        border.drawRect(input.x - 1, input.y - 1, input.textWidth + 2, input.textHeight + 2);
 
         // Set up change handler
         input.onChange = function() {

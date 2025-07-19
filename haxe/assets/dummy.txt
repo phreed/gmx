@@ -1,0 +1,7 @@
+This is a dummy resource file to satisfy the Heaps.io resource system requirements.
+
+The Heaps.io framework expects at least one file in the assets directory
+to properly initialize the resource system, especially when using the
+@:build(hxd.res.FileTree.build()) macro.
+
+This file can be removed once proper game assets are added to the project.

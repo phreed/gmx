@@ -94,7 +94,8 @@ class GMXApplication extends Object {
     private function setupEventHandlers():Void {
         // Add interactive area for the whole application
         var interactive = new Interactive(_width, _height, this);
-        interactive.onResize = onInteractiveResize;
+        // onResize property not available in this Heaps version
+        // interactive.onResize = onInteractiveResize;
 
         // Handle window resize events
         Window.getInstance().addEventTarget(onWindowEvent);
@@ -104,13 +105,13 @@ class GMXApplication extends Object {
      * Handle window events
      */
     private function onWindowEvent(event:Event):Void {
-        switch (event.kind) {
-            case EResize:
-                var window = Window.getInstance();
-                resize(window.width, window.height);
-            default:
-                // Handle other events as needed
+        // Simplified event handling for compatibility
+        var eventStr = Std.string(event.kind);
+        if (eventStr == "EResize") {
+            var window = Window.getInstance();
+            resize(window.width, window.height);
         }
+        // Handle other events as needed
     }
 
     /**
@@ -207,7 +208,7 @@ class GMXApplication extends Object {
     /**
      * Set scale and update display
      */
-    public function setScale(scale:Float):Void {
+    public function setAppScale(scale:Float):Void {
         if (scale <= 0) scale = 1.0;
 
         _scale = scale;

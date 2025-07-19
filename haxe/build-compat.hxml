@@ -2,22 +2,20 @@
 # Targeting HashLink for cross-platform deployment
 
 # Main class
--main Main
+-main compat.SimpleMain
 
 # Source directories
 -cp src
 
 # Target HashLink
--hl bin/gmx.hl
+-hl bin/gmx-compat.hl
 
-# Libraries
+# Libraries (minimal set for compatibility)
 -lib heaps
--lib hlsdl
--lib format
 
-# Compiler flags
--D resourcesPath=res
--dce full
+# Compiler flags (compatibility mode)
+-D no-deprecation-warnings
+-dce no
 
 # Debug build
 --debug

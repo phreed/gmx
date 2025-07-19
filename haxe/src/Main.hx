@@ -87,7 +87,7 @@ class Main extends App {
      */
     public static function setScale(scale:Float):Void {
         if (instance != null && instance.gmxApp != null) {
-            instance.gmxApp.setScale(scale);
+            instance.gmxApp.setAppScale(scale);
         }
     }
 
