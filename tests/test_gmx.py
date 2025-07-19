@@ -47,7 +47,7 @@ class GMXTester:
         self.logger = logging.getLogger(__name__)
 
         # Project paths
-        self.project_root = Path(__file__).parent
+        self.project_root = Path(__file__).parent.parent
         self.haxe_dir = self.project_root / "haxe"
         self.examples_dir = self.project_root / "examples"
         self.servers_dir = self.examples_dir / "servers"
