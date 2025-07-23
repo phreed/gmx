@@ -1,0 +1,77 @@
+= Layout Examples
+
+This directory contains XML layout message examples that demonstrate how to create and modify GMX user interface components.
+
+== Files
+
+=== Basic Layout Messages
+
+==== `basic_layout_message.xml`
+A comprehensive example showing a complete layout message with:
+
+* Parent container with LUID
+* HBox containers with nested components
+* Button with dual labels
+* ComboBox with collection reference
+* Label with static text
+* AttitudeIndicator with field mappings
+
+This example demonstrates the fundamental structure of GMX layout messages and shows how components are organized in a hierarchical tree structure.
+
+==== `layout_replacement_message.xml`
+Demonstrates layout tree pruning and replacement by targeting a specific LUID (`hbox2`). This shows how to:
+
+* Replace part of an existing layout tree
+* Use LUIDs to target specific layout nodes
+* Modify layouts without recreating the entire interface
+
+==== `attitude_indicator_with_values.xml`
+Shows how to set field values directly in layout messages:
+
+* Setting initial values for component fields
+* Mapping field IDs to field names with values
+* Understanding the trade-off between convenience and data retention
+
+=== Layout Manager Files
+
+==== `layout_manager_main.xml`
+Example of a Layout Manager configuration file demonstrating:
+
+* XInclude usage for modular layout composition
+* Dimensional specifications (width/height in mm)
+* Background color settings
+* Nested container structures (VBox, HBox)
+* Referenced layout files through href attributes
+
+==== `manifest.csv`
+Layout Manager manifest file example showing:
+
+* Base layout file specification
+* File reference mapping (logical name to physical path)
+* Comment syntax
+* File organization structure
+
+==== `initialData.csv`
+Initial data population file for Layout Manager demonstrating:
+
+* CUID (Collection Unique ID) definitions
+* RUID (Record Unique ID) definitions with field values
+* Hierarchical data organization
+* Shortcut command embedding in data
+* CSV format for data specification
+
+== Usage
+
+These examples can be used as:
+
+1. **Templates** for creating new layout messages
+2. **Reference** for understanding GMX layout syntax
+3. **Test data** for GMX client development
+4. **Documentation** for layout message structure
+
+== Related Documentation
+
+* link:../../docs/ux_designer_guide.adoc[UX Designer Guide] - Complete guide to GMX layout design
+* link:../../docs/protocol_reference.adoc[Protocol Reference] - Detailed message format specifications
+* link:../records/README.adoc[Record Examples] - Data message examples
+* link:../collections/README.adoc[Collection Examples] - Collection message examples

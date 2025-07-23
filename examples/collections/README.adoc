@@ -1,0 +1,98 @@
+= Collection Examples
+
+This directory contains XML collection message examples that demonstrate how to create and manage data collections in GMX.
+
+== Files
+
+=== Collection Messages
+
+==== `basic_collection_message.xml`
+A comprehensive example showing how to create and organize data collections with:
+
+* ISISCollection message structure
+* Collection Unique ID (CUID) definition
+* Record Unique ID (RUID) list organization
+* Hierarchical record relationships using `ref` and `select` attributes
+* Parent-child and sibling record positioning
+
+This example demonstrates:
+
+* **Root Records**: Records with empty `ref` attributes that serve as top-level nodes
+* **Child Records**: Records that reference parent records with `select="child"`
+* **Sibling Records**: Records that reference other records with `select="last"`
+* **Hierarchical Structure**: Building tree-like data organizations
+
+== Collection Structure
+
+The example creates the following hierarchy:
+```
+r1 (root)
+├── r1-1 (child of r1)
+│   └── r1-2 (last sibling of r1-1)
+└── r2 (last sibling of r1)
+```
+
+== Reference and Select Attributes
+
+=== `ref` Attribute
+* **Empty**: Creates a root-level record
+* **RUID Value**: References another record in the collection
+
+=== `select` Attribute
+* **`child`**: Positions the record as a child of the referenced record
+* **`last`**: Positions the record as the last sibling of the referenced record
+* **`first`**: Positions the record as the first sibling of the referenced record
+* **`before`**: Positions the record before the referenced record
+* **`after`**: Positions the record after the referenced record
+
+## Usage Patterns
+
+### Creating Root Collections
+```xml
+<Ruid>
+  <ruid>rootRecord</ruid>
+  <ref></ref>
+  <select>child</select>
+</Ruid>
+```
+
+### Adding Child Records
+```xml
+<Ruid>
+  <ruid>childRecord</ruid>
+  <ref>rootRecord</ref>
+  <select>child</select>
+</Ruid>
+```
+
+### Adding Sibling Records
+```xml
+<Ruid>
+  <ruid>siblingRecord</ruid>
+  <ref>existingRecord</ref>
+  <select>last</select>
+</Ruid>
+```
+
+## Component Integration
+
+Collections are linked to UI components through the `cuid` attribute:
+
+* **DataGrid**: Display tabular data from collections
+* **Tree**: Show hierarchical collection structures
+* **ComboBox**: Populate dropdown options from collections
+* **List**: Display collection items in a list format
+
+## Use Cases
+
+* **Navigation Trees**: Menu structures and file hierarchies
+* **Data Tables**: Tabular data with sorting and filtering
+* **Dropdown Lists**: Option lists for form components
+* **Hierarchical Data**: Organizational charts, category structures
+
+## Related Documentation
+
+* link:../../docs/ux_designer_guide.adoc[UX Designer Guide] - Complete guide to GMX data management
+* link:../../docs/protocol_reference.adoc[Protocol Reference] - Detailed message format specifications
+* link:../records/README.adoc[Record Examples] - Individual record management
+* link:../layouts/README.adoc[Layout Examples] - UI component layout examples

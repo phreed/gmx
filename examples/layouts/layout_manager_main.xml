@@ -1,0 +1,11 @@
+<layout_manager xmlns:xi="http://www.w3.org/2001/XInclude">
+  <VBox backgroundColor="ffffff" width="130mm" height="97.5mm">
+    <xi:include luid="adminBar" href="sample_adminbar" width="130mm" height="8mm"/>
+    <xi:include luid="tabPortal" href="sampleh_tab" width="130mm" height="89.5mm" backgroundColor="000000"/>
+  </VBox>
+
+  <HBox horizontalGap="0">
+    <xi:include luid="mainPortal" href="systems_mp" backgroundColor="ffffff" width="113mm" height="89.5mm"/>
+    <xi:include luid="samplehToolbar" href="sampleh_systems_tb" backgroundColor="ffffff" width="17mm" height="89.5mm"/>
+  </HBox>
+</layout_manager>

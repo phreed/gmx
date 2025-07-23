@@ -82,10 +82,12 @@ See link:docs/deployment_guide.adoc[Deployment Guide] for:
 === Examples
 The link:examples/[examples directory] contains:
 
-* Sample layouts (`examples/layouts/`)
-* Sample records (`examples/records/`)
-* Sample collections (`examples/collections/`)
+* Sample layouts (`examples/layouts/`) - Including examples extracted from the UX Designer Guide
+* Sample records (`examples/records/`) - Data message examples for various use cases
+* Sample collections (`examples/collections/`) - Hierarchical data organization examples
 * Reference Python server implementations (`examples/servers/`)
+
+The examples include both reference implementations and practical samples extracted from the UX Designer Guide for hands-on learning.
 
 === Testing
 
@@ -100,7 +102,7 @@ python tests/test_gmx.py --server-only
 
 == Documentation
 
-=== Primary Guides
+=== Primary Guides (Modern Implementation)
 
 ==== link:docs/developer_guide.adoc[Developer's Guide]
 Complete guide for developing with the modern Haxe/HashLink GMX implementation:
@@ -173,9 +175,47 @@ Operational deployment and maintenance:
 * Backup and recovery procedures
 * Security configuration and updates
 
+=== Legacy Documentation (Adobe AIR/Flash)
+
+For reference, the legacy Adobe AIR/Flash implementation documentation is preserved:
+
+==== link:docs/legacy_developer_guide.adoc[Legacy Developer's Guide]
+Development guide for the original Adobe AIR/Flash implementation:
+
+* Adobe AIR SDK setup and compilation
+* MXML and ActionScript development
+* Certificate creation and code signing
+* Package creation for AIR desktop and Android
+* Device deployment and debugging with ADB
+
+==== link:docs/legacy_operator_guide.adoc[Legacy Operator's Guide]
+Documentation generation for the Adobe AIR implementation:
+
+* ASDoc tool usage for API documentation
+* ActionScript source code documentation
+* HTML output generation and verification
+
+==== link:docs/plantuml_diagrams_guide.adoc[PlantUML Diagrams Guide]
+Visual documentation of the legacy Adobe AIR architecture and workflows:
+
+* Developer workflow sequence diagram
+* Operator documentation workflow
+* Application architecture components
+* Build and deployment process diagrams
+* Diagrams located in `docs/figures/`
+
+==== link:examples/README.adoc[Examples Directory]
+Comprehensive collection of XML message examples:
+
+* Layout messages extracted from UX Designer Guide
+* Record and collection examples for various use cases
+* Layout Manager configuration examples
+* Server implementation references
+* Detailed documentation for each example category
+
 == Migration Summary
 
-The GMX application has been successfully migrated from Adobe AIR/Flash to Haxe/HashLink, achieving:
+The GMX application has been successfully migrated from the legacy Adobe AIR/Flash implementation to the modern Haxe/HashLink implementation, achieving:
 
 * *Performance*: 3-4x faster startup, 70-80% memory reduction
 * *Security*: Elimination of Flash Player vulnerabilities

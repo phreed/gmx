@@ -1,0 +1,167 @@
+= Record Examples
+
+This directory contains XML record message examples that demonstrate how to create and update individual data records in GMX.
+
+== Files
+
+=== Record Messages
+
+==== `basic_record_message.xml`
+A fundamental example showing how to create and populate data records with:
+
+* ISISRecord message structure
+* Record Unique ID (RUID) definition
+* Field list organization with Field ID (FID) mappings
+* Field value assignments
+* Multiple fields within a single record
+
+This example demonstrates:
+
+* **Record Structure**: How records serve as containers for related fields
+* **Field Organization**: Using FIDs to uniquely identify fields within a record
+* **Data Types**: String, numeric, and other value types
+* **Batch Updates**: Multiple fields updated in a single message
+
+==== `attitude_indicator_record_message.xml`
+A specialized example showing sensor data record structure with:
+
+* Attitude sensor field mappings (roll, pitch, sideSlip)
+* Numeric field values for real-time data
+* Component-specific record organization
+* Field naming conventions for sensor data
+
+This example demonstrates:
+
+* **Sensor Data**: Real-time numeric values for attitude display
+* **Component Integration**: Records designed for specific UI components
+* **Field Semantics**: Meaningful field names that map to component properties
+* **Data Retention**: Persistent field values independent of layout changes
+
+== Record Structure
+
+Records in GMX follow a hierarchical organization:
+
+```
+Record (RUID: unique identifier)
+├── Field (FID: roll, Value: numeric)
+├── Field (FID: pitch, Value: numeric)
+└── Field (FID: sideSlip, Value: numeric)
+```
+
+== Field Types and Values
+
+=== Common Field Types
+* **Text Fields**: String values for labels, descriptions, status text
+* **Numeric Fields**: Integer and floating-point values for measurements
+* **Boolean Fields**: True/false values for toggles and states
+* **Color Fields**: Hex color codes for styling and visualization
+* **Image Fields**: File paths or URLs for image resources
+
+=== Value Examples
+```xml
+<!-- Text field -->
+<Field>
+  <fid>label</fid>
+  <value>System Status</value>
+</Field>
+
+<!-- Numeric field -->
+<Field>
+  <fid>temperature</fid>
+  <value>23.5</value>
+</Field>
+
+<!-- Boolean field -->
+<Field>
+  <fid>enabled</fid>
+  <value>true</value>
+</Field>
+
+<!-- Color field -->
+<Field>
+  <fid>backgroundColor</fid>
+  <value>#FF0000</value>
+</Field>
+```
+
+## Usage Patterns
+
+### Creating New Records
+```xml
+<Record>
+  <ruid>newRecord123</ruid>
+  <fieldList>
+    <Field>
+      <fid>fieldName</fid>
+      <value>fieldValue</value>
+    </Field>
+  </fieldList>
+</Record>
+```
+
+### Updating Existing Records
+Records are updated by sending new field values to existing RUIDs. GMX will:
+* Update existing fields with new values
+* Add new fields if they don't exist
+* Preserve unchanged fields
+
+### Partial Updates
+You can update individual fields without affecting other fields in the same record:
+```xml
+<Record>
+  <ruid>existingRecord</ruid>
+  <fieldList>
+    <Field>
+      <fid>onlyThisField</fid>
+      <value>newValue</value>
+    </Field>
+  </fieldList>
+</Record>
+```
+
+## Component Integration
+
+Records are linked to UI components through the `ruid` attribute:
+
+* **Gauges**: Sensor readings and measurement displays
+* **Labels**: Dynamic text content
+* **Input Fields**: User-editable data values
+* **Status Indicators**: State and condition displays
+* **Charts**: Data series and plotting points
+
+## Data Retention vs Layout Values
+
+=== Record Messages (Recommended)
+* **Persistent**: Values survive layout changes
+* **Updateable**: Can be modified independently of UI
+* **Flexible**: Support real-time data streams
+* **Testable**: Can be updated from external sources
+
+=== Layout Values (Limited Use)
+* **Temporary**: Reset when layout is reloaded
+* **Static**: Embedded in layout definition
+* **Convenient**: Good for initial/default values
+* **Inflexible**: Require layout changes to modify
+
+## Best Practices
+
+1. **Use Meaningful RUIDs**: Choose descriptive names that indicate the record's purpose
+2. **Consistent FID Naming**: Use standard naming conventions across related records
+3. **Atomic Updates**: Group related field changes in single messages when possible
+4. **Data Validation**: Ensure field values match expected component requirements
+5. **Documentation**: Document field semantics and expected value ranges
+
+## Use Cases
+
+* **Real-time Monitoring**: Sensor data, system status, performance metrics
+* **User Input**: Form data, configuration settings, user preferences
+* **Dynamic Content**: Labels, messages, help text that changes based on context
+* **State Management**: Application state, mode indicators, workflow status
+* **Data Visualization**: Chart data, graph points, measurement displays
+
+## Related Documentation
+
+* link:../../docs/ux_designer_guide.adoc[UX Designer Guide] - Complete guide to GMX data management
+* link:../../docs/protocol_reference.adoc[Protocol Reference] - Detailed message format specifications
+* link:../collections/README.adoc[Collection Examples] - Hierarchical data organization
+* link:../layouts/README.adoc[Layout Examples] - UI component layout examples

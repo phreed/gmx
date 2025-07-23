@@ -1,0 +1,27 @@
+<fn:invoke fn="ISISRecord"
+   xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
+   xmlns="http://isis.vanderbilt.edu/gmx/record">
+   <fn:args>
+     <fn:arg>
+       <RecordList>
+         <Record>
+           <ruid>attitudeIndicator</ruid>
+           <fieldList>
+             <Field>
+               <fid>roll</fid>
+               <value>4</value>
+             </Field>
+             <Field>
+               <fid>sideSlip</fid>
+               <value>7</value>
+             </Field>
+             <Field>
+               <fid>pitch</fid>
+               <value>10</value>
+             </Field>
+           </fieldList>
+         </Record>
+       </RecordList>
+     </fn:arg>
+   </fn:args>
+</fn:invoke>

@@ -8,6 +8,11 @@ This guide provides instructions for operators who need to generate documentatio
 
 For a visual overview of the documentation generation workflow, see the link:figures/operator_workflow.puml[Operator Workflow Diagram].
 
+[NOTE]
+====
+This guide covers the legacy Adobe AIR/Flash implementation of GMX. For the modern Haxe/HashLink implementation, see link:operator_guide.adoc[Operator Guide].
+====
+
 == Prerequisites
 
 Before generating documentation, ensure you have:
@@ -72,5 +77,6 @@ If documentation generation fails:
 == Additional Resources
 
 * link:figures/gmx_architecture.puml[GMX Application Architecture Diagram]
-* link:developer_guide.asciidoc[Developer Guide]
-* link:plantuml_diagrams_guide.asciidoc[PlantUML Diagrams Guide]
+* link:legacy_developer_guide.adoc[Legacy Developer Guide]
+* link:plantuml_diagrams_guide.adoc[PlantUML Diagrams Guide]
+* link:operator_guide.adoc[Modern Operator Guide (Haxe/HashLink)]

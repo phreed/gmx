@@ -8,6 +8,11 @@
 :icons: font
 :source-highlighter: highlight.js
 
+[NOTE]
+====
+The code examples in this guide have been extracted to separate files in the `examples/` directory for reuse and testing. The examples are included here using AsciiDoc include directives. See link:../examples/README.adoc[Examples Directory] for the complete collection.
+====
+
 [.lead]
 *<DRAFT>* +
 *ISIS Technical Report TR-?????* +
@@ -78,28 +83,7 @@ A user can create and update layout objects and data objects by sending GMX an X
 
 [source,xml]
 ----
-<fn:invoke fn="set_ISISFormLayout"
-  xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
-  xmlns="http://isis.vanderbilt.edu/gmx/layout">
-  <fn:args>
-    <fn:arg>
-      <Parent luid="mainLuid" id="PlanMissionSmallPortal">
-        <HBox luid="hbox1" ruid="hbox1" padding="0" backgroundColor="000000">
-          <Button fid="button1" label1="ButtonTop" label2="ButtonBottom"/>
-          <ComboBox cuid="combobox1" rowCount="2"/>
-          <HBox luid="hbox2" padding="0" backgroundColor="000000">
-            <Label text="sampleText"/>
-            <AttitudeIndicator ruid="attitudeIndicator1">
-              <field fid="rollFid" name="roll"/>
-              <field fid="pitchFid" name="pitch"/>
-              <field fid="sideSlipFid" name="sideSlip"/>
-            </AttitudeIndicator>
-          </HBox>
-        </HBox>
-      </Parent>
-    </fn:arg>
-  </fn:args>
-</fn:invoke>
+include::../examples/layouts/basic_layout_message.xml[]
 ----
 
 .Resulting GUI
@@ -134,17 +118,7 @@ If a new layout message with topmost luid "hbox2" is sent...
 
 [source,xml]
 ----
-<fn:invoke fn="set_ISISFormLayout"
-xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
-xmlns="http://isis.vanderbilt.edu/gmx/layout">
-  <fn:args>
-    <fn:arg>
-       <Parent luid="hbox2" id="PlanMissionSmallPortal">
-         <Button fid="button1" label1="NewTop" label2="NewBottom"/>
-       </Parent>
-    </fn:arg>
-  </fn:args>
-</fn:invoke>
+include::../examples/layouts/layout_replacement_message.xml[]
 ----
 
 ...then the old layout tree is pruned at the second HBox and replaced from that node downwards:
@@ -156,16 +130,11 @@ image::images/modified_layout_tree.png[]
 image::images/updated_gui.png[]
 
 A *R*ecord *U*nique *ID*entifier (RUID) is a unique string among a layout for identifying records; a *F*ield *Id*entifier (FID) is a unique string among a record for identifying fields, or data elements. Within a database, records serve as an namespace for containing fields. For example, the Gauge in the original layout (Figure 7) contains a pointer to a record that contains the fields pitch, roll, and sideSlip. The values of these fields can be set directly in a layout message, as follows:
+The values of these fields can be set directly in a layout message, as follows:
 
 [source,xml]
 ----
-...
-  <AttitudeIndicator ruid="attitudeIndicator1">
-    <field fid="rollFid" name="roll" value="5"/>
-    <field fid="pitchFid" name="pitch" value="10"/>
-    <field fid="sideSlipFid" name="sideSlip" value="0"/>
-  </AttitudeIndicator>
-...
+include::../examples/layouts/attitude_indicator_with_values.xml[]
 ----
 
 The drawback to setting a value in a layout message is a loss of data retention. Every time this layout message is send (for example, when toggling between UI screens), the data will always be reset to the value in the layout message. To have data retention, values should only be set using Data Messages:
@@ -181,41 +150,7 @@ Only components that implement Tables or Lists require a collection. Note that f
 
 [source,xml]
 ----
-<fn:invoke fn="ISISCollection"
-    xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
-    xmlns="http://isis.vanderbilt.edu/gmx/collection">
-   <fn:args>
-     <fn:arg>
-       <CollectionList>
-         <Collection>
-           <cuid>datagrid1</cuid>
-           <ruidList>
-             <Ruid>
-               <ruid>r1</ruid>
-               <ref></ref>
-               <select>child</select>
-             </Ruid>
-             <Ruid>
-               <ruid>r2</ruid>
-               <ref>r1</ref>
-               <select>last</select>
-             </Ruid>
-             <Ruid>
-               <ruid>r1-1</ruid>
-               <ref>r1</ref>
-               <select>child</select>
-             </Ruid>
-             <Ruid>
-               <ruid>r1-2</ruid>
-               <ref>r1-1</ref>
-               <select>last</select>
-             </Ruid>
-           </ruidList>
-         </Collection>
-       </CollectionList>
-     </fn:arg>
-   </fn:args>
-</fn:invoke>
+include::../examples/collections/basic_collection_message.xml[]
 ----
 
 Note that each incoming Ruid to be added to the collection has two children used specify where it is placed in the collection—a *ref*erence ruid and a *select*or.
@@ -224,33 +159,7 @@ In order to add fields to the records in Figure X2, an ISISRecord message must b
 
 [source,xml]
 ----
-<fn:invoke fn="ISISRecord"
-   xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
-   xmlns="http://isis.vanderbilt.edu/gmx/record">
-  <fn:args>
-    <fn:arg>
-      <RecordList>
-        <Record>
-          <ruid>r1</ruid>
-          <fieldList>
-            <Field>
-              <fid>column1</fid>
-              <value>col1</value>
-            </Field>
-            <Field>
-              <fid>column2</fid>
-              <value>col2</value>
-            </Field>
-            <Field>
-              <fid>column3</fid>
-              <value>col3</value>
-            </Field>
-          </fieldList>
-        </Record>
-      </RecordList>
-    </fn:arg>
-  </fn:args>
-</fn:invoke>
+include::../examples/records/basic_record_message.xml[]
 ----
 
 This data structure could now be mapped to any number of components (like datagrids) by setting their "cuid" attribute to "datagrid1". The component used to visualize this data is not required to exist before this data structure is created so as to maintain model and view independence.
@@ -259,33 +168,7 @@ As stated previously, data messages exist only to create/update data objects. Lo
 
 [source,xml]
 ----
-<fn:invoke fn="ISISRecord"
-   xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
-   xmlns="http://isis.vanderbilt.edu/gmx/record">
-   <fn:args>
-     <fn:arg>
-       <RecordList>
-         <Record>
-           <ruid>attitudeIndicator</ruid>
-           <fieldList>
-             <Field>
-               <fid>roll</fid>
-               <value>4</value>
-             </Field>
-             <Field>
-               <fid>sideSlip</fid>
-               <value>7</value>
-             </Field>
-             <Field>
-               <fid>pitch</fid>
-               <value>10</value>
-             </Field>
-           </fieldList>
-         </Record>
-       </RecordList>
-     </fn:arg>
-   </fn:args>
-</fn:invoke>
+include::../examples/records/attitude_indicator_record_message.xml[]
 ----
 
 === Component Library
@@ -307,17 +190,7 @@ The main layout file sample_main is:
 
 [source,xml]
 ----
-<layout_manager xmlns:xi="http://www.w3.org/2001/XInclude">
-  <VBox backgroundColor="ffffff" width="130mm" height="97.5mm">
-    <xi:include luid="adminBar" href="sample_adminbar" width="130mm" height="8mm"/>
-    <xi:include luid="tabPortal" href="sampleh_tab" width="130mm" height="89.5mm" backgroundColor="000000"/>
-  </VBox>
-
-  <HBox horizontalGap="0">
-    <xi:include luid="mainPortal" href="systems_mp" backgroundColor="ffffff" width="113mm" height="89.5mm"/>
-    <xi:include luid="samplehToolbar" href="sampleh_systems_tb" backgroundColor="ffffff" width="17mm" height="89.5mm"/>
-  </HBox>
-</layout_manager>
+include::../examples/layouts/layout_manager_main.xml[]
 ----
 
 This will show the systems main portal and toolbar in the tabPortal. (The main portal file has includes for the main part and details part.)
@@ -330,11 +203,7 @@ The first uncommented line is the base xml file you wish to load into the GMX. E
 
 [source]
 ----
-sample_main
-
-#THIS IS A COMMENT
-sample_main, GMX_XML/cc/sample_main.xml
-sample_adminbar, GMX_XML/cc/sample_adminbar.xml
+include::../examples/layouts/manifest.csv[]
 ----
 
 === sampleh_systems_mp, GMX_XML/cc/sampleh/sample_UI_0008/SystemsMP.xml
@@ -386,11 +255,5 @@ Here is a snippet from the initialData.csv file in the cc directory:
 
 [source,csv]
 ----
-CUID, adminMainTabCuid, mtRow1, , child, mtRow2, , child, mtRow3, , child
-RUID, mtRow1, mainTab, sampleh
-RUID, mtRow2, mainTab, test
-RUID, mtRow3, mainTab, ITEM
-CUID, adminSubTabCuid, stRow1, , child, stRow2, , child
-RUID, stRow1, subTab, Systems,|Shortcut|:sample_main:tabPortal|:sampleh_tab:samplehMainPortal|:sampleh_systems_mp
-RUID, stRow2, subTab, Checklists,|Shortcut|:sample_main:tabPortal|:sampleh_tab:samplehMainPortal|:test_checklists_mp
+include::../examples/layouts/initialData.csv[]
 ----

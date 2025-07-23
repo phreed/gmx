@@ -7,20 +7,32 @@ This directory contains comprehensive examples demonstrating the GMX (Graphical 
 ----
 examples/
 ├── layouts/           # Layout XML examples
-│   ├── basic_form.xml      # User registration form
-│   ├── dashboard.xml       # Complex dashboard interface
-│   └── simple_button.xml   # Basic interactive button
+│   ├── basic_layout_message.xml      # Complete layout with HBox, Button, ComboBox
+│   ├── layout_replacement_message.xml # Layout tree pruning example
+│   ├── attitude_indicator_with_values.xml # Fields with embedded values
+│   ├── layout_manager_main.xml       # Layout Manager configuration
+│   ├── manifest.csv                  # Layout Manager manifest file
+│   ├── initialData.csv               # Layout Manager initial data
+│   ├── basic_form.xml                # User registration form
+│   ├── dashboard.xml                 # Complex dashboard interface
+│   ├── simple_button.xml             # Basic interactive button
+│   └── README.adoc                   # Layout examples documentation
 ├── records/           # Record XML examples
-│   ├── navigation_record.xml     # GPS and navigation data
-│   ├── system_status_record.xml  # System monitoring data
-│   └── user_form_record.xml      # Form input data
+│   ├── basic_record_message.xml      # Fundamental record structure
+│   ├── attitude_indicator_record_message.xml # Sensor data record
+│   ├── navigation_record.xml         # GPS and navigation data
+│   ├── system_status_record.xml      # System monitoring data
+│   ├── user_form_record.xml          # Form input data
+│   └── README.adoc                   # Record examples documentation
 ├── collections/       # Collection XML examples
-│   ├── alerts_list.xml      # Active system alerts
-│   ├── role_options.xml     # User role selections
-│   └── system_metrics.xml   # Performance metrics
+│   ├── basic_collection_message.xml  # Hierarchical collection structure
+│   ├── alerts_list.xml               # Active system alerts
+│   ├── role_options.xml              # User role selections
+│   ├── system_metrics.xml            # Performance metrics
+│   └── README.adoc                   # Collection examples documentation
 ├── servers/           # Server implementation examples
-│   ├── layout_server.py     # Python layout server
-│   └── data_server.py       # Python data server
+│   ├── layout_server.py              # Python layout server
+│   └── data_server.py                # Python data server
 └── README.adoc        # This file
 ----
 
@@ -54,16 +66,37 @@ pixi run run
 == Examples Overview
 
 === Layouts
+
+==== From UX Designer Guide
+- **basic_layout_message.xml** - Complete layout with HBox, Button, ComboBox, and AttitudeIndicator
+- **layout_replacement_message.xml** - Demonstrates layout tree pruning using LUIDs
+- **attitude_indicator_with_values.xml** - Shows field values embedded in layout messages
+- **layout_manager_main.xml** - Layout Manager configuration with XInclude
+- **manifest.csv** - Layout Manager file manifest example
+- **initialData.csv** - Layout Manager initial data population
+
+==== Application Examples
 - **simple_button.xml** - Basic button with data binding (`mainLuid` → `button_record`)
 - **basic_form.xml** - User registration form with validation (`mainLuid` → `user_form_record`, `role_options`)
 - **dashboard.xml** - Complex real-time dashboard with multiple data sources
 
 === Records
+
+==== From UX Designer Guide
+- **basic_record_message.xml** - Fundamental record structure with multiple fields
+- **attitude_indicator_record_message.xml** - Sensor data record for attitude display
+
+==== Application Examples
 - **user_form_record.xml** - Form data structure with validation fields
 - **system_status_record.xml** - System monitoring and health metrics
 - **navigation_record.xml** - GPS positioning and navigation data
 
 === Collections
+
+==== From UX Designer Guide
+- **basic_collection_message.xml** - Hierarchical collection with parent-child relationships
+
+==== Application Examples
 - **role_options.xml** - User role definitions for form dropdowns
 - **alerts_list.xml** - System alerts with severity levels
 - **system_metrics.xml** - Real-time performance metrics
@@ -76,10 +109,14 @@ pixi run run
 
 For detailed information about these examples, see:
 
+- **link:../docs/ux_designer_guide.adoc[UX Designer Guide]** - Complete guide using these extracted examples
 - **link:../docs/developer_guide.adoc[Developer's Guide]** - Complete development workflow and Pixi tasks
 - **link:../docs/server_guide.adoc[Server Guide]** - Server implementation and data models
 - **link:../docs/protocol_reference.adoc[Protocol Reference]** - Message formats and flow examples
 - **link:../docs/component_reference.adoc[Component Reference]** - Layout examples and component usage
+- **link:layouts/README.adoc[Layout Examples Documentation]** - Detailed explanations of layout examples
+- **link:records/README.adoc[Record Examples Documentation]** - Detailed explanations of record examples
+- **link:collections/README.adoc[Collection Examples Documentation]** - Detailed explanations of collection examples
 
 == License
 

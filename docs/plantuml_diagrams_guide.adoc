@@ -128,10 +128,15 @@ java -jar plantuml.jar developer_workflow.puml
 
 These diagrams are designed to complement the existing guides:
 
-* **Developer Guide Integration**: The developer workflow diagram directly maps to the steps in `developer_guide.asciidoc`
-* **Operator Guide Integration**: The operator workflow diagram visualizes the ASDoc process from `operator_guide.asciidoc`
-* **Architecture Reference**: The architecture diagram provides system overview for both developers and operators
-* **Deployment Reference**: The deployment diagram shows the complete build and deployment pipeline
+* **Legacy Developer Guide Integration**: The developer workflow diagram directly maps to the Adobe AIR/Flash development steps in `legacy_developer_guide.adoc`
+* **Legacy Operator Guide Integration**: The operator workflow diagram visualizes the ASDoc process from `legacy_operator_guide.adoc`
+* **Architecture Reference**: The architecture diagram provides system overview for the legacy Adobe AIR implementation
+* **Deployment Reference**: The deployment diagram shows the complete Adobe AIR build and deployment pipeline
+
+[NOTE]
+====
+These diagrams specifically document the legacy Adobe AIR/Flash implementation. For the modern Haxe/HashLink implementation, refer to the current developer and operator guides.
+====
 
 === Maintenance
 
@@ -146,7 +151,7 @@ When updating the GMX application:
 
 All PlantUML source files are located in:
 ----
-doc/figures/
+docs/figures/
 ├── developer_workflow.puml
 ├── operator_workflow.puml
 ├── gmx_architecture.puml
@@ -155,7 +160,7 @@ doc/figures/
 
 Generated images (when created) should be placed in:
 ----
-doc/images/
+docs/images/
 ├── developer_workflow.png
 ├── operator_workflow.png
 ├── gmx_architecture.png
@@ -164,7 +169,15 @@ doc/images/
 
 == References
 
-* link:developer_guide.asciidoc[Developer's Guide] - Development process details
-* link:operator_guide.asciidoc[Operator's Guide] - Documentation generation process
+=== Legacy Documentation (Adobe AIR/Flash)
+* link:legacy_developer_guide.adoc[Legacy Developer's Guide] - Adobe AIR development process
+* link:legacy_operator_guide.adoc[Legacy Operator's Guide] - ASDoc documentation generation
+
+=== Modern Documentation (Haxe/HashLink)
+* link:developer_guide.adoc[Developer's Guide] - Modern development process
+* link:operator_guide.adoc[Operator's Guide] - Modern deployment and operations
+
+=== External Resources
 * http://plantuml.com/[PlantUML Official Documentation] - Diagram syntax reference
-* https://www.adobe.com/devnet/air.html[Adobe AIR Documentation] - Platform documentation
+* https://www.adobe.com/devnet/air.html[Adobe AIR Documentation] - Legacy platform documentation
+* https://haxe.org/[Haxe Documentation] - Modern platform documentation

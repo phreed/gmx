@@ -8,6 +8,11 @@ This guide provides step-by-step instructions for developing, building, testing,
 
 For a visual overview of the complete development workflow, see the link:figures/developer_workflow.puml[Developer Workflow Diagram].
 
+[NOTE]
+====
+This guide covers the legacy Adobe AIR/Flash implementation of GMX. For the modern Haxe/HashLink implementation, see link:developer_guide.adoc[Developer Guide].
+====
+
 == Development Environment Setup
 
 FIRST: open a console in and navigate over to the src folder
@@ -118,5 +123,6 @@ Default certificate password: `alan25`
 
 * link:figures/gmx_architecture.puml[GMX Application Architecture Diagram]
 * link:figures/deployment_diagram.puml[Build and Deployment Process Diagram]
-* link:operator_guide.asciidoc[Operator Guide]
-* link:plantuml_diagrams_guide.asciidoc[PlantUML Diagrams Guide]
+* link:legacy_operator_guide.adoc[Legacy Operator Guide]
+* link:plantuml_diagrams_guide.adoc[PlantUML Diagrams Guide]
+* link:developer_guide.adoc[Modern Developer Guide (Haxe/HashLink)]

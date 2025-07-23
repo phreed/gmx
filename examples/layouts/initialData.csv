@@ -1,0 +1,7 @@
+CUID, adminMainTabCuid, mtRow1, , child, mtRow2, , child, mtRow3, , child
+RUID, mtRow1, mainTab, sampleh
+RUID, mtRow2, mainTab, test
+RUID, mtRow3, mainTab, ITEM
+CUID, adminSubTabCuid, stRow1, , child, stRow2, , child
+RUID, stRow1, subTab, Systems,|Shortcut|:sample_main:tabPortal|:sampleh_tab:samplehMainPortal|:sampleh_systems_mp
+RUID, stRow2, subTab, Checklists,|Shortcut|:sample_main:tabPortal|:sampleh_tab:samplehMainPortal|:test_checklists_mp

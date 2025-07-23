@@ -1,0 +1,15 @@
+<fn:invoke fn="set_ISISFormLayout"
+  xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
+  xmlns="http://isis.vanderbilt.edu/gmx/layout">
+  <fn:args>
+    <fn:arg>
+      <Parent luid="mainLuid" id="PlanMissionSmallPortal">
+        <AttitudeIndicator ruid="attitudeIndicator1">
+          <field fid="rollFid" name="roll" value="5"/>
+          <field fid="pitchFid" name="pitch" value="10"/>
+          <field fid="sideSlipFid" name="sideSlip" value="0"/>
+        </AttitudeIndicator>
+      </Parent>
+    </fn:arg>
+  </fn:args>
+</fn:invoke>

@@ -1,0 +1,11 @@
+<fn:invoke fn="set_ISISFormLayout"
+xmlns:fn="http://isis.vanderbilt.edu/gmx/function"
+xmlns="http://isis.vanderbilt.edu/gmx/layout">
+  <fn:args>
+    <fn:arg>
+       <Parent luid="hbox2" id="PlanMissionSmallPortal">
+         <Button fid="button1" label1="NewTop" label2="NewBottom"/>
+       </Parent>
+    </fn:arg>
+  </fn:args>
+</fn:invoke>
