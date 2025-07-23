@@ -1,0 +1,64 @@
+@startuml Developer Workflow
+!theme plain
+title GMX Developer Workflow
+
+actor Developer
+participant "Console/Terminal" as Console
+participant "Adobe AIR SDK" as AIR
+participant "Android Debug Bridge" as ADB
+participant "Mobile Device" as Device
+database "Project Files" as Files
+
+== Development Setup ==
+Developer -> Console: Navigate to src folder
+Console -> Files: Access Main.mxml, GMX-app.xml
+
+== Compilation Process ==
+Developer -> Console: amxmlc Main.mxml
+Console -> AIR: Compile MXML to SWF
+AIR -> Files: Generate Main.swf
+
+== Testing Phase ==
+Developer -> Console: adl GMX-app.xml
+Console -> AIR: Launch AIR Debug Launcher
+AIR -> AIR: Run application in desktop environment
+
+== Certificate Creation ==
+Developer -> Console: adt -certificate -cn [SelfSigned] 1024-RSA [sampleCert.pfx] [samplePassword]
+Console -> AIR: Generate certificate
+AIR -> Files: Create sampleCert.pfx
+
+== Package Creation ==
+alt AIR Installation
+    Developer -> Console: adt -package -storetype pkcs12 -keystore sampleCert.pfx HelloWorld.air HelloWorld-app.xml HelloWorld.swf
+    Console -> AIR: Create AIR package
+    AIR -> Files: Generate HelloWorld.air
+else Android Installation
+    Developer -> Console: adt -package -target apk-debug -storetype pkcs12 -keystore GMXCert.pfx GMF.apk GMX-app.xml Main.swf assets/skull72x72.png assets/skull36x36.png assets/skull48x48.png
+    Console -> AIR: Create Android package
+    AIR -> Files: Generate GMF.apk
+end
+
+== Device Deployment ==
+Developer -> Console: adb install -r GMF.apk
+Console -> ADB: Install APK on device
+ADB -> Device: Deploy application
+
+== Debugging ==
+Developer -> Console: adb logcat
+Console -> ADB: Request debug output
+ADB -> Device: Collect logs
+Device -> ADB: Return log data
+ADB -> Console: Display debug information
+Console -> Developer: Show application logs
+
+== Application Structure ==
+note right of Files
+  Key Files:
+  - Main.mxml (Entry point)
+  - GMX-app.xml (Application descriptor)
+  - GMXMain.as (Main application class)
+  - Assets (Icons: skull36x36.png, skull48x48.png, skull72x72.png)
+end note
+
+@enduml

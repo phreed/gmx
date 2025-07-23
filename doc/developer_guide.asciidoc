@@ -1,0 +1,122 @@
+= GMX Developer Guide
+:toc:
+:numbered:
+
+== Overview
+
+This guide provides step-by-step instructions for developing, building, testing, and deploying the GMX application. The GMX application is built using Adobe AIR technology and can be deployed to both desktop and Android platforms.
+
+For a visual overview of the complete development workflow, see the link:figures/developer_workflow.puml[Developer Workflow Diagram].
+
+== Development Environment Setup
+
+FIRST: open a console in and navigate over to the src folder
+
+== Build Process
+
+=== Compile AIR Program
+
+Compile the main MXML file to SWF:
+
+----
+amxmlc Main.mxml
+----
+
+=== Testing
+
+Test the application using Adobe AIR Debug Launcher:
+
+----
+adl GMX-app.xml
+----
+
+== Certificate Management
+
+=== Create Certificate
+
+Create a self-signed certificate for code signing:
+
+----
+adt -certificate -cn [SelfSigned] 1024-RSA [sampleCert.pfx] [samplePassword]
+----
+
+== Package Creation
+
+You can create packages for different target platforms:
+
+=== Option 1: AIR Installation File
+
+Create a desktop AIR installation file:
+
+----
+adt -package -storetype pkcs12 -keystore sampleCert.pfx HelloWorld.air HelloWorld-app.xml HelloWorld.swf
+----
+
+=== Option 2: Android Installation File
+
+Create an Android APK file:
+
+----
+adt -package -target apk-debug -storetype pkcs12 -keystore GMXCert.pfx GMF.apk GMX-app.xml Main.swf assets/skull72x72.png assets/skull36x36.png assets/skull48x48.png
+----
+
+== Android Deployment
+
+=== Install on Device
+
+Install the APK on an Android device (after plugging in the USB and ensuring drivers are installed):
+
+----
+adb install -r GMF.apk
+----
+
+=== Debug Output
+
+View debug output from the device:
+
+----
+adb logcat
+----
+
+== Application Configuration
+
+=== Sample Application Descriptor
+
+A sample `*-app.xml` file structure:
+
+[source,xml]
+----
+<application>
+    <id>...</id>
+    <version>...</version>
+    <filename>???</filename>
+    <initialWindow>
+        <content>???</content>
+        <visible>???</visible>
+        <systemChrome>???</systemChrome>
+        <transparent>???</transparent>
+        <width>???</width>
+        <height>???</height>
+    </initialWindow>
+</application>
+----
+
+== Quick Reference Commands
+
+For quick reference, here are the most commonly used commands:
+
+----
+amxmlc Main.mxml
+adt -package -target apk-debug -storetype pkcs12 -keystore GMXCert.pfx GMF.apk GMX-app.xml Main.swf assets/skull72x72.png assets/skull36x36.png assets/skull48x48.png
+adb install -r GMF.apk
+adb logcat
+----
+
+Default certificate password: `alan25`
+
+== Additional Resources
+
+* link:figures/gmx_architecture.puml[GMX Application Architecture Diagram]
+* link:figures/deployment_diagram.puml[Build and Deployment Process Diagram]
+* link:operator_guide.asciidoc[Operator Guide]
+* link:plantuml_diagrams_guide.asciidoc[PlantUML Diagrams Guide]

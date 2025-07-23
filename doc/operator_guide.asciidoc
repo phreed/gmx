@@ -1,0 +1,76 @@
+= GMX Operator Guide
+:toc:
+:numbered:
+
+== Overview
+
+This guide provides instructions for operators who need to generate documentation for the GMX application. The primary task involves using the ASDoc tool to create comprehensive API documentation from the ActionScript source code.
+
+For a visual overview of the documentation generation workflow, see the link:figures/operator_workflow.puml[Operator Workflow Diagram].
+
+== Prerequisites
+
+Before generating documentation, ensure you have:
+
+* Adobe Flex SDK installed with ASDoc tool
+* Access to the GMX source code
+* Write permissions to create output directories
+
+== Documentation Generation Process
+
+=== Step 1: Navigate to Source Directory
+
+FIRST: navigate to the src directory
+
+=== Step 2: Execute ASDoc Command
+
+Generate API documentation using the following command:
+
+----
+asdoc --target-player=10.0.0 -source-path . -doc-classes GMXMain -main-title "This is a test main" -window-title "This is test Window" -output TEST
+----
+
+=== Command Parameters Explained
+
+* `--target-player=10.0.0`: Specifies the Flash Player version for compatibility
+* `-source-path .`: Sets the current directory as the source path for scanning
+* `-doc-classes GMXMain`: Specifies the main class to document (GMXMain)
+* `-main-title "This is a test main"`: Sets the main title for the documentation
+* `-window-title "This is test Window"`: Sets the browser window title
+* `-output TEST`: Specifies the output directory name (TEST)
+
+== Output Structure
+
+The ASDoc tool will generate a complete documentation website in the specified output directory (`TEST`), including:
+
+* `index.html`: Main documentation page with navigation
+* Class documentation pages for GMXMain and related classes
+* API reference with method and property details
+* Search functionality for easy navigation
+* CSS stylesheets for proper formatting
+* JavaScript files for interactive features
+
+== Verification
+
+After running the ASDoc command:
+
+1. Navigate to the `TEST` directory
+2. Open `index.html` in a web browser
+3. Verify that the documentation displays correctly
+4. Test navigation and search functionality
+5. Review the generated content for completeness
+
+== Troubleshooting
+
+If documentation generation fails:
+
+* Verify that the ASDoc tool is properly installed
+* Check that you're in the correct source directory
+* Ensure that the GMXMain class exists and is accessible
+* Verify write permissions for the output directory
+
+== Additional Resources
+
+* link:figures/gmx_architecture.puml[GMX Application Architecture Diagram]
+* link:developer_guide.asciidoc[Developer Guide]
+* link:plantuml_diagrams_guide.asciidoc[PlantUML Diagrams Guide]
