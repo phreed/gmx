@@ -1,0 +1,161 @@
+@startuml GMX Deployment Diagram
+!theme plain
+title GMX Application Build and Deployment Process
+
+node "Development Environment" {
+    artifact "Source Code" {
+        file "Main.mxml" as MainMXML
+        file "GMXMain.as" as GMXMainAS
+        folder "src/" as SourceFolder
+        folder "assets/" as AssetsFolder
+    }
+
+    component "Adobe Flex SDK" as FlexSDK {
+        component "amxmlc" as Compiler
+    }
+
+    component "Adobe AIR SDK" as AIRSDK {
+        component "adl" as DebugLauncher
+        component "adt" as PackagingTool
+    }
+
+    artifact "Certificates" {
+        file "sampleCert.pfx" as Certificate
+        file "GMXCert.pfx" as GMXCertificate
+    }
+}
+
+node "Build Artifacts" {
+    artifact "Compiled Output" {
+        file "Main.swf" as MainSWF
+    }
+
+    artifact "Application Descriptor" {
+        file "GMX-app.xml" as AppDescriptor
+    }
+
+    artifact "Package Files" {
+        file "HelloWorld.air" as AIRPackage
+        file "GMF.apk" as AndroidPackage
+    }
+}
+
+node "Testing Environment" {
+    component "AIR Debug Launcher" as TestRunner
+    component "Desktop AIR Runtime" as DesktopRuntime
+}
+
+node "Android Development Environment" {
+    component "Android Debug Bridge" as ADB
+    database "Android SDK" as AndroidSDK
+}
+
+device "Android Device" {
+    component "AIR Runtime for Android" as AndroidAIR
+    artifact "Installed App" as InstalledApp
+}
+
+node "Documentation Environment" {
+    component "ASDoc Tool" as ASDocTool
+    artifact "Generated Documentation" {
+        folder "TEST/" as DocOutput
+        file "index.html" as DocIndex
+    }
+}
+
+' Build Process Flow
+SourceFolder --> Compiler : compile
+Compiler --> MainSWF : generates
+MainSWML --> PackagingTool : input
+AppDescriptor --> PackagingTool : input
+AssetsFolder --> PackagingTool : includes
+Certificate --> PackagingTool : signs with
+
+' Package Generation
+PackagingTool --> AIRPackage : creates (desktop)
+PackagingTool --> AndroidPackage : creates (mobile)
+
+' Testing Flow
+MainSWF --> DebugLauncher : test
+AppDescriptor --> DebugLauncher : configure
+DebugLauncher --> TestRunner : launches
+TestRunner --> DesktopRuntime : runs on
+
+' Deployment Flow
+AndroidPackage --> ADB : install
+ADB --> AndroidSDK : uses
+ADB --> InstalledApp : deploys to device
+InstalledApp --> AndroidAIR : runs on
+
+' Documentation Flow
+SourceFolder --> ASDocTool : analyze
+ASDocTool --> DocOutput : generates
+DocOutput --> DocIndex : includes
+
+' Deployment Annotations
+note right of Compiler
+  Compilation Command:
+  amxmlc Main.mxml
+end note
+
+note right of DebugLauncher
+  Testing Command:
+  adl GMX-app.xml
+end note
+
+note right of PackagingTool
+  AIR Packaging:
+  adt -package -storetype pkcs12
+  -keystore sampleCert.pfx
+  HelloWorld.air HelloWorld-app.xml
+  HelloWorld.swf
+
+  Android Packaging:
+  adt -package -target apk-debug
+  -storetype pkcs12 -keystore GMXCert.pfx
+  GMF.apk GMX-app.xml Main.swf
+  assets/skull72x72.png
+  assets/skull36x36.png
+  assets/skull48x48.png
+end note
+
+note right of ADB
+  Installation Command:
+  adb install -r GMF.apk
+
+  Debug Command:
+  adb logcat
+end note
+
+note right of ASDocTool
+  Documentation Command:
+  asdoc --target-player=10.0.0
+  -source-path . -doc-classes GMXMain
+  -main-title "This is a test main"
+  -window-title "This is test Window"
+  -output TEST
+end note
+
+' Environment Labels
+note top of "Development Environment"
+  Developer Workstation
+  - Adobe Flex SDK
+  - Adobe AIR SDK
+  - Source code editor
+end note
+
+note top of "Android Development Environment"
+  Android Development Setup
+  - Android SDK
+  - USB debugging enabled
+  - Device drivers installed
+end note
+
+note top of "Android Device"
+  Target deployment device
+  - AIR Runtime installed
+  - Developer options enabled
+  - USB debugging allowed
+end note
+
+@enduml

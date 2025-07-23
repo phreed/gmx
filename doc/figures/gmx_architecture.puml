@@ -1,0 +1,153 @@
+@startuml GMX Architecture
+!theme plain
+title GMX Application Architecture
+
+package "Adobe AIR Runtime" {
+    component [AIR Application Container] as AIR
+}
+
+package "GMX Application" {
+    component [Main.mxml] as MainMXML {
+        note bottom : Entry point MXML application
+    }
+
+    component [GMXMain.as] as GMXMain {
+        note bottom : Core application controller
+    }
+
+    package "UI Components" {
+        component [GMXComponentBuilder.as] as Builder
+        component [GMXComponentListeners.as] as Listeners
+        component [GMXComponentProperties.as] as Properties
+        component [PopUpManager_ISIS.as] as PopUpMgr
+    }
+
+    package "Data Layer" {
+        component [GMXDictionaries.as] as Dictionaries
+        folder "records/" {
+            component [Record Classes] as Records
+        }
+        folder "GMX/Data/" {
+            component [AttributeVO.as] as AttributeVO
+            component [CollectionVO.as] as CollectionVO
+            component [FieldVO.as] as FieldVO
+            component [RecordVO.as] as RecordVO
+        }
+    }
+
+    package "Services" {
+        folder "services/" {
+            component [Service Classes] as Services
+        }
+    }
+
+    package "Graphics & UI" {
+        component [Graphics_ISIS.as] as Graphics
+        folder "gmx_builder/" {
+            component [GMXBuilder] as GMXBuilder
+            folder "drawing_tool/" {
+                component [ActionScriptGraphicsGenerator] as GraphicsGen
+            }
+        }
+    }
+
+    package "Utilities" {
+        folder "generics/" {
+            component [VBox_X] as VBoxX
+            component [FileBrowser] as FileBrowser
+        }
+        folder "interfaces/" {
+            component [Interface Definitions] as Interfaces
+        }
+        folder "constants/" {
+            component [Constant Definitions] as Constants
+        }
+    }
+
+    package "External Integration" {
+        folder "com/" {
+            component [Third-party Libraries] as ThirdParty
+        }
+    }
+}
+
+package "Assets" {
+    folder "assets/" {
+        file [skull36x36.png] as Icon36
+        file [skull48x48.png] as Icon48
+        file [skull72x72.png] as Icon72
+        file [Other Assets] as OtherAssets
+    }
+}
+
+package "Configuration" {
+    file [GMX-app.xml] as AppDescriptor {
+        note bottom : AIR application descriptor
+    }
+    file [ClassDefinitions.xml] as ClassDefs
+    file [GMXHelpText.html] as HelpText
+}
+
+' Relationships
+AIR --> MainMXML : hosts
+MainMXML --> GMXMain : initializes
+GMXMain --> Builder : uses
+GMXMain --> Listeners : uses
+GMXMain --> Properties : uses
+GMXMain --> PopUpMgr : manages
+GMXMain --> Graphics : renders
+
+Builder --> Records : creates
+Builder --> Services : utilizes
+Listeners --> Records : handles events for
+Properties --> Records : configures
+
+GMXMain --> Dictionaries : references
+Dictionaries --> Records : manages
+
+GMXBuilder --> GraphicsGen : uses
+GraphicsGen --> Graphics : generates
+
+Services --> ThirdParty : integrates with
+GMXMain --> FileBrowser : can launch
+GMXMain --> VBoxX : uses custom containers
+
+MainMXML ..> AppDescriptor : configured by
+GMXMain ..> ClassDefs : references
+GMXMain ..> HelpText : displays
+
+GMXMain --> Icon36 : uses
+GMXMain --> Icon48 : uses
+GMXMain --> Icon72 : uses
+
+' Data flow
+Records --> AttributeVO : contains
+Records --> CollectionVO : organized in
+Records --> FieldVO : composed of
+Records --> RecordVO : implements
+
+' Notes
+note top of GMXMain
+    Core application class that:
+    - Manages UI components
+    - Handles application lifecycle
+    - Coordinates data flow
+    - Manages pop-ups and dialogs
+end note
+
+note top of Records
+    Data model classes
+    representing business
+    entities and their
+    relationships
+end note
+
+note top of Services
+    Service layer for:
+    - Data persistence
+    - External API calls
+    - Business logic
+    - Validation
+end note
+
+@enduml

@@ -1,0 +1,170 @@
+= PlantUML Diagrams Guide for GMX Application
+:toc:
+:numbered:
+
+== Overview
+
+This document describes the PlantUML diagrams created to visualize the GMX application's architecture, development workflow, and operational processes. These diagrams complement the existing developer and operator guides by providing visual representations of the key processes and system architecture.
+
+== Available Diagrams
+
+=== 1. Developer Workflow Diagram (`developer_workflow.puml`)
+
+This sequence diagram illustrates the complete development workflow for GMX application developers, including:
+
+* **Setup Phase**: Navigation to source directory and file access
+* **Compilation Process**: Using `amxmlc` to compile MXML to SWF
+* **Testing Phase**: Using Adobe AIR Debug Launcher (`adl`) for testing
+* **Certificate Creation**: Generating self-signed certificates for packaging
+* **Package Creation**: Creating both AIR and Android packages
+* **Device Deployment**: Installing applications on Android devices
+* **Debugging Process**: Using `adb logcat` for debug output
+
+Key Commands Visualized::
+- `amxmlc Main.mxml` - Compilation
+- `adl GMX-app.xml` - Testing
+- `adt -certificate` - Certificate generation
+- `adt -package` - Package creation
+- `adb install -r GMF.apk` - Installation
+- `adb logcat` - Debugging
+
+=== 2. Operator Workflow Diagram (`operator_workflow.puml`)
+
+This sequence diagram shows the documentation generation process for operators, featuring:
+
+* **Setup Phase**: Directory navigation and source file access
+* **Documentation Generation**: Using ASDoc tool with specific parameters
+* **Processing Phase**: Source code scanning and documentation extraction
+* **Output Generation**: HTML documentation structure creation
+* **Verification**: Reviewing generated documentation
+
+Key ASDoc Parameters Visualized::
+- `--target-player=10.0.0` - Flash Player version targeting
+- `-source-path .` - Source directory specification
+- `-doc-classes GMXMain` - Specific class documentation
+- `-main-title` and `-window-title` - Documentation titles
+- `-output TEST` - Output directory specification
+
+=== 3. GMX Architecture Diagram (`gmx_architecture.puml`)
+
+This component diagram provides a comprehensive view of the GMX application architecture, showing:
+
+==== Core Components
+* **Main.mxml**: Entry point MXML application
+* **GMXMain.as**: Core application controller
+* **UI Components**: Builder, Listeners, Properties, PopUp Manager
+* **Data Layer**: Dictionaries, Records, Value Objects
+* **Services**: Business logic and external integrations
+* **Graphics & UI**: Rendering and drawing components
+* **Utilities**: Generic components and interfaces
+
+==== Package Structure
+The diagram maps to the actual source code structure:
+----
+src/
+├── Main.mxml
+├── GMXMain.as
+├── GMX/Data/           # Value Objects
+├── records/            # Data models
+├── services/           # Business services
+├── gmx_builder/        # UI builders
+├── generics/           # Utility classes
+├── interfaces/         # Interface definitions
+├── constants/          # Application constants
+└── com/                # Third-party integrations
+----
+
+==== Key Relationships
+* Main.mxml initializes GMXMain.as
+* GMXMain coordinates all subsystems
+* Data flows through Value Objects
+* Services handle external integrations
+* Graphics components manage rendering
+
+=== 4. Deployment Diagram (`deployment_diagram.puml`)
+
+This deployment diagram shows the complete build and deployment infrastructure, including:
+
+==== Development Environment
+* Source code organization
+* Adobe Flex SDK (amxmlc compiler)
+* Adobe AIR SDK (adl, adt tools)
+* Certificate management
+
+==== Build Artifacts
+* Compiled SWF files
+* Application descriptors
+* Package files (AIR and APK)
+
+==== Target Environments
+* Desktop testing environment
+* Android development setup
+* Mobile device deployment
+* Documentation generation environment
+
+==== Process Flows
+* **Build Process**: Source → Compile → Package
+* **Testing Flow**: SWF → Debug Launcher → Desktop Runtime
+* **Deployment Flow**: APK → ADB → Android Device
+* **Documentation Flow**: Source → ASDoc → HTML Output
+
+== Using the Diagrams
+
+=== Viewing the Diagrams
+
+To view these PlantUML diagrams, you can:
+
+1. **Online PlantUML Editor**: Copy the content to http://www.plantuml.com/plantuml/
+2. **Local PlantUML**: Install PlantUML locally and render to PNG/SVG
+3. **IDE Plugins**: Use PlantUML plugins in IntelliJ IDEA, Eclipse, or VS Code
+4. **Command Line**: Use PlantUML JAR file with Java
+
+Example command line usage:
+----
+java -jar plantuml.jar developer_workflow.puml
+----
+
+=== Integration with Documentation
+
+These diagrams are designed to complement the existing guides:
+
+* **Developer Guide Integration**: The developer workflow diagram directly maps to the steps in `developer_guide.asciidoc`
+* **Operator Guide Integration**: The operator workflow diagram visualizes the ASDoc process from `operator_guide.asciidoc`
+* **Architecture Reference**: The architecture diagram provides system overview for both developers and operators
+* **Deployment Reference**: The deployment diagram shows the complete build and deployment pipeline
+
+=== Maintenance
+
+When updating the GMX application:
+
+1. **Code Changes**: Update the architecture diagram if new components are added
+2. **Process Changes**: Modify workflow diagrams if development or deployment processes change
+3. **Tool Updates**: Update diagrams if SDK versions or tools change
+4. **Documentation**: Keep this guide synchronized with diagram updates
+
+== File Locations
+
+All PlantUML source files are located in:
+----
+doc/figures/
+├── developer_workflow.puml
+├── operator_workflow.puml
+├── gmx_architecture.puml
+└── deployment_diagram.puml
+----
+
+Generated images (when created) should be placed in:
+----
+doc/images/
+├── developer_workflow.png
+├── operator_workflow.png
+├── gmx_architecture.png
+└── deployment_diagram.png
+----
+
+== References
+
+* link:developer_guide.asciidoc[Developer's Guide] - Development process details
+* link:operator_guide.asciidoc[Operator's Guide] - Documentation generation process
+* http://plantuml.com/[PlantUML Official Documentation] - Diagram syntax reference
+* https://www.adobe.com/devnet/air.html[Adobe AIR Documentation] - Platform documentation

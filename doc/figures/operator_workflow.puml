@@ -1,0 +1,66 @@
+@startuml Operator Workflow
+!theme plain
+title GMX Operator Documentation Workflow
+
+actor Operator
+participant "Console/Terminal" as Console
+participant "ASDoc Tool" as ASDoc
+participant "Source Code" as Source
+database "Documentation Output" as Docs
+
+== Setup Phase ==
+Operator -> Console: Navigate to src directory
+Console -> Source: Access source files
+note right of Source
+  Source files include:
+  - GMXMain.as (main class)
+  - Various AS3 classes
+  - MXML components
+end note
+
+== Documentation Generation ==
+Operator -> Console: asdoc --target-player=10.0.0 -source-path . -doc-classes GMXMain -main-title "This is a test main" -window-title "This is test Window" -output TEST
+Console -> ASDoc: Execute documentation command
+
+== ASDoc Processing ==
+ASDoc -> Source: Scan source path for classes
+ASDoc -> Source: Parse GMXMain class
+ASDoc -> ASDoc: Extract documentation comments
+ASDoc -> ASDoc: Generate HTML documentation
+
+== Output Generation ==
+ASDoc -> Docs: Create documentation structure
+ASDoc -> Docs: Generate index.html
+ASDoc -> Docs: Create class documentation pages
+ASDoc -> Docs: Generate navigation files
+ASDoc -> Docs: Copy assets and stylesheets
+
+== Documentation Structure ==
+note right of Docs
+  Generated Output (TEST folder):
+  - index.html (main documentation page)
+  - Class documentation for GMXMain
+  - API reference pages
+  - Search functionality
+  - CSS stylesheets
+  - JavaScript for interactivity
+end note
+
+== Configuration Details ==
+note left of Console
+  ASDoc Parameters:
+  --target-player=10.0.0 (Flash Player version)
+  -source-path . (current directory)
+  -doc-classes GMXMain (specific class to document)
+  -main-title "This is a test main" (documentation title)
+  -window-title "This is test Window" (browser title)
+  -output TEST (output directory)
+end note
+
+== Verification ==
+Operator -> Console: Navigate to TEST directory
+Console -> Docs: List generated files
+Operator -> Docs: Open index.html in browser
+Docs -> Operator: Display generated documentation
+
+@enduml
