@@ -1,0 +1,38 @@
+The legacy client ships its base widgets in `src/generics/` (see commit `073e595`).
+Each implements `ISelfBuilding`.
+All of them are still in use, so the Rust port must provide every one.
+The tiers set the order of work by dependency and difficulty.
+They do not mark any widget as optional.
+
+[cols="1,3,2",options="header"]
+|===
+|Tier |Legacy widgets |Notes
+
+|T1 Containers
+|`VBox_X`, `HBox_X`, `Canvas_X`, `Spacer_X`, `HRule_X`, `VRule_X`, `ResizingBoxContainer_X`, `ResizingBox_X`
+|Must implement the `flexible` sizing rule.
+Must expose a LUID slot for layout replacement.
+
+|T2 Form controls
+|`Label_X`, `LabelEnum_X`, `Button_X`, `PushButton_X`, `SendButton_X`, `ToggleButton_X`, `ToggleButtonGroup_X`, `CheckBox_X`, `CheckBoxHierarchicalGroup_X`, `RadioButton_X`, `RadioButtonGroup_X`, `TextInput_X`, `TextArea_X`, `TextAreaCumulative_X`, `SpinBox_X`, `ComboBox_X`, `ComboBoxSingleField_X`, `MenuButton_X`, `ColorPicker_X`, `Calendar_X`
+|Bound to a single field or to a collection.
+User edits produce `ISISDataEdit`.
+
+|T3 Collection views
+|`List_X`, `DataGrid_ISIS`, `CustomGrid`, and the `tables/` column renderers (check box, icon, tree)
+|Driven by collection operations.
+Tree rows use the `child` and `parent` operations.
+
+|T4 Instruments
+|`Compass_X`, `Dial_X`, `TurnRateIndicator_X`, `RateInstrument_X`, `VoltageIndicator_X`, `WindDirIndicator_X`, `Volume_X`, `SliderDisplay_X`, `MaxStatus_X`, `Joystick_X`, `AttitudeIndicator` (`gaget/attitude-indicator.svg`)
+|Custom vector painting.
+Good first candidates for delivery by the widget-source server.
+
+|T5 Media and overlays
+|`Icon_X`, `ImageViewer_X`, `Video_X`, `InfoTag_X`, `InfoTagPopUp_X`, `FileBrowser`, `ShapeShifter`, `PopUpManager_ISIS`
+|Video and file browsing depend on platform services.
+Scheduled last.
+|===
+
+The GMX Builder tool (`src/gmx_builder/`) is an authoring application, not part of the runtime.
+It is out of scope for the first release.

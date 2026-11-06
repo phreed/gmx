@@ -1,0 +1,488 @@
+= GMX Rust Rewrite Plan
+:toc: left
+:toclevels: 3
+:sectnums:
+:icons: font
+
+== Purpose
+
+This document plans a rewrite of the GMX system in Rust.
+The work happens on the `rust` branch.
+The Flash implementation is preserved on the `royale` branch.
+The Haxe port remains on the `haxe` branch.
+
+The rewrite has two goals.
+It replaces each application with a Rust binary.
+It keeps the existing wire protocol, so current servers, layouts and captured streams still work.
+
+include::partials/wire-compat.adoc[]
+
+== Scope
+
+The system consists of four applications.
+
+include::partials/applications.adoc[]
+
+The layout and data-messages servers already exist as Python reference implementations in `examples/servers/`.
+The widget-source server is new.
+It has no counterpart in the legacy system, which compiled every widget into the client.
+Each server listens on its own port.
+
+All legacy widgets are still in use.
+Every widget tier is therefore required for the first release.
+
+=== Out of scope for the first release
+
+The following items are deferred.
+
+* The GMX Builder authoring tool.
+* Android packaging.
+* TLS and authentication, beyond leaving room for them in the transport layer.
+* Clients for embedded devices.
+  This is not an immediate goal, so the library crates target `std` only.
+
+== Source of truth
+
+The rewrite is driven by these artifacts.
+
+* `docs/protocol_reference.adoc` and `docs/ux_designer_guide.adoc` for message semantics.
+* `examples/layouts/`, `examples/records/` and `examples/collections/` as golden inputs.
+* `examples/servers/*.py` for server behavior and the plain-text debug commands.
+* The ActionScript sources at commit `073e595` for client behavior the documents do not cover.
+
+The ActionScript sources reveal details absent from the documents.
+
+* The client sends `ISISRefresh` as soon as a socket connects.
+* `GMX_Connector_EventMap` reads `ISISLayout`, `ISISRecord`, `ISISCollection` and `ISISAttributes`.
+* It writes `ISISRefresh` and `ISISDataEdit`.
+* `ExtraLayoutStateRetainer` keeps per-widget UI state when a layout with the same LUID and content hash is rebuilt.
+* `ISelfBuilding` defines the widget contract: `build`, `disintegrate`, `setAttributes` and `flexible`.
+
+== Architecture
+
+=== Cargo workspace
+
+A single Cargo workspace lives at the repository root.
+Shared logic sits in library crates.
+Each application is a thin binary crate.
+
+----
+Cargo.toml                 workspace manifest
+crates/
+  gmx-proto/               message types, XML codec, NUL framing
+  gmx-model/               LUID/RUID/CUID, Record, Field, Collection, Attributes
+  gmx-net/                 async transport, connection hub, reconnect
+  gmx-widgets/             widget trait, registry, base widgets (T1-T5)
+  gmx-widget-pkg/          widget package format, validation, hashing
+  gmx-testkit/             replay driver, golden-file helpers, fake servers
+apps/
+  gmx-client/              UI client binary
+  gmx-layout-server/       layout server binary
+  gmx-data-server/         data-messages server binary
+  gmx-widget-server/       widget-source server binary
+  gmx-cat/                 netcat-like send, capture and replay tool
+----
+
+=== Dependency direction
+
+[plantuml]
+----
+@startuml
+[gmx-proto] --> [gmx-model]
+[gmx-net] --> [gmx-proto]
+[gmx-widget-pkg] --> [gmx-proto]
+[gmx-widgets] --> [gmx-model]
+[gmx-widgets] --> [gmx-widget-pkg]
+[gmx-client] --> [gmx-widgets]
+[gmx-client] --> [gmx-net]
+[gmx-layout-server] --> [gmx-net]
+[gmx-data-server] --> [gmx-net]
+[gmx-widget-server] --> [gmx-net]
+[gmx-widget-server] --> [gmx-widget-pkg]
+@enduml
+----
+
+`gmx-model` and `gmx-proto` have no I/O and no UI dependencies.
+That keeps them usable by servers, tests and a future embedded client.
+
+=== Configuration
+
+No port is reserved for GMX.
+Every host and port is set in a configuration file.
+The binaries contain no default port numbers.
+A missing port is a start-up error that names the absent key.
+
+All four applications read the same TOML schema.
+Each server reads its own section.
+The client reads all three sections to find its endpoints.
+
+[source,toml]
+----
+# gmx.toml
+[layout]
+host = "0.0.0.0"
+port = 12345
+layout_dir = "examples/layouts"
+
+[data]
+host = "0.0.0.0"
+port = 12346
+seed = ["examples/layouts/initialData.csv", "examples/records", "examples/collections"]
+
+[widget]
+host = "0.0.0.0"
+port = 12347
+package_dir = "widgets"
+
+[client]
+mode = "multi"        # or "single" for a legacy single-socket controller
+max_frame_bytes = 1048576
+----
+
+The file path is given by `--config`.
+It falls back to `$GMX_CONFIG`, then to `gmx.toml` in the working directory.
+The port numbers above are only example values.
+They match those used by the current Python servers and documents.
+A `--port` flag may override the file for a single run.
+This keeps `tests/test_gmx.py` and the existing operator scripts usable.
+
+=== Recommended libraries
+
+[cols="1,2,3",options="header"]
+|===
+|Concern |Choice |Reason
+
+|Async runtime
+|`tokio`
+|Mature runtime with good TCP support.
+`tokio-util` provides the codec framework.
+
+|Framing
+|custom `Decoder`/`Encoder` on `tokio-util::codec`
+|Splits on NUL.
+Enforces a maximum frame size.
+
+|XML
+|`quick-xml`
+|Fast streaming parser.
+Preserves the raw subtree needed for layout hashing and replay.
+
+|UI
+|`egui` with `eframe` (wgpu backend)
+|Layouts arrive at run time as data.
+An immediate-mode toolkit maps a dynamic tree to widgets without code generation.
+Its painter API suits the T4 instruments.
+It runs on Wayland, X11, Windows and macOS.
+
+|Vector graphics
+|`usvg` and `resvg`
+|Renders SVG gadgets such as the attitude indicator.
+
+|Widget tree storage
+|`slotmap`
+|Gives stable widget handles without reference cycles.
+
+|CLI and config
+|`clap`, `serde`, `toml`
+|Matches the `--host`, `--port` and `--verbose` flags of the Python servers.
+
+|Logging
+|`tracing`, `tracing-subscriber`
+|Structured logs.
+Replaces the `debugSend` and `debugReceive` flags.
+
+|Hashing
+|`sha2`
+|Content addressing for widget packages and layout state retention.
+|===
+
+The UI choice is the decision with the most consequences.
+`iced` and `slint` were considered.
+`iced` is viable, but its message-driven design adds work for a tree that changes shape at run time.
+`slint` fits compile-time UIs better than run-time XML.
+The `GmxWidget` trait keeps toolkit types out of the model layer, which limits the cost of changing toolkit later.
+
+== Component design
+
+=== gmx-proto
+
+This crate defines one enum for every message the system exchanges.
+
+* `Inbound`: `Layout`, `Record`, `Collection`, `Attributes`, `Refresh`, `WidgetCatalog`, `Widget`.
+* `Outbound`: `Refresh`, `DataEdit`, `WidgetRequest`, `Error`.
+* `DebugCommand`: `GET_LAYOUT:<luid>`, `LIST_LAYOUTS`, `GET_RECORD:<ruid>`, `GET_COLLECTION:<cuid>`, `LIST_RECORDS`, `LIST_COLLECTIONS`.
+
+The decoder accepts the `fn:invoke` envelope and the bare root elements.
+The encoder emits the `fn:invoke` envelope by default.
+A flag selects the bare form for older servers.
+Unknown elements are kept as raw XML and logged, never dropped.
+
+=== gmx-model
+
+This crate holds the data store, with no UI or I/O dependencies.
+
+* `Luid`, `Ruid` and `Cuid` are distinct newtypes over interned strings.
+* `Record` maps a field id to a `Field` value and an optional `Attributes` set.
+* `Collection` is an ordered tree of RUIDs.
+* `Collection` implements `first`, `last`, `before`, `after`, `child`, `parent`, `delete`, `splice` and `clear`.
+* It accepts both `select="after" ref="x"` and `select="after:x"`.
+* `Store` applies inbound messages and returns a change set of touched RUIDs, CUIDs and field ids.
+
+The change set lets the client redraw only the widgets bound to changed data.
+
+=== gmx-net
+
+This crate provides the transport shared by all four applications.
+
+* `FramedConnection` wraps a TCP stream with the NUL codec.
+* `Hub` is a server-side broadcast set with per-client send queues and back-pressure.
+* `Endpoint` is a client-side connection with reconnect, back-off and the `ISISRefresh`-on-connect rule.
+* A frame size limit, 1 MiB by default, guards against malformed peers.
+
+=== gmx-widgets
+
+This crate defines the widget contract and the base widgets.
+The legacy `ISelfBuilding` interface maps to a Rust trait.
+
+[source,rust]
+----
+pub trait GmxWidget {
+    /// Construct from a layout XML node. Containers build their children via the context.
+    fn build(node: &LayoutNode, ctx: &mut BuildCtx) -> Result<Self, BuildError>
+    where
+        Self: Sized;
+
+    /// Data keys this widget reads, used to route change sets.
+    fn bindings(&self) -> &[Binding];
+
+    /// Apply an ISISAttributes update.
+    fn set_attributes(&mut self, attrs: &Attributes);
+
+    /// Participates in remaining-space distribution in a fixed-size parent.
+    fn flexible(&self) -> bool { false }
+
+    /// Draw and handle input. Returns user edits to send as ISISDataEdit.
+    fn ui(&mut self, ui: &mut egui::Ui, store: &Store) -> Vec<DataEdit>;
+}
+----
+
+The legacy `disintegrate` method has no direct equivalent.
+Widgets live in a `slotmap` arena.
+Removing a subtree drops its widgets, and the binding index removes their subscriptions.
+
+A `WidgetRegistry` maps a tag name to a constructor.
+Base widgets register at start-up.
+Widgets received from the widget-source server register at run time under the same tag namespace.
+The legacy `_X` suffix is accepted as an alias, so `Button` and `Button_X` resolve to one widget.
+
+include::partials/widget-inventory.adoc[]
+
+=== gmx-client
+
+The client is the application with the most logic.
+
+* It connects to the layout, data and widget endpoints named in the configuration file.
+* Inbound messages are routed by type, whichever socket they arrive on.
+* A single-endpoint mode reproduces the legacy client, which used one socket.
+* `ISISLayout` replaces the subtree at the target LUID.
+* The client keeps UI state across rebuilds, keyed by LUID and a hash of the layout XML.
+  This reproduces `ExtraLayoutStateRetainer`.
+* User edits become `ISISDataEdit` messages on the data endpoint.
+* A debug panel shows the message log, the LUID tree and the store contents.
+
+=== gmx-layout-server
+
+This server replaces `examples/servers/layout_server.py`.
+
+* It loads layouts from a directory and reads `manifest.csv` to map names to files.
+* It resolves `xi:include` elements inside `<layout_manager>` documents.
+* It sends `mainLuid` and its includes to every client that connects or sends `ISISRefresh`.
+* It answers the plain-text debug commands so `tests/test_gmx.py` runs unchanged.
+* It watches the layout directory and broadcasts changed layouts.
+
+=== gmx-data-server
+
+This server replaces `examples/servers/data_server.py`.
+
+* It uses the `gmx-model` store as its authority.
+* It seeds data from `initialData.csv` and from record and collection XML files.
+* It applies `ISISDataEdit` from one client and broadcasts the result to all clients.
+* A pluggable `DataSource` trait lets real systems feed the store.
+  The simulated metrics source from the Python server becomes one implementation.
+* Snapshots to SQLite are optional, behind a feature flag.
+
+=== gmx-widget-server
+
+This server is new.
+It lets widgets be created and evolved independently of the client, as the UX designer guide describes.
+
+==== Widget package format
+
+A widget package is a directory or a `.gmxw` archive with this content.
+
+----
+widget.toml        name, version, tag, field contract, sizing hints
+template.xml       composition of base widgets and bindings (optional)
+assets/*.svg       vector parts, with element ids used as animation targets
+module.wasm        sandboxed behavior (phase 2, optional)
+----
+
+The field contract lists the field ids the widget reads and writes.
+It documents the data contract the UX designer guide requires.
+The client checks a layout's `field` children against the contract.
+
+A declarative package needs no executable code.
+It can rotate, translate or show SVG elements from bound field values.
+That covers the attitude indicator and most T4 instruments.
+WebAssembly modules, run in `wasmtime` with no host access except drawing and the store, are a later phase.
+
+==== Proposed messages
+
+These messages are new.
+Their names follow the existing `ISIS` prefix convention.
+They need review before they are frozen.
+
+[source,xml]
+----
+<!-- client -> widget server -->
+<ISISWidgetRequest tag="AttitudeIndicator" version="^1.2"/>
+
+<!-- widget server -> client -->
+<ISISWidgetCatalog>
+  <Widget tag="AttitudeIndicator" version="1.2.0" sha256="..."/>
+</ISISWidgetCatalog>
+
+<ISISWidget tag="AttitudeIndicator" version="1.2.0" sha256="..." encoding="base64">
+  ...package bytes...
+</ISISWidget>
+----
+
+The client caches packages by content hash.
+A layout that names an unknown tag triggers an `ISISWidgetRequest`.
+The client shows a placeholder until the package arrives.
+
+== Phases
+
+Each phase ends with a demonstrable result and passing tests.
+Estimates assume one developer familiar with Rust.
+
+[cols="1,3,3,1",options="header"]
+|===
+|Phase |Work |Exit criteria |Estimate
+
+|0 Foundation
+|Workspace skeleton.
+CI with `cargo fmt`, `clippy` and `test`.
+Pixi tasks that wrap `cargo`.
+|`cargo build --workspace` passes on Linux, Windows and macOS.
+|2 days
+
+|1 Protocol and model
+|`gmx-proto` and `gmx-model`.
+Golden tests that parse every file under `examples/`.
+|All example messages round-trip.
+Every collection operation has a unit test.
+|1 week
+
+|2 Transport and `gmx-cat`
+|`gmx-net` codec, hub and endpoint.
+`gmx-cat` for send, capture and replay.
+|`gmx-cat` replays a capture against the Python servers.
+|4 days
+
+|3 Servers
+|`gmx-layout-server` and `gmx-data-server`.
+|`python tests/test_gmx.py --server-only` passes against the Rust servers.
+Differential tests match the Python servers byte for byte on the debug commands.
+|1.5 weeks
+
+|4 Client core and T1-T2 widgets
+|`gmx-client` shell, binding index, layout replacement, state retention.
+Containers and form controls.
+|`basic_form.xml`, `simple_button.xml` and `basic_layout_message.xml` render and round-trip edits.
+|3 weeks
+
+|5 T3 and T4 widgets
+|Lists, grids, tree rows.
+Instruments drawn with the painter and `resvg`.
+|`dashboard.xml` and `attitude_indicator_with_values.xml` render with live data.
+|3 weeks
+
+|6 Widget-source server
+|`gmx-widget-pkg`, `gmx-widget-server`, client-side fetch and cache.
+Attitude indicator moved into a package.
+|The client renders a widget it was not compiled with.
+|2 weeks
+
+|7 T5 widgets, packaging, docs
+|Media and overlay widgets.
+Flatpak, MSI and macOS bundles.
+Updated developer, operator and server guides.
+|Release candidate tagged on `rust`.
+|2 weeks
+|===
+
+Phases 3 and 4 can run in parallel once phase 2 is done.
+The servers depend only on the library crates, not on the client.
+
+== Testing strategy
+
+* *Golden files.* Every file in `examples/` is a parser and encoder fixture.
+* *Property tests.* `proptest` checks that random operation sequences keep each collection tree valid.
+* *Differential tests.* `gmx-testkit` runs each Python reference server beside its Rust replacement and compares responses.
+* *Replay tests.* Captured streams from `gmx-cat` drive the client headless and compare the resulting LUID tree and store.
+* *Snapshot tests.* `egui_kittest` renders widgets to images for visual regression.
+* *Existing suite.* `tests/test_gmx.py` stays green against the Rust servers.
+
+== Risks
+
+[cols="2,1,3",options="header"]
+|===
+|Risk |Impact |Mitigation
+
+|Behavior that only the ActionScript code documents
+|High
+|Read `073e595` sources per widget before porting it.
+Record findings as test cases.
+
+|Two message dialects (`fn:invoke` and bare roots)
+|Medium
+|Accept both from day one.
+Make the output dialect configurable.
+
+|egui styling falls short of the legacy look
+|Medium
+|Keep toolkit types behind `GmxWidget`.
+Build a theme module early.
+
+|Widget-source protocol is new and unreviewed
+|Medium
+|Mark the messages experimental.
+Ship declarative packages before WASM.
+
+|Running remote widget code
+|High
+|Phase 1 runs no code.
+Phase 2 uses a WASM sandbox with an allow-list of host calls and signed packages.
+
+|Hierarchical collections and `parent` operation semantics
+|Medium
+|Port `CheckBoxHierarchicalGroup_X` and `DataGridTreeRenderer` logic with tests first.
+|===
+
+== Open questions
+
+* The widget-source messages need review before they are frozen.
+* The WebAssembly host interface for phase 2 widgets is not yet defined.
+
+== Decisions
+
+These questions were raised during planning and are now settled.
+
+* The widget-source server has its own port.
+* No port is reserved.
+  Every port comes from the configuration file.
+* All legacy widgets are still in use.
+  All five widget tiers are in scope.
+* Clients for embedded devices are not an immediate goal.
+* The `royale` branch holds the Flash implementation at commit `073e595`.

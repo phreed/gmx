@@ -1,0 +1,8 @@
+[IMPORTANT]
+====
+Wire compatibility with existing servers and captured message streams is a hard requirement.
+Every message is a UTF-8 XML document terminated by a single NUL byte (`\0`).
+This matches the Flash `XMLSocket` framing used by the legacy client.
+The `fn:invoke` envelope in namespace `http://isis.vanderbilt.edu/gmx/function` must be accepted.
+The bare `ISISLayout`, `ISISRecord` and `ISISCollection` root elements used by the reference servers must also be accepted.
+====

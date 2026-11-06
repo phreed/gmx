@@ -1,0 +1,33 @@
+[cols="1,1,1,3",options="header"]
+|===
+|Application |Crate |Port (configured) |Responsibility
+
+|GMX client
+|`gmx-client`
+|n/a (connects out)
+|Renders layouts.
+Binds widgets to records and collections.
+Sends user edits back to the servers.
+
+|Layout server
+|`gmx-layout-server`
+|`layout.port`
+|Stores layout trees keyed by LUID.
+Resolves `xi:include` references and the layout manifest.
+Pushes `ISISLayout` messages.
+
+|Data-messages server
+|`gmx-data-server`
+|`data.port`
+|Owns the real-time data store.
+Holds records (RUID) and collections (CUID).
+Pushes `ISISRecord`, `ISISCollection` and `ISISAttributes` messages.
+Receives `ISISDataEdit` from clients.
+
+|Widget-source server
+|`gmx-widget-server`
+|`widget.port`
+|Serves widget definitions that are not compiled into the client.
+Publishes a widget catalog.
+Delivers versioned widget packages on request.
+|===
