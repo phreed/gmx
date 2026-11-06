@@ -123,11 +123,12 @@ The client reads all three sections to find its endpoints.
 host = "0.0.0.0"
 port = 12345
 layout_dir = "examples/layouts"
+initial_data = false   # load each folder's initialData.csv
 
 [data]
 host = "0.0.0.0"
 port = 12346
-seed = ["examples/layouts/initialData.csv", "examples/records", "examples/collections"]
+seed = ["examples/records", "examples/collections"]
 
 [widget]
 host = "0.0.0.0"
@@ -308,13 +309,18 @@ This server replaces `examples/servers/layout_server.py`.
 * It sends `mainLuid` and its includes to every client that connects or sends `ISISRefresh`.
 * It answers the plain-text debug commands so `tests/test_gmx.py` runs unchanged.
 * It watches the layout directory and broadcasts changed layouts.
+* When `initial_data` is on, it reads each layout folder's `initialData.csv` and sends that data after the layouts.
+
+==== initialData.csv format
+
+include::partials/initial-data-format.adoc[]
 
 === gmx-data-server
 
 This server replaces `examples/servers/data_server.py`.
 
 * It uses the `gmx-model` store as its authority.
-* It seeds data from `initialData.csv` and from record and collection XML files.
+* It seeds data from record and collection XML files.
 * It applies `ISISDataEdit` from one client and broadcasts the result to all clients.
 * A pluggable `DataSource` trait lets real systems feed the store.
   The simulated metrics source from the Python server becomes one implementation.
@@ -402,8 +408,9 @@ Done; see link:legacy-semantics.adoc[legacy semantics].
 
 |3 Servers
 |`gmx-layout-server` and `gmx-data-server`.
-Readers for `manifest.csv` and `initialData.csv`.
+Readers for `manifest.csv` and `initialData.csv`, the latter to the format in this plan.
 Interpretation of `set_ISISFormLayout` and `\|Shortcut\|` commands.
+Correct the `initialData.csv` section of the UX designer guide to match.
 |`python tests/test_gmx.py --server-only` passes against the Rust servers.
 Differential tests match the Python servers byte for byte on the debug commands.
 |1.5 weeks
@@ -486,8 +493,6 @@ Phase 2 uses a WASM sandbox with an allow-list of host calls and signed packages
 
 * The widget-source messages need review before they are frozen.
 * The WebAssembly host interface for phase 2 widgets is not yet defined.
-* The `initialData.csv` format in the UX designer guide does not match the example file.
-  The guide lists bare RUIDs after the CUID; the file uses `ruid, ref, select` triples.
 
 == Decisions
 
@@ -503,3 +508,6 @@ These questions were raised during planning and are now settled.
 * `Attribute` elements inside `ISISRecord` are not part of the protocol.
   They are dropped with a warning.
   See link:legacy-semantics.adoc#_attribute_elements_inside_records[legacy semantics].
+* `initialData.csv` follows the UX designer guide's example file, not its prose.
+  The layout server loads it, per layout folder, when `initial_data` is on.
+  See <<_initialdata_csv_format>>.

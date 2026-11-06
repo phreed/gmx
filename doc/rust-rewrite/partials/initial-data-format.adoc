@@ -1,0 +1,68 @@
+Each layout folder may hold an `initialData.csv` file.
+It pre-populates records and collections for the layouts in that folder.
+
+The format follows the example file in the UX designer guide.
+The guide's prose describes CUID rows differently from its own example.
+Where they disagree, the example wins.
+
+===== Lines
+
+* Blank lines are ignored.
+* A line whose first non-blank character is `#` is a comment.
+* Fields are separated by commas.
+* Whitespace around each field is trimmed.
+* There is no quoting.
+* The first field is the row type, `CUID` or `RUID`.
+  Any other row type is an error.
+
+===== CUID rows
+
+----
+CUID, cuid, ruid1, ref1, select1, ruid2, ref2, select2, ...
+----
+
+* The fields after the CUID are triples.
+  Each triple holds the three values of a legacy `Ruid` element, in the same order.
+* Each triple is one collection operation.
+  Operations apply in order, with the rules in link:legacy-semantics.adoc#_collections[legacy semantics].
+* An empty `ref` means the collection itself.
+* An empty `select` means `last`.
+* An incomplete trailing triple is an error.
+
+For example, `CUID, tabs, row1, , child, row2, , child` appends `row1` and then `row2` to the collection `tabs`.
+
+===== RUID rows
+
+----
+RUID, ruid, fid[, value[, layout]]
+----
+
+* Each row sets one field.
+  A record with several fields takes several rows.
+* A missing `value` defaults to `ruid:fid`.
+* A present but empty `value` sets the field to the empty string.
+* A `value` cannot contain a comma.
+* The `layout` column takes the rest of the line, commas included.
+  This keeps Layout Manager commands such as `|Shortcut|:...` intact.
+* The `layout` sets the record's Layout Manager command.
+  A blank `layout` keeps the previous one.
+  When several rows name one record, the last non-blank `layout` wins.
+
+===== Errors
+
+* An error names the file and the line number.
+* A file with any error is rejected as a whole.
+  On reload, the previously loaded data stays in effect.
+
+===== Loading
+
+* The layout server loads the file, once per layout folder.
+  The data server does not read it.
+* Loading is off unless `initial_data = true` is set in the `[layout]` section of the configuration file.
+  The `--initial-data` flag turns it on for one run.
+  This replaces the Layout Manager's `-initialData` flag.
+* After sending layouts to a client, the layout server sends the file's data as `ISISCollection` and `ISISRecord` messages, in file order.
+
+The file is meant for development, before a data service exists.
+The layout server resends the data on every `ISISRefresh`.
+With a live data service running, leave loading off, or the file's values can overwrite live ones.
