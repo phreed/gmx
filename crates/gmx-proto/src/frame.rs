@@ -116,6 +116,20 @@ impl FrameDecoder {
             return Some(Ok(frame));
         }
     }
+
+    /// Ends the stream, returning any unterminated bytes as a last frame.
+    ///
+    /// The Python servers drop such a tail, but returning it lets tools
+    /// such as `printf '<a/>' | ...`, which send no final NUL, work.
+    /// Returns `None` when nothing is buffered or an oversized frame was
+    /// being skipped. Call [`FrameDecoder::next_frame`] until it returns
+    /// `None` first.
+    pub fn finish(&mut self) -> Option<Vec<u8>> {
+        let discarding = std::mem::take(&mut self.discarding);
+        self.scanned = 0;
+        let tail = std::mem::take(&mut self.buffer);
+        (!discarding && !tail.is_empty()).then_some(tail)
+    }
 }
 
 /// Appends a frame and its NUL to `out`.
@@ -192,6 +206,27 @@ mod tests {
         assert_eq!(frames(&mut d), []);
         d.push(b"\0");
         assert_eq!(frames(&mut d), [Ok(b"1234".to_vec())]);
+    }
+
+    #[test]
+    fn finish_returns_unterminated_tail() {
+        let mut d = FrameDecoder::default();
+        d.push(b"<a/>\0<b/>");
+        assert_eq!(frames(&mut d), [Ok(b"<a/>".to_vec())]);
+        assert_eq!(d.finish(), Some(b"<b/>".to_vec()));
+        assert_eq!(d.finish(), None);
+        assert_eq!(d.buffered(), 0);
+    }
+
+    #[test]
+    fn finish_drops_tail_of_oversized_frame() {
+        let mut d = FrameDecoder::new(4);
+        d.push(b"123456");
+        assert_eq!(frames(&mut d), [Err(FrameError::TooLong { limit: 4 })]);
+        d.push(b"78");
+        assert_eq!(d.finish(), None);
+        d.push(b"ok\0");
+        assert_eq!(frames(&mut d), [Ok(b"ok".to_vec())], "state is reset");
     }
 
     #[test]

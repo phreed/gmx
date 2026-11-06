@@ -1,0 +1,127 @@
+= gmx-cat
+:toc: left
+:icons: font
+
+== Purpose
+
+`gmx-cat` is a netcat-like tool for GMX.
+It sends messages to a GMX server and prints the replies.
+It records sessions to capture files.
+It replays captures and checks that a server still replies the same way.
+
+It speaks the GMX framing: each message is UTF-8 text followed by one NUL byte.
+
+== Building
+
+[source,bash]
+----
+cargo build --release -p gmx-cat
+----
+
+== Sending
+
+`send` connects, sends its input, prints each reply on its own line, and exits once the server has been quiet for `--wait`.
+
+[source,bash]
+----
+# Plain-text debug commands
+gmx-cat send localhost:12345 -c LIST_LAYOUTS -c GET_LAYOUT:mainLuid
+
+# XML files; a file holding several messages sends one frame per message
+gmx-cat send localhost:12346 examples/collections/alerts_list.xml
+
+# Convert to the bare dialect the Python servers read
+gmx-cat send localhost:12346 --dialect bare examples/records/basic_record_message.xml
+
+# Standard input
+echo LIST_RECORDS | gmx-cat send localhost:12346 -
+----
+
+Commands given with `-c` are sent before the input files.
+Input whose first character is `<` is XML.
+Other input is one command per line.
+
+== Recording
+
+Add `--record FILE` to `send` to keep the session.
+
+To record a real client, put `proxy` between it and the server.
+`proxy` relays every connection and records both directions until Ctrl-C.
+
+[source,bash]
+----
+gmx-cat proxy --listen 127.0.0.1:12400 --upstream localhost:12345 --record session.jsonl
+----
+
+Point the client at port 12400 instead of 12345.
+
+== Replaying
+
+`replay` opens one connection per connection in the capture.
+It resends the client's frames with their recorded timing.
+It then compares the server's replies with the captured ones.
+
+[source,bash]
+----
+gmx-cat replay session.jsonl --to localhost:12345
+----
+
+The command exits with status 0 when every connection matches.
+It exits with 1 when replies differ, and lists each missing or unexpected frame.
+It exits with 2 on usage, file or connection errors.
+
+Options:
+
+* `--fast` sends without the recorded delays.
+  `--speed 2` replays twice as fast.
+* `--ignore-field RUID.FID` ignores the value of matching record fields.
+  `*` matches anything, as in `*.last_updated` or `navigation_data.*`.
+  Repeat the option for more fields.
+* `--allow-extra` accepts replies that the capture lacks.
+
+Replies are compared as decoded messages, so quoting and whitespace in the XML do not matter.
+One extra or missing reply is reported once, without misaligning the rest.
+
+[NOTE]
+====
+GMX servers keep state between connections.
+A replay is only comparable against a server that starts in the state it had when the capture was made.
+Restart the server before replaying.
+====
+
+== Capture files
+
+A capture is JSON Lines, one entry per line, so it can be read, diffed and edited.
+
+[source,json]
+----
+{"event":"header","format":"gmx-capture","version":1}
+{"event":"open","t":0.0007,"conn":0,"peer":"127.0.0.1:12345"}
+{"event":"frame","t":0.0020,"conn":0,"dir":"to_server","frame":"LIST_LAYOUTS"}
+{"event":"frame","t":0.0026,"conn":0,"dir":"to_client","frame":"LAYOUTS:[\"mainLuid\"]"}
+{"event":"close","t":0.5446,"conn":0}
+----
+
+* `t` is seconds since the capture started.
+* `conn` numbers the connections within the capture.
+* `dir` is `to_server` or `to_client`.
+* A `dropped` entry records a frame over the size limit.
+* A frame that was not valid UTF-8 is stored with `"lossy":true`.
+
+== Example: checking the Python data server
+
+The data server's simulation changes some values over time.
+Mask them when replaying.
+
+[source,bash]
+----
+python3 examples/servers/data_server.py --port 12346 &
+gmx-cat send localhost:12346 -c LIST_RECORDS --quiet --record data.jsonl
+kill %1
+
+python3 examples/servers/data_server.py --port 12346 &
+gmx-cat replay data.jsonl --to localhost:12346 \
+  --ignore-field system_status.current_time \
+  --ignore-field 'navigation_data.*' \
+  --ignore-field '*.last_updated'
+----

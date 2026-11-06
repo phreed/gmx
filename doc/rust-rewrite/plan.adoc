@@ -244,10 +244,18 @@ The change set lets the client redraw only the widgets bound to changed data.
 
 This crate provides the transport shared by all four applications.
 
-* `FramedConnection` wraps a TCP stream with the NUL codec.
-* `Hub` is a server-side broadcast set with per-client send queues and back-pressure.
+* `Connection` wraps a TCP stream with the NUL codec.
+  It can be split into halves for concurrent reading and writing.
+* `Server` accepts connections and reports them as one ordered stream of events.
+  A service handles that stream in one task, so it owns its state without locks.
+* `Hub` sends and broadcasts to clients through bounded per-client queues.
+  A client whose queue fills is disconnected.
 * `Endpoint` is a client-side connection with reconnect, back-off and the `ISISRefresh`-on-connect rule.
+  Frames queued when a connection drops are discarded, so stale edits never reach a later session.
+* `capture` reads and writes JSON Lines capture files.
 * A frame size limit, 1 MiB by default, guards against malformed peers.
+
+link:../gmx-cat.adoc[`gmx-cat`] is built on this crate.
 
 === gmx-widgets
 
@@ -404,6 +412,7 @@ Done; see link:legacy-semantics.adoc[legacy semantics].
 |`gmx-net` codec, hub and endpoint.
 `gmx-cat` for send, capture and replay.
 |`gmx-cat` replays a capture against the Python servers.
+Done; `apps/gmx-cat/tests/python_servers.rs` checks it.
 |4 days
 
 |3 Servers
