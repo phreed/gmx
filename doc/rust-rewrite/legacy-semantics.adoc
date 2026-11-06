@@ -72,17 +72,27 @@ The Rust encoder always uses the escaped-text form.
 
 === Bare-dialect extensions
 
-The bare examples use two constructs the legacy client never had.
+The bare dialect adds a `send` attribute on `Field`, which the legacy client never had.
+The Rust code applies it as the field's `send` attribute.
+It also reads `send="true"` and `send="false"` as `always` and `never`.
 
-* A `send` attribute on `Field`.
-  The Rust code applies it as the field's `send` attribute.
-* `Attribute` elements inside `ISISRecord`.
-  The examples call them cross-record references.
-  No document defines their effect.
-  The Rust code carries them unchanged and does not apply them.
+=== Attribute elements inside records
 
-The bare examples also write `send="true"` and `send="false"`.
-The Rust code reads these as `always` and `never`.
+Earlier documentation and examples showed `Attribute` elements inside `ISISRecord`.
+They were described as cross-record references and computed values.
+
+They are not part of the protocol.
+The legacy client never read them.
+The Python reference server never acted on them.
+They first appeared in documentation written in 2025, during the Haxe conversion.
+The documents disagreed about what they meant.
+
+The examples and documents no longer use them.
+The Rust decoder drops them.
+Applying such a record reports a warning and still applies its fields.
+To change a field's attributes, send `ISISAttributes`.
+
+Cross-record references or computed fields, if wanted, need their own design.
 
 == Attributes
 

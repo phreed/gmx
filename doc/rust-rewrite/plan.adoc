@@ -486,9 +486,6 @@ Phase 2 uses a WASM sandbox with an allow-list of host calls and signed packages
 
 * The widget-source messages need review before they are frozen.
 * The WebAssembly host interface for phase 2 widgets is not yet defined.
-* What should `Attribute` elements inside a bare `ISISRecord` do?
-  The examples call them cross-record references, but no document defines them.
-  They are carried unchanged and not applied for now.
 * The `initialData.csv` format in the UX designer guide does not match the example file.
   The guide lists bare RUIDs after the CUID; the file uses `ruid, ref, select` triples.
 
@@ -503,3 +500,6 @@ These questions were raised during planning and are now settled.
   All five widget tiers are in scope.
 * Clients for embedded devices are not an immediate goal.
 * The `royale` branch holds the Flash implementation at commit `073e595`.
+* `Attribute` elements inside `ISISRecord` are not part of the protocol.
+  They are dropped with a warning.
+  See link:legacy-semantics.adoc#_attribute_elements_inside_records[legacy semantics].

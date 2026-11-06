@@ -62,12 +62,18 @@ fn apply_records(store: &mut Store, records: &[WireRecord]) -> ChangeSet {
             }
             fields.push((fid, field.value.clone()));
         }
+        if record.ignored_attributes > 0 {
+            warnings.push(StoreWarning::Unsupported {
+                ruid: ruid.clone(),
+                message: "Attribute elements inside ISISRecord are not part of the GMX \
+                          protocol and were ignored; use ISISAttributes to set field attributes",
+            });
+        }
         updates.push(RecordUpdate {
             ruid,
             layout: LayoutUpdate::from_wire(record.layout.as_deref()),
             fields,
         });
-        // `record.attributes` are carried but not applied; see `WireRecord`.
     }
     let mut changes = store.apply_records(&updates);
     changes.merge(store.apply_attributes(&attributes));
@@ -196,12 +202,7 @@ mod tests {
             ruid: "r".into(),
             layout: Some("|Shortcut|:a".into()),
             fields: vec![field("a", "1", None), field("b", "2", Some("never"))],
-            attributes: vec![WireAttribute {
-                ruid: "other".into(),
-                fid: "x".into(),
-                send: Some("true".into()),
-                ..Default::default()
-            }],
+            ignored_attributes: 0,
         }]);
         let changes = apply(&mut store, &msg);
         assert!(changes.warnings.is_empty(), "{:?}", changes.warnings);
@@ -210,10 +211,29 @@ mod tests {
         assert_eq!(record.layout(), Some("|Shortcut|:a"));
         assert_eq!(record.field("b").unwrap().attributes.send, Send::Never);
         assert!(changes.attributes["r"].contains("b"));
+    }
+
+    #[test]
+    fn ignored_attribute_elements_warn_and_values_still_apply() {
+        let mut store = Store::new();
+        let msg = Message::Record(vec![WireRecord {
+            ruid: "r".into(),
+            fields: vec![field("a", "1", None)],
+            ignored_attributes: 3,
+            ..Default::default()
+        }]);
+        let changes = apply(&mut store, &msg);
+        assert!(matches!(
+            changes.warnings.as_slice(),
+            [StoreWarning::Unsupported { ruid, .. }] if ruid.as_str() == "r"
+        ));
         assert!(
-            store.record("other").is_none(),
-            "nested attributes are not applied"
+            changes.warnings[0]
+                .to_string()
+                .contains("use ISISAttributes")
         );
+        assert_eq!(store.value("r", "a"), Some("1"));
+        assert_eq!(store.records().count(), 1, "no other records are created");
     }
 
     #[test]

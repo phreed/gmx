@@ -88,20 +88,35 @@ Messages that update individual data records.
 *Field Attributes:*
 - `fid` (required) - Field identifier
 - `value` (required) - Field value
-- `send` (optional) - Send behavior flag
+- `send` (optional) - Sets the field's `send` attribute; see <<Attribute Messages>>
 
-==== Record with Attributes
+An `ISISRecord` carries only `Field` elements.
+To change a field's attributes, send an `ISISAttributes` message.
+
+=== Attribute Messages
+Messages that change how widgets treat a field.
+
+==== Attribute Update
 
 [source,xml]
 ----
-<ISISRecord ruid="record_identifier">
-  <Field fid="field_name" value="field_value"/>
-  <Attribute ruid="attr_ruid" fid="attr_field" send="true"/>
-</ISISRecord>
+<ISISAttributes>
+  <Attribute ruid="record_identifier" fid="field_name"
+             send="changed" permissions="readOnly" actionState="waiting"/>
+</ISISAttributes>
 ----
 
-*Attribute Elements:*
-Used for cross-record field references and computed values.
+*Attribute Attributes:*
+
+- `ruid` (required) - Record holding the field
+- `fid` (required) - Field to change
+- `send` (optional) - When the field is included in an `ISISDataEdit`: `always` (default), `changed` or `never`
+- `permissions` (optional) - Whether widgets may edit the field: `readWrite` (default), `readOnly` or `disabled`
+- `actionState` (optional) - Progress of the action the field triggers: `ok` (default), `waiting`, `failed` or `active`
+
+Values are not case sensitive.
+Omitted attributes keep their current value.
+The record and field are created if they do not exist.
 
 === Collection Messages
 Messages that manage collections of records.
@@ -322,19 +337,6 @@ Components can bind to collections using `cuid` attribute:
 
 The ComboBox displays all records in `user_list` collection.
 
-=== Advanced Binding
-
-Use Attribute elements for computed fields and references:
-
-[source,xml]
-----
-<ISISRecord ruid="computed_record">
-  <Field fid="display_name" value=""/>
-  <Attribute ruid="user_record" fid="first_name" send="false"/>
-  <Attribute ruid="user_record" fid="last_name" send="false"/>
-</ISISRecord>
-----
-
 == Error Handling
 
 === Client Error Responses
@@ -394,7 +396,7 @@ Servers should validate:
 
 === Memory Management
 - Ensure proper cleanup of removed records and collections
-- Avoid circular references in cross-record attributes
+
 - Monitor client memory usage with large datasets
 
 == Security Considerations
@@ -463,7 +465,7 @@ GMXMain.debugReceive = true;
 - Group related fields logically
 - Use descriptive field IDs (FIDs)
 - Include validation and status fields
-- Implement cross-record references when appropriate
+
 
 === Collection Management
 - Keep collections focused on single purposes

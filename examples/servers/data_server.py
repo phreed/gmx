@@ -44,7 +44,6 @@ class Record:
     def __init__(self, ruid: str):
         self.ruid = ruid
         self.fields: Dict[str, str] = {}
-        self.attributes: List[Dict[str, str]] = []
         self.last_updated = datetime.now()
 
     def set_field(self, fid: str, value: str):
@@ -56,13 +55,6 @@ class Record:
         """Get field value"""
         return self.fields.get(fid)
 
-    def add_attribute(self, ruid: str, fid: str, send: bool = True):
-        """Add cross-record attribute reference"""
-        self.attributes.append({
-            'ruid': ruid,
-            'fid': fid,
-            'send': str(send).lower()
-        })
 
     def to_xml(self) -> str:
         """Convert record to XML format"""
@@ -72,11 +64,7 @@ class Record:
             escaped_value = value.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
             fields_xml += f'<Field fid="{fid}" value="{escaped_value}"/>'
 
-        attributes_xml = ""
-        for attr in self.attributes:
-            attributes_xml += f'<Attribute ruid="{attr["ruid"]}" fid="{attr["fid"]}" send="{attr["send"]}"/>'
-
-        return f'<ISISRecord ruid="{self.ruid}">{fields_xml}{attributes_xml}</ISISRecord>'
+        return f'<ISISRecord ruid="{self.ruid}">{fields_xml}</ISISRecord>'
 
 
 class Collection:

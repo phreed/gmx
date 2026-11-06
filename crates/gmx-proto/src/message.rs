@@ -31,9 +31,12 @@
 //! store updates, where strings are validated, is done separately by
 //! [`crate::apply()`].
 //!
-//! Bare-dialect extensions are carried through invoke as extra child
-//! elements that the legacy client ignores: `<send>` in a `Field`, and
-//! `Attribute` elements in a `Record`.
+//! The bare dialect's `send` attribute on `Field` is carried through invoke
+//! as a `<send>` child element, which the legacy client ignores.
+//!
+//! `Attribute` elements inside a record are not part of the protocol. They
+//! are counted, so that [`crate::apply()`] can warn, and otherwise dropped.
+//! Field attributes are set with `ISISAttributes`.
 //!
 //! The bare dialect has no data-edit message; the Python servers expect
 //! client edits as `ISISRecord`. A [`Message::DataEdit`] therefore encodes
@@ -95,12 +98,13 @@ pub struct WireRecord {
     pub layout: Option<String>,
     /// Field values, in order.
     pub fields: Vec<WireField>,
-    /// `Attribute` children (bare dialect extension).
+    /// How many `Attribute` elements the record held.
     ///
-    /// The examples call these cross-record references, but no GMX
-    /// document defines what they do. They are carried unchanged and are
-    /// not applied to the store.
-    pub attributes: Vec<WireAttribute>,
+    /// Earlier GMX documentation showed `Attribute` inside `ISISRecord` as
+    /// a cross-record reference, but no implementation ever gave it a
+    /// meaning. It is not part of the protocol, so the elements are dropped.
+    /// The count lets [`crate::apply()`] warn. It is never encoded.
+    pub ignored_attributes: usize,
 }
 
 /// One collection operation, as sent. Empty strings mean absent.
@@ -512,10 +516,7 @@ fn invoke_records(arg: &Element) -> Result<Vec<WireRecord>, DecodeError> {
                         .collect()
                 })
                 .unwrap_or_default(),
-            attributes: record
-                .children_named("Attribute")
-                .map(invoke_attribute_from)
-                .collect(),
+            ignored_attributes: record.children_named("Attribute").count(),
         })
         .collect())
 }
@@ -576,11 +577,7 @@ fn invoke_record(record: &WireRecord) -> Element {
             }
             list.with_child(f)
         });
-    record
-        .attributes
-        .iter()
-        .map(invoke_attribute)
-        .fold(element.with_child(fields), Element::with_child)
+    element.with_child(fields)
 }
 
 fn invoke_collection(collection: &WireCollection) -> Element {
@@ -658,10 +655,7 @@ fn bare_record(root: &Element) -> WireRecord {
                 send: attr_non_empty(field, "send"),
             })
             .collect(),
-        attributes: root
-            .children_named("Attribute")
-            .map(bare_attribute)
-            .collect(),
+        ignored_attributes: root.children_named("Attribute").count(),
     }
 }
 
@@ -707,11 +701,7 @@ fn bare_record_element(record: &WireRecord) -> Element {
         }
         element = element.with_child(f);
     }
-    record
-        .attributes
-        .iter()
-        .map(bare_attribute_element)
-        .fold(element, Element::with_child)
+    element
 }
 
 fn bare_collection_element(collection: &WireCollection) -> Element {
@@ -818,10 +808,10 @@ mod tests {
     }
 
     #[test]
-    fn decodes_bare_record_with_extensions() {
+    fn decodes_bare_record_with_field_send() {
         let msg = decode(
             "<ISISRecord ruid=\"r\" layout=\"\"><Field fid=\"a\" value=\"x &lt; y\" send=\"never\"/>\
-             <Attribute ruid=\"o\" fid=\"f\" send=\"true\"/></ISISRecord>",
+             </ISISRecord>",
         );
         let Message::Record(records) = msg else {
             panic!()
@@ -830,8 +820,32 @@ mod tests {
         assert_eq!(r.layout.as_deref(), Some(""));
         assert_eq!(r.fields[0].value, "x < y");
         assert_eq!(r.fields[0].send.as_deref(), Some("never"));
-        assert_eq!(r.attributes[0].ruid, "o");
-        assert_eq!(r.attributes[0].send.as_deref(), Some("true"));
+        assert_eq!(r.ignored_attributes, 0);
+    }
+
+    #[test]
+    fn attribute_elements_in_records_are_counted_and_dropped() {
+        for frame in [
+            "<ISISRecord ruid=\"r\"><Field fid=\"a\" value=\"1\"/>\
+             <Attribute ruid=\"o\" fid=\"f\" send=\"true\"/>\
+             <Attribute ruid=\"p\" fid=\"g\"/></ISISRecord>",
+            "<invoke fn=\"ISISRecord\"><args><arg><RecordList><Record><ruid>r</ruid>\
+             <fieldList><Field><fid>a</fid><value>1</value></Field></fieldList>\
+             <Attribute><ruid>o</ruid><fid>f</fid></Attribute>\
+             <Attribute><ruid>p</ruid><fid>g</fid></Attribute>\
+             </Record></RecordList></arg></args></invoke>",
+        ] {
+            let msg = decode(frame);
+            let Message::Record(records) = &msg else {
+                panic!("{msg:?}")
+            };
+            assert_eq!(records[0].ignored_attributes, 2, "{frame}");
+            assert_eq!(records[0].fields.len(), 1);
+            for dialect in [Dialect::Invoke, Dialect::Bare] {
+                let encoded = msg.encode(dialect).concat();
+                assert!(!encoded.contains("Attribute"), "{dialect:?}: {encoded}");
+            }
+        }
     }
 
     #[test]

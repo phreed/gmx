@@ -66,6 +66,14 @@ pub enum StoreWarning {
     },
     /// A required identifier was empty, so the item was skipped.
     MissingId(&'static str),
+    /// A record held content that is not part of the protocol, which was
+    /// ignored.
+    Unsupported {
+        /// The record.
+        ruid: Ruid,
+        /// What was ignored, and what to do instead.
+        message: &'static str,
+    },
 }
 
 impl fmt::Display for StoreWarning {
@@ -78,6 +86,7 @@ impl fmt::Display for StoreWarning {
                 write!(f, "field '{ruid}.{fid}': {error}")
             }
             Self::MissingId(what) => f.write_str(what),
+            Self::Unsupported { ruid, message } => write!(f, "record '{ruid}': {message}"),
         }
     }
 }

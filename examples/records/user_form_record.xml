@@ -31,8 +31,4 @@
     <Field fid="creation_timestamp" value=""/>
     <Field fid="last_modified" value=""/>
 
-    <!-- Cross-Record References -->
-    <Attribute ruid="validation_record" fid="status_message" send="true"/>
-    <Attribute ruid="user_preferences" fid="default_theme" send="false"/>
-
 </ISISRecord>

@@ -452,7 +452,6 @@ Demonstrates record structure for form data:
 - Basic user information fields
 - Selection and action fields
 - Validation status tracking
-- Cross-record attribute references
 
 *RUID:* `user_form_record`
 *Related Collections:* `role_options`
@@ -479,7 +478,6 @@ Example implementation:
     <Field fid="cancel_action" value=""/>
     <Field fid="form_valid" value="false"/>
     <Field fid="validation_errors" value=""/>
-    <Attribute ruid="validation_record" fid="status_message" send="true"/>
 </ISISRecord>
 ----
 

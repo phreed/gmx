@@ -131,8 +131,9 @@ impl FromStr for Send {
     /// Parses the legacy values case-insensitively.
     ///
     /// `true` and `false` are also accepted as `always` and `never`. The
-    /// legacy client never used them, but the Python reference servers and
-    /// `examples/records/` do.
+    /// legacy client never used them, but `docs/protocol_reference.adoc`
+    /// once described `send` as a flag, and the Python reference server
+    /// wrote booleans.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_ascii_lowercase().as_str() {
             "changed" => Ok(Self::Changed),

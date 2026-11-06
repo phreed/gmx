@@ -82,9 +82,4 @@
     <Field fid="deviation_alert" value="false"/>
     <Field fid="speed_alert" value="false"/>
 
-    <!-- Cross-Record References -->
-    <Attribute ruid="system_status" fid="gps_service_status" send="true"/>
-    <Attribute ruid="alerts_summary" fid="navigation_warnings" send="true"/>
-    <Attribute ruid="route_plan" fid="next_waypoint" send="false"/>
-
 </ISISRecord>

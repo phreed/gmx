@@ -66,9 +66,4 @@
     <Field fid="last_restart" value="2024-01-15 08:00:00"/>
     <Field fid="last_update" value="2024-01-14 18:30:00"/>
 
-    <!-- Cross-Record References -->
-    <Attribute ruid="user_info" fid="session_count" send="true"/>
-    <Attribute ruid="alerts_summary" fid="alert_count" send="true"/>
-    <Attribute ruid="performance_metrics" fid="cpu_trend" send="false"/>
-
 </ISISRecord>
