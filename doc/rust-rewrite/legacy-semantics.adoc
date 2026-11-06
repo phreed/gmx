@@ -1,0 +1,206 @@
+= GMX Legacy Semantics and Deliberate Deviations
+:toc: left
+:toclevels: 2
+:icons: font
+
+== Purpose
+
+This page records how the legacy client handles the wire protocol.
+It also records where the Rust rewrite deliberately differs.
+The findings come from the ActionScript sources at commit `073e595`, held on the `royale` branch.
+They were gathered during phase 1 of link:plan.adoc[the rewrite plan].
+
+The code is the authority for details.
+See `crates/gmx-proto/src/message.rs` and `crates/gmx-model/src/collection.rs`.
+
+== Message dialects
+
+Two XML dialects are in use.
+
+The legacy client accepts only the `invoke` envelope.
+It matches the root by local name and dispatches on the `fn` attribute.
+It writes the envelope without namespaces.
+
+[source,xml]
+----
+<invoke fn="ISISDataEdit"><args><arg><RecordList>
+  <Record><ruid>r1</ruid><fieldList>
+    <Field><fid>a</fid><value>1</value></Field>
+  </fieldList></Record>
+</RecordList></arg></args></invoke>
+----
+
+The bare dialect comes from the Python reference servers.
+It puts identifiers and values in attributes.
+It carries one record or collection per message.
+
+[source,xml]
+----
+<ISISRecord ruid="r1"><Field fid="a" value="1"/></ISISRecord>
+----
+
+The Rust decoder accepts both, with or without namespace prefixes.
+The Rust encoder writes either.
+Its `invoke` output matches what the legacy client writes.
+
+=== Functions
+
+The legacy client registers four inbound functions.
+
+* `ISISLayout`
+* `ISISRecord`
+* `ISISCollection`
+* `ISISAttributes`
+
+It sends two outbound functions.
+
+* `ISISRefresh`, with an empty command, as soon as a socket connects.
+* `ISISDataEdit`, when the user edits a field.
+
+`set_ISISFormLayout`, used in several examples, is a Layout Manager function.
+The client never receives it.
+The Rust decoder keeps it as raw XML for the layout server to interpret.
+
+=== Layout payloads
+
+The legacy client reads an `ISISLayout` argument as a string.
+Layout Managers send the layout as escaped text or CDATA inside a `<Layout>` element.
+A layout whose root is `<Command>` is a control-channel command, not a tree to render.
+
+The Rust decoder also accepts the layout as a direct child element.
+The Rust encoder always uses the escaped-text form.
+
+=== Bare-dialect extensions
+
+The bare examples use two constructs the legacy client never had.
+
+* A `send` attribute on `Field`.
+  The Rust code applies it as the field's `send` attribute.
+* `Attribute` elements inside `ISISRecord`.
+  The examples call them cross-record references.
+  No document defines their effect.
+  The Rust code carries them unchanged and does not apply them.
+
+The bare examples also write `send="true"` and `send="false"`.
+The Rust code reads these as `always` and `never`.
+
+== Attributes
+
+Each field has three attributes.
+
+[cols="1,2,1",options="header"]
+|===
+|Attribute |Values (not case sensitive) |Default
+
+|`send`
+|`always`, `changed`, `never`
+|`always`
+
+|`permissions`
+|`readOnly`, `disabled`, `readWrite`
+|`readWrite`
+
+|`actionState`
+|`waiting`, `failed`, `ok`, `active`
+|`ok`
+|===
+
+An invalid value is reported and ignored.
+The other attributes in the same message still apply.
+
+== Records
+
+An empty or absent `layout` leaves the record's layout command unchanged.
+A value starting with `|null` clears it.
+The legacy code meant to do this.
+Its condition tested the stored layout instead of the incoming one.
+
+A data edit includes every field marked `always`.
+It includes a field marked `changed` only when that field was edited.
+It never includes a field marked `never`.
+
+== Collections
+
+A collection is an ordered tree of records.
+Each record appears at most once.
+
+[cols="1,2,2",options="header"]
+|===
+|`select` |Without `ref` |With `ref`
+
+|`first`
+|First top-level record
+|First sibling of `ref`
+
+|`last`
+|Last top-level record
+|Last sibling of `ref`
+
+|`child`
+|Same as `last`
+|Last child of `ref`
+
+|`before`
+|Error
+|Just before `ref`
+
+|`after`
+|Error
+|Just after `ref`
+
+|`parent`
+|Error
+|`ref` becomes the last child of `ruid`
+
+|`clear`
+|Removes every record
+|Removes every descendant of `ref`
+
+|`delete`
+|Removes `ruid` and its descendants
+|Removes `ref` and its descendants
+
+|`splice`
+|Error
+|Removes `ref`, lifting its children into its place
+|===
+
+`remove` is accepted as `delete`.
+A selector such as `after:x` is accepted as `select="after" ref="x"`.
+Both forms appear in `docs/protocol_reference.adoc`.
+
+=== Deviations from the legacy client
+
+The Rust code corrects these legacy behaviors.
+
+* A `ref` that is not in the collection is an error.
+  The legacy client created a hidden node, which made later inserts invisible.
+* `parent` with a new `ruid` puts `ruid` where `ref` was.
+  The legacy client left both records out of view.
+* With an empty `ruid`, `clear` and `delete` act on `ref`.
+  The legacy code had these branches swapped.
+* `delete` without `ref` removes `ruid`.
+  The legacy client rejected this.
+  The Python server and the protocol reference accept it.
+* A move that would make a record its own ancestor is an error.
+  The legacy client could build such cycles.
+
+A rejected operation leaves the collection unchanged.
+Later operations in the same message still apply.
+
+== Framing
+
+Each message is UTF-8 text followed by one NUL byte.
+Frames over the size limit are reported, dropped, and skipped to the next NUL.
+The default limit is 1 MiB.
+
+== Debug commands
+
+The Python servers accept plain-text requests.
+
+* `GET_LAYOUT:<luid>` and `LIST_LAYOUTS`
+* `GET_RECORD:<ruid>`, `GET_COLLECTION:<cuid>`, `LIST_RECORDS` and `LIST_COLLECTIONS`
+
+Listing replies are `LAYOUTS:`, `RECORDS:` or `COLLECTIONS:` followed by a JSON array.
+The Rust encoder formats the array exactly as Python's `json.dumps` does.
+That allows byte-for-byte comparison of Rust and Python servers.

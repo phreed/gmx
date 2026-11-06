@@ -566,8 +566,9 @@ description = "Format the Rust workspace"
 cmd = "cargo fmt --all"
 
 [tasks.cargo-lint]
-description = "Check Rust formatting and run clippy with warnings as errors"
-cmd = "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings"
+description = "Check Rust formatting, clippy and rustdoc with warnings as errors"
+cmd = "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && cargo doc --workspace --no-deps"
+env = { RUSTDOCFLAGS = "-D warnings" }
 
 [tasks.cargo-ci]
 description = "Run the same Rust checks as CI"

@@ -206,27 +206,36 @@ The `GmxWidget` trait keeps toolkit types out of the model layer, which limits t
 
 === gmx-proto
 
-This crate defines one enum for every message the system exchanges.
+This crate defines one `Message` enum for everything that travels in a frame.
 
-* `Inbound`: `Layout`, `Record`, `Collection`, `Attributes`, `Refresh`, `WidgetCatalog`, `Widget`.
-* `Outbound`: `Refresh`, `DataEdit`, `WidgetRequest`, `Error`.
-* `DebugCommand`: `GET_LAYOUT:<luid>`, `LIST_LAYOUTS`, `GET_RECORD:<ruid>`, `GET_COLLECTION:<cuid>`, `LIST_RECORDS`, `LIST_COLLECTIONS`.
+* Data: `Layout`, `Record`, `DataEdit`, `Collection`, `Attributes`, `Refresh`.
+* `Command`: `GET_LAYOUT:<luid>`, `LIST_LAYOUTS`, `GET_RECORD:<ruid>`, `GET_COLLECTION:<cuid>`, `LIST_RECORDS`, `LIST_COLLECTIONS`, and their replies.
+* `Other`: any other XML, kept unchanged, including Layout Manager calls such as `set_ISISFormLayout`.
 
-The decoder accepts the `fn:invoke` envelope and the bare root elements.
-The encoder emits the `fn:invoke` envelope by default.
-A flag selects the bare form for older servers.
+The widget-source messages will join the enum in phase 6.
+
+The decoder accepts the `invoke` envelope and the bare root elements, with or without namespaces.
+The encoder writes either dialect.
+Its `invoke` output matches what the legacy client writes.
 Unknown elements are kept as raw XML and logged, never dropped.
+
+Payloads keep the wire strings, so each dialect round-trips exactly.
+A separate `apply` function validates them and updates a `gmx-model` store.
+
+link:legacy-semantics.adoc[Legacy semantics and deliberate deviations] records the protocol details found in the ActionScript sources.
 
 === gmx-model
 
 This crate holds the data store, with no UI or I/O dependencies.
 
-* `Luid`, `Ruid` and `Cuid` are distinct newtypes over interned strings.
-* `Record` maps a field id to a `Field` value and an optional `Attributes` set.
+* `Luid`, `Ruid`, `Cuid` and `Fid` are distinct newtypes over shared strings.
+* `Record` maps a field id to a `Field` value and its `Attributes`, in insertion order.
 * `Collection` is an ordered tree of RUIDs.
 * `Collection` implements `first`, `last`, `before`, `after`, `child`, `parent`, `delete`, `splice` and `clear`.
 * It accepts both `select="after" ref="x"` and `select="after:x"`.
-* `Store` applies inbound messages and returns a change set of touched RUIDs, CUIDs and field ids.
+* `Store` applies record, collection and attribute updates and returns a change set of touched RUIDs, CUIDs and field ids.
+
+The store's update types are independent of the wire format.
 
 The change set lets the client redraw only the widgets bound to changed data.
 
@@ -379,9 +388,10 @@ Pixi tasks that wrap `cargo`.
 
 |1 Protocol and model
 |`gmx-proto` and `gmx-model`.
-Golden tests that parse every file under `examples/`.
+Golden tests that parse every XML file under `examples/`.
 |All example messages round-trip.
 Every collection operation has a unit test.
+Done; see link:legacy-semantics.adoc[legacy semantics].
 |1 week
 
 |2 Transport and `gmx-cat`
@@ -392,6 +402,8 @@ Every collection operation has a unit test.
 
 |3 Servers
 |`gmx-layout-server` and `gmx-data-server`.
+Readers for `manifest.csv` and `initialData.csv`.
+Interpretation of `set_ISISFormLayout` and `\|Shortcut\|` commands.
 |`python tests/test_gmx.py --server-only` passes against the Rust servers.
 Differential tests match the Python servers byte for byte on the debug commands.
 |1.5 weeks
@@ -474,6 +486,11 @@ Phase 2 uses a WASM sandbox with an allow-list of host calls and signed packages
 
 * The widget-source messages need review before they are frozen.
 * The WebAssembly host interface for phase 2 widgets is not yet defined.
+* What should `Attribute` elements inside a bare `ISISRecord` do?
+  The examples call them cross-record references, but no document defines them.
+  They are carried unchanged and not applied for now.
+* The `initialData.csv` format in the UX designer guide does not match the example file.
+  The guide lists bare RUIDs after the CUID; the file uses `ruid, ref, select` triples.
 
 == Decisions
 

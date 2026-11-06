@@ -18,6 +18,11 @@ gmx-widgets = { path = "crates/gmx-widgets" }
 gmx-widget-pkg = { path = "crates/gmx-widget-pkg" }
 gmx-testkit = { path = "crates/gmx-testkit" }
 
+indexmap = "2.14"
+proptest = "1.11"
+quick-xml = "0.41"
+serde_json = "1.0"
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 missing_docs = "warn"
