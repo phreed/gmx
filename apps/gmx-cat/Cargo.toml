@@ -1,0 +1,16 @@
+[package]
+name = "gmx-cat"
+description = "Send, capture and replay GMX message streams"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmx-proto.workspace = true
+gmx-net.workspace = true
+
+[lints]
+workspace = true

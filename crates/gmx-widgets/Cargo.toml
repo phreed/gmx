@@ -1,0 +1,16 @@
+[package]
+name = "gmx-widgets"
+description = "GMX widget trait, widget registry and base widgets"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmx-model.workspace = true
+gmx-widget-pkg.workspace = true
+
+[lints]
+workspace = true

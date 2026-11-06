@@ -1,0 +1,16 @@
+[package]
+name = "gmx-widget-server"
+description = "GMX widget-source server"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmx-net.workspace = true
+gmx-widget-pkg.workspace = true
+
+[lints]
+workspace = true

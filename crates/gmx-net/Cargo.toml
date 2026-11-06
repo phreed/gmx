@@ -1,0 +1,15 @@
+[package]
+name = "gmx-net"
+description = "GMX transport: framed connections, server hub and client endpoints"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmx-proto.workspace = true
+
+[lints]
+workspace = true

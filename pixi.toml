@@ -21,6 +21,8 @@ libjpeg-turbo = "*"
 openal-soft = "*"
 libvorbis = "*"
 mbedtls = "*"
+# Rust toolchain for the rewrite on the `rust` branch (edition 2024 needs >= 1.85)
+rust = ">=1.85"
 # Note: curl, unzip should be available as system tools
 
 [pypi-dependencies]
@@ -546,6 +548,30 @@ else
 fi
 '
 """
+
+# =============================================================================
+# Rust Workspace Tasks (see doc/rust-rewrite/plan.adoc)
+# =============================================================================
+
+[tasks.cargo-build]
+description = "Build every crate in the Rust workspace"
+cmd = "cargo build --workspace --all-targets"
+
+[tasks.cargo-test]
+description = "Run the Rust workspace tests"
+cmd = "cargo test --workspace"
+
+[tasks.cargo-fmt]
+description = "Format the Rust workspace"
+cmd = "cargo fmt --all"
+
+[tasks.cargo-lint]
+description = "Check Rust formatting and run clippy with warnings as errors"
+cmd = "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings"
+
+[tasks.cargo-ci]
+description = "Run the same Rust checks as CI"
+depends-on = ["cargo-lint", "cargo-build", "cargo-test"]
 
 [tasks.docs]
 description = "Generate documentation"

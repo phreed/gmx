@@ -1,0 +1,16 @@
+[package]
+name = "gmx-client"
+description = "GMX UI client"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+gmx-net.workspace = true
+gmx-widgets.workspace = true
+
+[lints]
+workspace = true

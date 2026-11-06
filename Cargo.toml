@@ -1,0 +1,30 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["Fredrick Eisele <fred.eisele@vanderbilt.edu>"]
+repository = "https://github.com/phreed/gmx"
+publish = false
+
+[workspace.dependencies]
+gmx-proto = { path = "crates/gmx-proto" }
+gmx-model = { path = "crates/gmx-model" }
+gmx-net = { path = "crates/gmx-net" }
+gmx-widgets = { path = "crates/gmx-widgets" }
+gmx-widget-pkg = { path = "crates/gmx-widget-pkg" }
+gmx-testkit = { path = "crates/gmx-testkit" }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
